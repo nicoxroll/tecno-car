@@ -74,7 +74,7 @@ const FeaturedProducts: React.FC = () => {
                             {product.tag}
                         </div>
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                             <span className="bg-white text-black px-6 py-3 text-xs tracking-widest uppercase hover:bg-zinc-200">
+                             <span className="bg-white text-black px-6 py-3 text-xs tracking-widest uppercase hover:bg-zinc-200 transition-colors border border-white">
                                 Ver Detalles
                              </span>
                         </div>
@@ -110,12 +110,12 @@ const FeaturedProducts: React.FC = () => {
               <X size={24} strokeWidth={1} />
             </button>
 
-            {/* Image Side */}
+            {/* Image Side - Removed grayscale filter to show full color in modal */}
             <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
                 <img 
                     src={selectedProduct.image} 
                     alt={selectedProduct.name} 
-                    className="w-full h-full object-cover filter grayscale contrast-110"
+                    className="w-full h-full object-cover"
                 />
             </div>
 
@@ -146,7 +146,7 @@ const FeaturedProducts: React.FC = () => {
                     href={`https://wa.me/5492213334444?text=Hola,%20me%20interesa%20saber%20m%C3%A1s%20sobre:%20${selectedProduct.name}`} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors"
+                    className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
                 >
                     <MessageCircle size={16} />
                     Consultar Precio

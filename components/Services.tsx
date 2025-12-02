@@ -56,7 +56,7 @@ const Services: React.FC = () => {
           }
         });
       },
-      { threshold: 0.1, rootMargin: "0px" } 
+      { threshold: 0.2, rootMargin: "0px" } // Increased threshold for a better trigger point
     );
 
     const elements = document.querySelectorAll('.service-item');
@@ -86,7 +86,9 @@ const Services: React.FC = () => {
                         key={service.id}
                         id={service.anchorId}
                         data-id={service.id}
-                        className={`service-item flex flex-col md:flex-row items-center gap-12 md:gap-0 scroll-mt-32 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}
+                        // Used inline style for animation to force a smoother 1s duration
+                        className={`service-item flex flex-col md:flex-row items-center gap-12 md:gap-0 scroll-mt-32 transition-opacity duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                        style={{ transition: 'opacity 1s ease-out, transform 1s ease-out' }}
                     >
                         {/* Image Side */}
                         <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-16 md:text-right order-1 md:order-1' : 'md:pl-16 order-1 md:order-2'}`}>
@@ -102,7 +104,7 @@ const Services: React.FC = () => {
 
                         {/* Dot on Line - Centered */}
                         <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center rounded-full transform -translate-x-1/2">
-                            <div className={`w-2 h-2 bg-white rounded-full transition-all duration-700 ${isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}></div>
+                            <div className={`w-2 h-2 bg-white rounded-full transition-all duration-700 delay-300 ${isVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}></div>
                         </div>
 
                         {/* Text Side */}
@@ -112,12 +114,6 @@ const Services: React.FC = () => {
                             <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8 max-w-md ml-0 md:ml-auto md:mr-0 inline-block">
                                 {service.description}
                             </p>
-                            <div className={`flex ${isEven ? 'justify-start' : 'md:justify-end justify-start'}`}>
-                                <a href="https://wa.me/5492213334444" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-2 text-xs uppercase tracking-widest text-white border-b border-white/30 pb-1 hover:border-white transition-all">
-                                    Consultar
-                                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                                </a>
-                            </div>
                         </div>
                     </div>
                 );

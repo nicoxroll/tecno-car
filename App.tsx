@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Highlights from './components/Highlights';
 import Services from './components/Services';
+import About from './components/About';
 import FeaturedProducts from './components/FeaturedProducts';
 import Gallery from './components/Gallery';
 import Newsletter from './components/Newsletter';
@@ -17,6 +18,7 @@ function App() {
         <Hero />
         <Highlights />
         <Services />
+        <About />
         <FeaturedProducts />
         <Gallery />
         <Newsletter />
