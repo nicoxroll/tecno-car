@@ -26,9 +26,12 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <a href="#home" className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-8 h-8 bg-white flex items-center justify-center border border-white">
-                {/* M Icon */}
-                <span className="text-black font-semibold text-lg leading-none">M</span>
+            <div className="w-10 h-10 overflow-hidden border border-zinc-800 rounded-full bg-black">
+                <img 
+                    src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
+                    alt="Merlano Logo" 
+                    className="w-full h-full object-cover filter hover:brightness-110 transition-all duration-500"
+                />
             </div>
             <div className="flex flex-col">
               <span className="font-light text-xl leading-none tracking-tight text-white group-hover:text-zinc-300 transition-colors">MERLANO</span>
@@ -47,18 +50,6 @@ const Navbar: React.FC = () => {
                 {link.name}
               </a>
             ))}
-          </div>
-
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <a 
-              href="https://wa.me/5492213334444" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-white px-6 py-2 text-xs font-light tracking-widest border border-zinc-700 hover:border-white hover:bg-white hover:text-black transition-all duration-300 uppercase"
-            >
-              WhatsApp
-            </a>
           </div>
 
           {/* Mobile Toggle */}

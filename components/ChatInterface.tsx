@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, ArrowRight, Sparkles, ExternalLink, Loader2 } from 'lucide-react';
+import { X, ArrowRight, ExternalLink, Loader2 } from 'lucide-react';
 import { streamChat } from '../services/geminiService';
 import { ChatMessage } from '../types';
 
@@ -98,11 +98,17 @@ const ChatInterface: React.FC = () => {
     <div className="fixed bottom-0 right-4 sm:right-8 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-0 w-[350px] sm:w-[400px] h-[550px] bg-black border-x border-t border-zinc-800 shadow-2xl flex flex-col animate-fade-in">
+        <div className="mb-6 w-[350px] sm:w-[400px] h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in rounded-lg overflow-hidden">
           {/* Header */}
           <div className="bg-black p-4 flex justify-between items-center border-b border-zinc-800">
             <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-white animate-pulse"></div>
+                <div className="w-10 h-10 rounded-full border border-zinc-700 overflow-hidden bg-zinc-950 p-1.5 flex items-center justify-center">
+                     <img 
+                        src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
+                        alt="Merlano Assistant" 
+                        className="w-full h-full object-contain" 
+                     />
+                </div>
                 <div>
                     <h3 className="font-light tracking-[0.2em] text-white text-xs uppercase">Asistente Merlano</h3>
                     <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">Gemini 3 Pro Intelligence</p>
@@ -200,9 +206,13 @@ const ChatInterface: React.FC = () => {
       {!isOpen && (
         <button
             onClick={() => setIsOpen(true)}
-            className="bg-white text-black w-14 h-14 flex items-center justify-center shadow-lg border border-zinc-800 hover:bg-zinc-200 transition-all duration-300 mb-6"
+            className="bg-black w-16 h-16 flex items-center justify-center shadow-lg border border-zinc-700 hover:border-white transition-all duration-300 mb-6 rounded-full overflow-hidden p-2.5"
         >
-            <MessageSquare size={24} strokeWidth={1} />
+             <img 
+                src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
+                alt="Chat" 
+                className="w-full h-full object-contain" 
+             />
         </button>
       )}
     </div>
