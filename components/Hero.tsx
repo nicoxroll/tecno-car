@@ -19,9 +19,9 @@ const Hero: React.FC = () => {
         <div className="absolute inset-0 bg-black/60 z-10"></div> {/* Dark Overlay for text contrast */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black z-20"></div> {/* Gradient fade at bottom */}
         
-        {/* Pexels Image - Modern Luxury Car Interior (Mercedes/Audi style) */}
+        {/* Pexels Image - Requested Image */}
         <img 
-            src="https://images.pexels.com/photos/11194510/pexels-photo-11194510.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            src="https://images.pexels.com/photos/305070/pexels-photo-305070.jpeg?auto=compress&cs=tinysrgb&w=1600"
             alt="Automotive Technology Dashboard" 
             className="w-full h-full object-cover transition-transform duration-100 ease-out"
             style={{

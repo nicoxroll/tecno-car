@@ -3,13 +3,43 @@ import { MessageSquare, X, ArrowRight, Sparkles, ExternalLink, Loader2 } from 'l
 import { streamChat } from '../services/geminiService';
 import { ChatMessage } from '../types';
 
+// Helper component to render Markdown-like text
+const FormattedText: React.FC<{ text: string }> = ({ text }) => {
+  const renderContent = () => {
+    // Split by new lines first
+    return text.split('\n').map((line, lineIdx) => {
+      if (line.trim() === '') return <br key={lineIdx} />;
+      
+      // Split by bold markers (**text**)
+      const parts = line.split(/(\*\*.*?\*\*)/g);
+      
+      return (
+        <p key={lineIdx} className="mb-1 last:mb-0">
+          {parts.map((part, partIdx) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+              return (
+                <strong key={partIdx} className="font-bold text-white">
+                  {part.slice(2, -2)}
+                </strong>
+              );
+            }
+            return <span key={partIdx}>{part}</span>;
+          })}
+        </p>
+      );
+    });
+  };
+
+  return <>{renderContent()}</>;
+};
+
 const ChatInterface: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       role: 'model',
-      text: 'Bienvenido a Merlano. Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?'
+      text: 'Bienvenido a Merlano. Soy tu asistente virtual. **¿En qué puedo ayudarte hoy?**'
     }
   ]);
   const [input, setInput] = useState('');
@@ -94,7 +124,7 @@ const ChatInterface: React.FC = () => {
                 className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
-                  className={`max-w-[85%] p-4 text-sm font-light leading-relaxed border ${
+                  className={`max-w-[85%] p-4 text-sm font-light leading-relaxed border break-words ${
                     msg.role === 'user'
                       ? 'bg-white text-black border-white'
                       : 'bg-zinc-950 text-zinc-300 border-zinc-800'
@@ -107,7 +137,10 @@ const ChatInterface: React.FC = () => {
                         <div className="w-1 h-1 bg-zinc-500 rounded-full typing-dot"></div>
                      </div>
                   ) : (
-                    <div className="whitespace-pre-wrap">{msg.text}</div>
+                    <div className="whitespace-pre-wrap">
+                        {/* Use the formatter here */}
+                        <FormattedText text={msg.text} />
+                    </div>
                   )}
                 </div>
 

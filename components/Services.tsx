@@ -20,7 +20,7 @@ const Services: React.FC = () => {
       category: "02 / ACCESORIOS",
       title: "Electrónica y Confort",
       description: "Sensores de estacionamiento, cámaras de retroceso y accesorios electrónicos que modernizan tu experiencia de conducción y aumentan la seguridad.",
-      image: "https://images.pexels.com/photos/1335077/pexels-photo-1335077.jpeg?auto=compress&cs=tinysrgb&w=800" // Luxury Interior Detail
+      image: "https://images.pexels.com/photos/9966011/pexels-photo-9966011.jpeg?auto=compress&cs=tinysrgb&w=800" // Modern Interior Detail
     },
     {
       id: 3,

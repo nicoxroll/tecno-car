@@ -1,16 +1,34 @@
-import React from 'react';
-import { Instagram, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Instagram, ArrowRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Gallery: React.FC = () => {
+  const [selectedImage, setSelectedImage] = useState<{ id: number, img: string, title: string } | null>(null);
+
   // Reliable Pexels Modern Automotive Images
   const posts = [
-    { id: 1, img: 'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'BMW TECH' },
-    { id: 2, img: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'INTERIORES' },
-    { id: 3, img: 'https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'BLACK SERIES' },
-    { id: 4, img: 'https://images.pexels.com/photos/136872/pexels-photo-136872.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'MERCEDES BENZ' },
-    { id: 5, img: 'https://images.pexels.com/photos/794435/pexels-photo-794435.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'AUDI S-LINE' },
-    { id: 6, img: 'https://images.pexels.com/photos/2526127/pexels-photo-2526127.jpeg?auto=compress&cs=tinysrgb&w=800', title: 'DETALLADO' },
+    { id: 1, img: 'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BMW TECH' },
+    { id: 2, img: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'INTERIORES' },
+    { id: 3, img: 'https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BLACK SERIES' },
+    { id: 4, img: 'https://images.pexels.com/photos/136872/pexels-photo-136872.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'MERCEDES BENZ' },
+    { id: 5, img: 'https://images.pexels.com/photos/794435/pexels-photo-794435.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'AUDI S-LINE' },
+    { id: 6, img: 'https://images.pexels.com/photos/2526127/pexels-photo-2526127.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'DETALLADO' },
   ];
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedImage) return;
+    const currentIndex = posts.findIndex(p => p.id === selectedImage.id);
+    const nextIndex = (currentIndex + 1) % posts.length;
+    setSelectedImage(posts[nextIndex]);
+  };
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedImage) return;
+    const currentIndex = posts.findIndex(p => p.id === selectedImage.id);
+    const prevIndex = (currentIndex - 1 + posts.length) % posts.length;
+    setSelectedImage(posts[prevIndex]);
+  };
 
   return (
     <section id="gallery" className="py-24 bg-black border-t border-zinc-900 relative z-20">
@@ -28,7 +46,11 @@ const Gallery: React.FC = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5 bg-zinc-900 border border-zinc-900">
             {posts.map((post) => (
-                <div key={post.id} className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer">
+                <div 
+                  key={post.id} 
+                  className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer"
+                  onClick={() => setSelectedImage(post)}
+                >
                     <img 
                         src={post.img} 
                         alt={post.title} 
@@ -44,6 +66,57 @@ const Gallery: React.FC = () => {
             ))}
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="relative max-w-5xl w-full max-h-[90vh] bg-zinc-950 border border-zinc-800 flex flex-col shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 text-white hover:text-zinc-300 transition-colors flex items-center gap-2"
+            >
+              <span className="text-xs tracking-widest uppercase">Cerrar</span>
+              <X size={24} strokeWidth={1} />
+            </button>
+            
+            <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden border-b border-zinc-900 group">
+               <img 
+                 src={selectedImage.img} 
+                 alt={selectedImage.title} 
+                 className="max-h-[70vh] w-auto object-contain"
+               />
+               
+               {/* Navigation Arrows */}
+               <button 
+                onClick={handlePrev}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 rounded-full border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+               >
+                 <ChevronLeft size={24} strokeWidth={1} />
+               </button>
+               
+               <button 
+                onClick={handleNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 rounded-full border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+               >
+                 <ChevronRight size={24} strokeWidth={1} />
+               </button>
+            </div>
+            
+            <div className="p-8 flex justify-between items-center bg-zinc-950">
+                <h3 className="text-xl text-white font-light tracking-[0.2em] uppercase">{selectedImage.title}</h3>
+                <a href="https://instagram.com/merlanotecnologiavehicular" target="_blank" rel="noreferrer" className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 px-6 py-3 transition-colors">
+                  Ver en Instagram
+                </a>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
