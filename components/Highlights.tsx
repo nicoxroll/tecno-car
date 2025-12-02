@@ -1,11 +1,11 @@
 import React from 'react';
-import { PlayCircle, ShieldCheck, Music, Users, ArrowDown } from 'lucide-react';
+import { PlayCircle, ShieldCheck, Wrench, Users } from 'lucide-react';
 
 const Highlights: React.FC = () => {
   const highlights = [
     { id: '1', title: 'MULTIMEDIA', icon: <PlayCircle size={24} strokeWidth={1} />, href: '#service-multimedia' },
     { id: '2', title: 'POLARIZADOS', icon: <ShieldCheck size={24} strokeWidth={1} />, href: '#service-polarizados' },
-    { id: '3', title: 'AUDIO', icon: <Music size={24} strokeWidth={1} />, href: '#featured-products' },
+    { id: '3', title: 'ACCESORIOS', icon: <Wrench size={24} strokeWidth={1} />, href: '#featured-products' },
     { id: '4', title: 'CLIENTES', icon: <Users size={24} strokeWidth={1} />, href: '#gallery' },
   ];
 

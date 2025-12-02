@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 
 const Services: React.FC = () => {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
@@ -10,33 +9,33 @@ const Services: React.FC = () => {
       id: 1,
       anchorId: "service-multimedia",
       category: "01 / MULTIMEDIA",
-      title: "Sistemas Android & Apple",
-      description: "Actualización tecnológica con pantallas de alta definición. Conectividad total con Android Auto y Apple CarPlay, GPS integrado y aplicaciones en tu tablero.",
-      image: "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800" // Modern Tesla/Screen Interior
+      title: "Audio & Conectividad",
+      description: "Venta e instalación de centrales multimedia originales y alternativas. Sistemas Android & Apple CarPlay, GPS integrado y actualización tecnológica para todo tipo de vehículos.",
+      image: "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800"
     },
     {
       id: 2,
       anchorId: "service-accesorios",
-      category: "02 / ACCESORIOS",
-      title: "Electrónica y Confort",
-      description: "Sensores de estacionamiento, cámaras de retroceso y accesorios electrónicos que modernizan tu experiencia de conducción y aumentan la seguridad.",
-      image: "https://images.pexels.com/photos/9966011/pexels-photo-9966011.jpeg?auto=compress&cs=tinysrgb&w=800" // Modern Interior Detail
+      category: "02 / ELECTRÓNICA INTEGRAL",
+      title: "Diagnóstico & Electricidad",
+      description: "Cerrajería integral (llaves codificadas), Inyección electrónica, Airbag y ABS. Electricidad general (alternadores y arranques), alza cristales, cierres centralizados, alarmas y baterías multimarca.",
+      image: "https://images.pexels.com/photos/9966011/pexels-photo-9966011.jpeg?auto=compress&cs=tinysrgb&w=800"
     },
     {
       id: 3,
       anchorId: "service-polarizados",
       category: "03 / POLARIZADOS",
-      title: "Protección Solar Tech",
-      description: "Láminas de seguridad y control solar de alto rendimiento. Reducción de calor y protección UV con tecnología de vanguardia para el cuidado del interior.",
-      image: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800" // Dark Sleek BMW/Sports Car
+      title: "Protección Solar & Seguridad",
+      description: "Servicio integral de polarizados vehicular y comercial. Láminas de seguridad antivandálicas y control solar de alto rendimiento para el cuidado del interior y confort térmico.",
+      image: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800"
     },
     {
       id: 4,
       anchorId: "service-climatizacion",
-      category: "04 / CLIMATIZACIÓN",
-      title: "Service de Aire",
-      description: "Mantenimiento técnico de sistemas de refrigeración. Carga de gas, detección de fugas electrónica y reparación de compresores.",
-      image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=800" // Dashboard Vents/Climate
+      category: "04 / CLIMATIZACIÓN PRO",
+      title: "Aire Acondicionado & Calefacción",
+      description: "Reparación integral de sistemas de A/A y calefacción. Servicio especializado para vehículos particulares, maquinaria vial, línea pesada, ómnibus y agrícola.",
+      image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=800"
     }
   ];
 
@@ -56,7 +55,7 @@ const Services: React.FC = () => {
           }
         });
       },
-      { threshold: 0.2, rootMargin: "0px" } // Increased threshold for a better trigger point
+      { threshold: 0.1, rootMargin: "0px" }
     );
 
     const elements = document.querySelectorAll('.service-item');
@@ -86,9 +85,8 @@ const Services: React.FC = () => {
                         key={service.id}
                         id={service.anchorId}
                         data-id={service.id}
-                        // Used inline style for animation to force a smoother 1s duration
-                        className={`service-item flex flex-col md:flex-row items-center gap-12 md:gap-0 scroll-mt-32 transition-opacity duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
-                        style={{ transition: 'opacity 1s ease-out, transform 1s ease-out' }}
+                        className={`service-item flex flex-col md:flex-row items-center gap-12 md:gap-0 scroll-mt-32 opacity-0 translate-y-10 ${isVisible ? 'animate-fade-in opacity-100 translate-y-0' : ''}`}
+                        style={{ animationDuration: '1s', animationFillMode: 'forwards' }}
                     >
                         {/* Image Side */}
                         <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-16 md:text-right order-1 md:order-1' : 'md:pl-16 order-1 md:order-2'}`}>
@@ -111,7 +109,7 @@ const Services: React.FC = () => {
                         <div className={`w-full md:w-1/2 ${isEven ? 'md:pl-16 order-2 md:order-2 text-left' : 'md:pr-16 order-2 md:order-1 md:text-right text-left'}`}>
                             <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium block mb-4 border-l-2 border-white pl-3 md:border-l-0 md:pl-0">{service.category}</span>
                             <h3 className="text-3xl font-light text-white mb-6 leading-tight">{service.title}</h3>
-                            <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8 max-w-md ml-0 md:ml-auto md:mr-0 inline-block">
+                            <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8 max-w-lg ml-0 md:ml-auto md:mr-0 inline-block">
                                 {service.description}
                             </p>
                         </div>
