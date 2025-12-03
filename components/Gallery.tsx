@@ -70,7 +70,7 @@ const Gallery: React.FC = () => {
       {/* Lightbox Modal */}
       {selectedImage && (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
             onClick={() => setSelectedImage(null)}
         >
           <div 

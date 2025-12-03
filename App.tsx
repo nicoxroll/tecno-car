@@ -7,6 +7,7 @@ import ChatInterface from "./components/ChatInterface";
 import Checkout from "./components/Checkout";
 import Contact from "./components/Contact";
 import FeaturedProducts from "./components/FeaturedProducts";
+import Footer from "./components/Footer";
 import Gallery from "./components/Gallery";
 import Hero from "./components/Hero";
 import Highlights from "./components/Highlights";
@@ -98,6 +99,8 @@ function App() {
               <Checkout onBack={() => handleNavigate("catalog")} />
             )}
           </main>
+
+          {currentView === "landing" && <Footer />}
 
           <CartDrawer onCheckout={() => handleNavigate("checkout")} />
           <ChatInterface />

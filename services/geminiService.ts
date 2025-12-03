@@ -1,9 +1,7 @@
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
 
-// Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
+// SYSTEM_INSTRUCTION remains the same
 const SYSTEM_INSTRUCTION = `
 You are the AI Assistant for "Merlano Tecnología Vehicular", a premier automotive technology shop located in Berisso, Argentina (Calle 7 #4143 e 163 y 164).
 You are helpful, knowledgeable, and polite. 
@@ -39,6 +37,9 @@ export const streamChat = async (
     onComplete(defaultMessage);
     return;
   }
+
+  // Initialize Gemini Client only if API key is available
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
   try {
     // Construct the history for the API
