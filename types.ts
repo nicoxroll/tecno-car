@@ -1,5 +1,7 @@
 import React from 'react';
 
+export type ViewState = 'landing' | 'catalog' | 'product-details' | 'checkout';
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'model';
@@ -20,4 +22,18 @@ export interface Post {
   imageUrl: string;
   title: string;
   category: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  description: string;
+  features?: string[]; // Made optional to support catalog items that might add this later
+}
+
+export interface CartItem extends Product {
+  quantity: number;
 }

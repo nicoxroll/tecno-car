@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { X, MessageCircle } from 'lucide-react';
 
 const Services: React.FC = () => {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
+  const [selectedService, setSelectedService] = useState<any | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   const services = [
@@ -11,7 +13,8 @@ const Services: React.FC = () => {
       category: "01 / MULTIMEDIA",
       title: "Audio & Conectividad",
       description: "Venta e instalación de centrales multimedia originales y alternativas. Sistemas Android & Apple CarPlay, GPS integrado y actualización tecnológica para todo tipo de vehículos.",
-      image: "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800"
+      image: "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800",
+      fullDescription: "Transformamos la experiencia de manejo integrando sistemas multimedia de última generación. Ofrecemos pantallas Tesla Style, interfaces CarPlay/Android Auto inalámbricas, y sistemas de audio de alta fidelidad. Compatible con mandos al volante y funciones originales del vehículo."
     },
     {
       id: 2,
@@ -19,7 +22,8 @@ const Services: React.FC = () => {
       category: "02 / ELECTRÓNICA INTEGRAL",
       title: "Diagnóstico & Electricidad",
       description: "Cerrajería integral (llaves codificadas), Inyección electrónica, Airbag y ABS. Electricidad general (alternadores y arranques), alza cristales, cierres centralizados, alarmas y baterías multimarca.",
-      image: "https://images.pexels.com/photos/9966011/pexels-photo-9966011.jpeg?auto=compress&cs=tinysrgb&w=800"
+      image: "https://images.pexels.com/photos/9966011/pexels-photo-9966011.jpeg?auto=compress&cs=tinysrgb&w=800",
+      fullDescription: "Soluciones completas para la electrónica de tu auto. Desde duplicado de llaves codificadas hasta diagnóstico computarizado de fallas complejas. Reparamos alternadores, burros de arranque, sistemas de confort (levantavidrios, cierres) y seguridad (Airbag, ABS)."
     },
     {
       id: 3,
@@ -27,7 +31,8 @@ const Services: React.FC = () => {
       category: "03 / POLARIZADOS",
       title: "Protección Solar & Seguridad",
       description: "Servicio integral de polarizados vehicular y comercial. Láminas de seguridad antivandálicas y control solar de alto rendimiento para el cuidado del interior y confort térmico.",
-      image: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800"
+      image: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800",
+      fullDescription: "Trabajamos con láminas de primera calidad que garantizan protección UV, reducción de calor y seguridad ante roturas. Disponemos de tonos intermedios y oscuros, así como láminas transparentes de seguridad antivandálica."
     },
     {
       id: 4,
@@ -35,7 +40,8 @@ const Services: React.FC = () => {
       category: "04 / CLIMATIZACIÓN PRO",
       title: "Aire Acondicionado & Calefacción",
       description: "Reparación integral de sistemas de A/A y calefacción. Servicio especializado para vehículos particulares, maquinaria vial, línea pesada, ómnibus y agrícola.",
-      image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=800"
+      image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=800",
+      fullDescription: "Mantenimiento y reparación experta de sistemas de climatización. Carga de gas, detección de fugas con UV, reparación de compresores y limpieza de circuitos. Atendemos flota pesada y maquinaria agrícola."
     }
   ];
 
@@ -90,7 +96,10 @@ const Services: React.FC = () => {
                     >
                         {/* Image Side */}
                         <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-16 md:text-right order-1 md:order-1' : 'md:pl-16 order-1 md:order-2'}`}>
-                            <div className="relative group overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3]">
+                            <div 
+                                className="relative group overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3] cursor-pointer"
+                                onClick={() => setSelectedService(service)}
+                            >
                                 <img 
                                     src={service.image} 
                                     alt={service.title} 
@@ -118,6 +127,51 @@ const Services: React.FC = () => {
             })}
         </div>
       </div>
+
+      {/* Service Detail Modal */}
+      {selectedService && (
+        <div 
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={() => setSelectedService(null)}
+        >
+          <div 
+            className="relative max-w-3xl w-full bg-zinc-950 border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+             <button 
+              onClick={() => setSelectedService(null)}
+              className="absolute top-4 right-4 z-10 text-white bg-black/50 p-2 rounded-full hover:bg-white hover:text-black transition-all"
+            >
+              <X size={20} strokeWidth={1} />
+            </button>
+
+            <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
+                <img 
+                    src={selectedService.image} 
+                    alt={selectedService.title} 
+                    className="w-full h-full object-cover"
+                />
+            </div>
+
+            <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
+                <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4">{selectedService.category}</span>
+                <h3 className="text-2xl text-white font-light uppercase tracking-tight mb-6">{selectedService.title}</h3>
+                <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
+                    {selectedService.fullDescription || selectedService.description}
+                </p>
+                <a 
+                    href={`https://wa.me/5492213334444?text=Hola,%20me%20interesa%20consultar%20sobre%20el%20servicio%20de:%20${selectedService.title}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
+                >
+                    <MessageCircle size={16} />
+                    Consultar en WhatsApp
+                </a>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

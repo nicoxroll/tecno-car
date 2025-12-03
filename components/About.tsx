@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wifi, Coffee, Tv, Wind, CheckCircle, Armchair } from 'lucide-react';
+import { Wifi, Coffee, Tv, Wind, CheckCircle } from 'lucide-react';
 
 const About: React.FC = () => {
   const amenities = [
@@ -32,10 +32,10 @@ const About: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {amenities.map((item, index) => (
                     <div key={index} className="flex items-center gap-4 text-zinc-400 group">
-                        <div className="w-10 h-10 border border-zinc-800 bg-black rounded-full flex items-center justify-center text-white group-hover:border-blue-500 group-hover:text-blue-400 transition-colors">
+                        <div className="w-10 h-10 border border-zinc-800 bg-black rounded-full flex items-center justify-center text-white group-hover:border-white group-hover:text-white transition-colors">
                             {item.icon}
                         </div>
-                        <span className="text-xs uppercase tracking-widest font-light group-hover:text-zinc-200 transition-colors">{item.text}</span>
+                        <span className="text-xs uppercase tracking-widest font-light group-hover:text-white transition-colors">{item.text}</span>
                     </div>
                 ))}
             </div>
@@ -44,7 +44,7 @@ const About: React.FC = () => {
           {/* Image Side */}
           <div className="w-full lg:w-1/2 order-1 lg:order-2">
             <div className="relative aspect-[4/3] border border-zinc-800 p-2 bg-black">
-                <div className="absolute inset-0 bg-blue-900/20 translate-x-4 translate-y-4 -z-10"></div>
+                {/* Removed blue background decoration */}
                 <img 
                     src="https://images.pexels.com/photos/4488652/pexels-photo-4488652.jpeg?auto=compress&cs=tinysrgb&w=800" 
                     alt="Taller Merlano Sala de Espera" 

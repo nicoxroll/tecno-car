@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useScroll } from '../context/ScrollContext';
 
 const Hero: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
+  const { scrollTo } = useScroll();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -10,6 +12,11 @@ const Hero: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault();
+    scrollTo(href);
+  };
 
   return (
     <section id="home" className="relative h-screen flex flex-col justify-center items-center overflow-hidden">
@@ -52,10 +59,10 @@ const Hero: React.FC = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fade-in" style={{ animationDelay: '1s', animationFillMode: 'forwards' }}>
-            <a href="#services" className="bg-white text-black text-xs md:text-sm font-medium py-4 px-12 tracking-[0.2em] uppercase hover:bg-zinc-200 transition-all border border-white inline-block">
+            <a href="#services" onClick={(e) => handleClick(e, '#services')} className="bg-white text-black text-xs md:text-sm font-medium py-4 px-12 tracking-[0.2em] uppercase hover:bg-zinc-200 transition-all border border-white inline-block">
                 Ver Servicios
             </a>
-            <a href="#contact" className="backdrop-blur-sm bg-black/30 text-white text-xs md:text-sm font-light py-4 px-12 tracking-[0.2em] uppercase border border-zinc-600 hover:border-white hover:bg-black/50 transition-all inline-block">
+            <a href="#contact" onClick={(e) => handleClick(e, '#contact')} className="backdrop-blur-sm bg-black/30 text-white text-xs md:text-sm font-light py-4 px-12 tracking-[0.2em] uppercase border border-zinc-600 hover:border-white hover:bg-black/50 transition-all inline-block">
                 Contactar
             </a>
         </div>
