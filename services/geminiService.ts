@@ -31,6 +31,14 @@ export const streamChat = async (
   onChunk: (text: string) => void,
   onComplete: (fullText: string, groundingUrls?: string[]) => void
 ) => {
+  // Check if API key is available
+  if (!process.env.API_KEY) {
+    const defaultMessage = "En este momento el asistente no se encuentra disponible, enviar mensaje a 2213334444";
+    onChunk(defaultMessage);
+    onComplete(defaultMessage);
+    return;
+  }
+
   try {
     // Construct the history for the API
     // We only send the last few turns to keep context but avoid overload if necessary, 
