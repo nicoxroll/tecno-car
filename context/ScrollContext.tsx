@@ -24,10 +24,9 @@ export const ScrollProvider: React.FC<{ children: React.ReactNode }> = ({
     const element = document.querySelector(targetId);
     if (element) {
       // Manually calculate position to ensure offset is correct and behavior is forced
-      const headerOffset = 100; // Matches navbar height + padding
+      const headerOffset = 60; // Further adjusted navbar height + padding
       const elementPosition = element.getBoundingClientRect().top;
       const offsetPosition = elementPosition + window.scrollY - headerOffset;
-
       if (lenis) {
         lenis.scrollTo(offsetPosition);
       } else {
