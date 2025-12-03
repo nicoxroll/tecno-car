@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type ViewState = 'landing' | 'catalog' | 'product-details' | 'checkout';
+export type ViewState = 'landing' | 'catalog' | 'product-details' | 'checkout' | 'admin';
 
 export interface ChatMessage {
   id: string;
@@ -32,6 +32,16 @@ export interface Product {
   category: string;
   description: string;
   features?: string[]; // Made optional to support catalog items that might add this later
+}
+
+export interface Service {
+  id: number;
+  anchorId: string;
+  category: string;
+  title: string;
+  description: string;
+  image: string;
+  fullDescription: string;
 }
 
 export interface CartItem extends Product {

@@ -1,6 +1,7 @@
 import Lenis from "lenis";
 import { useEffect, useState } from "react";
 import About from "./components/About";
+import Admin from "./components/Admin";
 import CartDrawer from "./components/CartDrawer";
 import Catalog from "./components/Catalog";
 import ChatInterface from "./components/ChatInterface";
@@ -36,6 +37,11 @@ function App() {
     // Store lenis instance to use it in other functions
     (window as any).lenis = lenis;
 
+    // Check if URL contains /admin
+    if (window.location.pathname === '/admin') {
+      setCurrentView('admin');
+    }
+
     return () => {
       lenis.destroy();
       (window as any).lenis = null;
@@ -51,6 +57,13 @@ function App() {
     } else {
       window.scrollTo({ top: 0, behavior: "auto" });
     }
+
+    // Update URL for admin
+    if (view === 'admin') {
+      window.history.pushState({}, '', '/admin');
+    } else {
+      window.history.pushState({}, '', '/');
+    }
   };
 
   const handleProductSelect = (product: Product) => {
@@ -62,11 +75,13 @@ function App() {
     <CartProvider>
       <ScrollProvider>
         <div className="min-h-screen bg-black text-white font-sans selection:bg-brand selection:text-white">
-          <Navbar
-            onNavigate={handleNavigate}
-            currentView={currentView}
-            onGoToCheckout={() => handleNavigate("checkout")}
-          />
+          {currentView !== 'admin' && (
+            <Navbar
+              onNavigate={handleNavigate}
+              currentView={currentView}
+              onGoToCheckout={() => handleNavigate("checkout")}
+            />
+          )}
 
           <main>
             {currentView === "landing" && (
@@ -96,6 +111,10 @@ function App() {
 
             {currentView === "checkout" && (
               <Checkout onBack={() => handleNavigate("catalog")} />
+            )}
+
+            {currentView === "admin" && (
+              <Admin onBack={() => handleNavigate("landing")} />
             )}
           </main>
 

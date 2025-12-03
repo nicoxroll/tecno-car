@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "name": "Pantalla Tesla Style 10\"",
+    "price": 450000,
+    "image": "https://images.pexels.com/photos/17345649/pexels-photo-17345649.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Multimedia",
+    "description": "Sistema Android 12, 4GB RAM, CarPlay inalámbrico.",
+    "features": ["Android 12", "Pantalla Vertical 10 pulgadas", "CarPlay Inalámbrico", "4GB RAM + 64GB ROM"],
+    "stock": 15
+  },
+  {
+    "id": 2,
+    "name": "Kit Cree LED H4 30.000LM",
+    "price": 85000,
+    "image": "https://images.pexels.com/photos/13207103/pexels-photo-13207103.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Iluminación",
+    "description": "Iluminación blanca pura 6000K, sin error de tablero.",
+    "features": ["30.000 Lúmenes", "Chip CSP", "Canbus Integrado", "Tono 6000K"],
+    "stock": 8
+  },
+  {
+    "id": 3,
+    "name": "Alarma Volumétrica G8",
+    "price": 120000,
+    "image": "https://images.pexels.com/photos/13101559/pexels-photo-13101559.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Seguridad",
+    "description": "Protección integral con sensor de presencia y cierre.",
+    "features": ["Sensor Volumétrico", "Bloqueo de motor", "2 Controles remotos", "Sirena bitonal"],
+    "stock": 22
+  },
+  {
+    "id": 4,
+    "name": "Subwoofer Slim 10\" 800W",
+    "price": 210000,
+    "image": "https://images.pexels.com/photos/326259/pexels-photo-326259.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Audio",
+    "description": "Bajos profundos en espacio reducido. Caja sellada.",
+    "features": ["800W PMPO", "Bobina Doble", "Diseño Slim para espacios reducidos", "Caja alfombrada"],
+    "stock": 12
+  },
+  {
+    "id": 5,
+    "name": "Polarizado 3M Intermedio",
+    "price": 65000,
+    "image": "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Accesorios",
+    "description": "Lámina americana con garantía de 5 años.",
+    "features": ["Garantía 5 Años", "Filtro UV 99%", "Tono Intermedio", "Instalación en 2hs"],
+    "stock": 30
+  },
+  {
+    "id": 6,
+    "name": "Multimedia Universal 7\"",
+    "price": 180000,
+    "image": "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Multimedia",
+    "description": "Ideal para renovación de estéreo básico. Mirrorlink.",
+    "features": ["Pantalla 7 pulgadas", "Bluetooth", "MirrorLink", "Entrada Cámara Reversa"],
+    "stock": 18
+  },
+  {
+    "id": 7,
+    "name": "Cámara de Retroceso HD",
+    "price": 95000,
+    "image": "https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Seguridad",
+    "description": "Cámara HD con visión nocturna y guías dinámicas.",
+    "features": ["Resolución HD 1080p", "Visión Nocturna", "Guías Dinámicas", "IP69K"],
+    "stock": 25
+  },
+  {
+    "id": 8,
+    "name": "Tweeters Componente 4\"",
+    "price": 75000,
+    "image": "https://images.pexels.com/photos/1719648/pexels-photo-1719648.jpeg?auto=compress&cs=tinysrgb&w=800",
+    "category": "Audio",
+    "description": "Altavoz de agudos de alta fidelidad para sistemas premium.",
+    "features": ["4 pulgadas", "Diseño Componente", "Bobina CCAW", "Crossover Integrado"],
+    "stock": 20
+  }
+]

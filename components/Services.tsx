@@ -1,49 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { X, MessageCircle } from 'lucide-react';
+import { Service } from '../types';
+import { loadServices } from '../utils/dataLoader';
 
 const Services: React.FC = () => {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
-  const [selectedService, setSelectedService] = useState<any | null>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  const services = [
-    {
-      id: 1,
-      anchorId: "service-multimedia",
-      category: "01 / MULTIMEDIA",
-      title: "Audio & Conectividad",
-      description: "Venta e instalación de centrales multimedia originales y alternativas. Sistemas Android & Apple CarPlay, GPS integrado y actualización tecnológica para todo tipo de vehículos.",
-      image: "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800",
-      fullDescription: "Transformamos la experiencia de manejo integrando sistemas multimedia de última generación. Ofrecemos pantallas Tesla Style, interfaces CarPlay/Android Auto inalámbricas, y sistemas de audio de alta fidelidad. Compatible con mandos al volante y funciones originales del vehículo."
-    },
-    {
-      id: 2,
-      anchorId: "service-accesorios",
-      category: "02 / ELECTRÓNICA INTEGRAL",
-      title: "Diagnóstico & Electricidad",
-      description: "Cerrajería integral (llaves codificadas), Inyección electrónica, Airbag y ABS. Electricidad general (alternadores y arranques), alza cristales, cierres centralizados, alarmas y baterías multimarca.",
-      image: "https://images.pexels.com/photos/9966011/pexels-photo-9966011.jpeg?auto=compress&cs=tinysrgb&w=800",
-      fullDescription: "Soluciones completas para la electrónica de tu auto. Desde duplicado de llaves codificadas hasta diagnóstico computarizado de fallas complejas. Reparamos alternadores, burros de arranque, sistemas de confort (levantavidrios, cierres) y seguridad (Airbag, ABS)."
-    },
-    {
-      id: 3,
-      anchorId: "service-polarizados",
-      category: "03 / POLARIZADOS",
-      title: "Protección Solar & Seguridad",
-      description: "Servicio integral de polarizados vehicular y comercial. Láminas de seguridad antivandálicas y control solar de alto rendimiento para el cuidado del interior y confort térmico.",
-      image: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800",
-      fullDescription: "Trabajamos con láminas de primera calidad que garantizan protección UV, reducción de calor y seguridad ante roturas. Disponemos de tonos intermedios y oscuros, así como láminas transparentes de seguridad antivandálica."
-    },
-    {
-      id: 4,
-      anchorId: "service-climatizacion",
-      category: "04 / CLIMATIZACIÓN PRO",
-      title: "Aire Acondicionado & Calefacción",
-      description: "Reparación integral de sistemas de A/A y calefacción. Servicio especializado para vehículos particulares, maquinaria vial, línea pesada, ómnibus y agrícola.",
-      image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?auto=compress&cs=tinysrgb&w=800",
-      fullDescription: "Mantenimiento y reparación experta de sistemas de climatización. Carga de gas, detección de fugas con UV, reparación de compresores y limpieza de circuitos. Atendemos flota pesada y maquinaria agrícola."
-    }
-  ];
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const servicesData = await loadServices();
+        setServices(servicesData);
+      } catch (error) {
+        console.error('Error loading services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
     // Fallback for browsers that don't support IntersectionObserver
@@ -68,7 +47,15 @@ const Services: React.FC = () => {
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, []);
+  }, [services]);
+
+  if (loading) {
+    return (
+      <section className="py-32 bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Cargando servicios...</div>
+      </section>
+    );
+  }
 
   return (
     <section id="services" ref={sectionRef} className="py-32 bg-black relative z-20 overflow-hidden">
@@ -135,7 +122,7 @@ const Services: React.FC = () => {
             onClick={() => setSelectedService(null)}
         >
           <div 
-            className="relative max-w-3xl w-full bg-zinc-950 border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden"
+            className="relative max-w-3xl w-full bg-zinc-950 border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
             onClick={(e) => e.stopPropagation()}
           >
              <button 

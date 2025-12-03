@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Filter, ChevronUp, ChevronDown, Search } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Product } from '../types';
+import { loadProducts } from '../utils/dataLoader';
 
 interface CatalogProps {
   onProductSelect: (product: Product) => void;
@@ -12,6 +13,8 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   const [priceRange, setPriceRange] = useState<number>(1000000);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [scrollY, setScrollY] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -22,69 +25,34 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const productsData = await loadProducts();
+        setProducts(productsData);
+      } catch (error) {
+        console.error('Error loading products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
   const categories = ['Todos', 'Multimedia', 'Audio', 'Iluminación', 'Seguridad', 'Accesorios'];
 
-  const products: Product[] = [
-    {
-      id: 1,
-      name: "Pantalla Tesla Style 10\"",
-      price: 450000,
-      image: "https://images.pexels.com/photos/17345649/pexels-photo-17345649.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "Multimedia",
-      description: "Sistema Android 12, 4GB RAM, CarPlay inalámbrico.",
-      features: ["Android 12", "Pantalla Vertical 10 pulgadas", "CarPlay Inalámbrico", "4GB RAM + 64GB ROM"]
-    },
-    {
-      id: 2,
-      name: "Kit Cree LED H4 30.000LM",
-      price: 85000,
-      image: "https://images.pexels.com/photos/13207103/pexels-photo-13207103.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "Iluminación",
-      description: "Iluminación blanca pura 6000K, sin error de tablero.",
-      features: ["30.000 Lúmenes", "Chip CSP", "Canbus Integrado", "Tono 6000K"]
-    },
-    {
-      id: 3,
-      name: "Alarma Volumétrica G8",
-      price: 120000,
-      image: "https://images.pexels.com/photos/13101559/pexels-photo-13101559.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "Seguridad",
-      description: "Protección integral con sensor de presencia y cierre.",
-      features: ["Sensor Volumétrico", "Bloqueo de motor", "2 Controles remotos", "Sirena bitonal"]
-    },
-    {
-      id: 4,
-      name: "Subwoofer Slim 10\" 800W",
-      price: 210000,
-      image: "https://images.pexels.com/photos/326259/pexels-photo-326259.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "Audio",
-      description: "Bajos profundos en espacio reducido. Caja sellada.",
-      features: ["800W PMPO", "Bobina Doble", "Diseño Slim para espacios reducidos", "Caja alfombrada"]
-    },
-    {
-      id: 5,
-      name: "Polarizado 3M Intermedio",
-      price: 65000,
-      image: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "Accesorios",
-      description: "Lámina americana con garantía de 5 años.",
-      features: ["Garantía 5 Años", "Filtro UV 99%", "Tono Intermedio", "Instalación en 2hs"]
-    },
-    {
-      id: 6,
-      name: "Multimedia Universal 7\"",
-      price: 180000,
-      image: "https://images.pexels.com/photos/627678/pexels-photo-627678.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "Multimedia",
-      description: "Ideal para renovación de estéreo básico. Mirrorlink.",
-      features: ["Pantalla 7 pulgadas", "Bluetooth", "MirrorLink", "Entrada Cámara Reversa"]
-    }
-  ];
-
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter(p =>
     (selectedCategory === 'Todos' || p.category === selectedCategory) &&
     p.price <= priceRange
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-lg">Cargando productos...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black animate-fade-in">
