@@ -1,14 +1,4 @@
-import { Product } from '../types';
-
-export interface Service {
-  id: number;
-  anchorId: string;
-  category: string;
-  title: string;
-  description: string;
-  image: string;
-  fullDescription: string;
-}
+import { Product, Service } from '../types';
 
 // Load products from JSON
 export const loadProducts = async (): Promise<Product[]> => {

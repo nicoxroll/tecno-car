@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: dark;
+}
+
 /* 
   Note: Core styles and theme config are currently handled in index.html 
   to ensure immediate preview rendering without a build step.
