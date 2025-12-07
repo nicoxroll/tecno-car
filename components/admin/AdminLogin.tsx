@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from '../../services/supabase';
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -7,13 +8,30 @@ interface AdminLoginProps {
 
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'admin@merlano.com') {
-      onLogin();
-    } else {
-      alert('Credenciales incorrectas');
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        onLogin();
+      }
+    } catch (err: any) {
+      setError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,6 +42,11 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
           Panel de Administración
         </h1>
         <form onSubmit={handleLogin} className="space-y-6">
+          {error && (
+            <div className="bg-red-900/50 border border-red-800 text-red-200 px-4 py-3 text-sm">
+              {error}
+            </div>
+          )}
           <div>
             <label className="block text-zinc-400 text-sm mb-2">Email</label>
             <input
@@ -34,11 +57,22 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
               required
             />
           </div>
+          <div>
+            <label className="block text-zinc-400 text-sm mb-2">Contraseña</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
+              required
+            />
+          </div>
           <button
             type="submit"
-            className="w-full bg-white text-black py-3 uppercase tracking-widest text-sm font-medium hover:bg-zinc-200 transition-colors"
+            disabled={loading}
+            className="w-full bg-white text-black py-3 uppercase tracking-widest text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Iniciar Sesión
+            {loading ? 'Iniciando...' : 'Iniciar Sesión'}
           </button>
         </form>
         <button

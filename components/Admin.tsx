@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadProducts, loadServices } from '../utils/dataLoader';
 import { Product, Service } from '../types';
+import { supabase } from '../services/supabase';
 import AdminLogin from './admin/AdminLogin';
 import AdminNav from './admin/AdminNav';
 import DashboardStats from './admin/DashboardStats';
@@ -17,10 +18,18 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('adminLoggedIn');
-    if (loggedIn === 'true') {
-      setIsLoggedIn(true);
-    }
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
 
     const loadData = async () => {
       try {
@@ -32,21 +41,19 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         setServices(servicesData);
       } catch (error) {
         console.error('Error loading data:', error);
-      } finally {
-        setLoading(false);
       }
     };
     loadData();
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogin = () => {
-    setIsLoggedIn(true);
-    localStorage.setItem('adminLoggedIn', 'true');
+    // State is handled by onAuthStateChange
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    localStorage.removeItem('adminLoggedIn');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   if (!isLoggedIn) {
@@ -56,7 +63,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black pt-4 pb-12 flex items-center justify-center">
-        <div className="text-white text-lg">Cargando datos del panel...</div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
     );
   }
@@ -118,6 +125,12 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         {activeTab === 'settings' && (
           <SettingsManager />
         )}
+      </div>
+
+      <div className="border-t border-zinc-900 py-8 mt-auto">
+        <div className="flex justify-center items-center gap-2 opacity-50">
+            <span className="text-zinc-600 text-[10px] uppercase tracking-widest">Desarrollado por Arise</span>
+        </div>
       </div>
     </div>
   );

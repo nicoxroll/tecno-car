@@ -1,9 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { useScroll } from '../context/ScrollContext';
+import { supabase } from '../services/supabase';
 
 const Hero: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
   const { scrollTo } = useScroll();
+  const [heroImage, setHeroImage] = useState('https://images.pexels.com/photos/305070/pexels-photo-305070.jpeg?auto=compress&cs=tinysrgb&w=1600');
+  const [heroTitle, setHeroTitle] = useState('MERLANO');
+  const [heroSubtitle, setHeroSubtitle] = useState('TECNOLOGÍA VEHICULAR');
+
+  useEffect(() => {
+    const fetchHero = async () => {
+      const { data } = await supabase
+        .from('site_config')
+        .select('key, value')
+        .in('key', ['main_hero_image', 'main_hero_title', 'main_hero_subtitle']);
+      
+      if (data) {
+        data.forEach(item => {
+          if (item.key === 'main_hero_image') setHeroImage(item.value);
+          if (item.key === 'main_hero_title') setHeroTitle(item.value);
+          if (item.key === 'main_hero_subtitle') setHeroSubtitle(item.value);
+        });
+      }
+    };
+    fetchHero();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,7 +50,7 @@ const Hero: React.FC = () => {
         
         {/* Pexels Image - Requested Image */}
         <img 
-            src="https://images.pexels.com/photos/305070/pexels-photo-305070.jpeg?auto=compress&cs=tinysrgb&w=1600"
+            src={heroImage}
             alt="Automotive Technology Dashboard" 
             className="w-full h-full object-cover transition-transform duration-100 ease-out"
             style={{
@@ -48,8 +70,8 @@ const Hero: React.FC = () => {
         </div>
 
         <h1 className="text-5xl md:text-8xl font-thin text-white mb-6 tracking-tight leading-none animate-fade-in opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
-          MERLANO<br />
-          <span className="text-zinc-400 font-extralight text-2xl md:text-5xl tracking-[0.2em] block mt-4">TECNOLOGÍA VEHICULAR</span>
+          {heroTitle}<br />
+          <span className="text-zinc-400 font-extralight text-2xl md:text-5xl tracking-[0.2em] block mt-4">{heroSubtitle}</span>
         </h1>
         
         <div className="w-16 h-[1px] bg-white mx-auto mb-8 opacity-0 animate-fade-in" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}></div>

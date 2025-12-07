@@ -1,3 +1,4 @@
+import { Toaster } from 'sonner';
 import Lenis from "lenis";
 import { useEffect, useState } from "react";
 import About from "./components/About";
@@ -74,6 +75,7 @@ function App() {
   return (
     <CartProvider>
       <ScrollProvider>
+        <Toaster position="top-center" theme="dark" richColors style={{ zIndex: 9999 }} />
         <div className="min-h-screen bg-black text-white font-sans selection:bg-brand selection:text-white">
           {currentView !== 'admin' && (
             <Navbar

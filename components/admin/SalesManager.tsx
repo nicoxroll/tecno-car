@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
-import { Edit, Trash2, Plus, X } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Edit, Trash2, Plus, X, PieChart as PieChartIcon, List, TrendingUp, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
+import { 
+  PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid
+} from 'recharts';
 import Modal from './Modal';
+import { supabase } from '../../services/supabase';
 
 interface Order {
   id: number;
@@ -11,39 +17,183 @@ interface Order {
   items: string[];
 }
 
-const mockOrders: Order[] = [
-  { id: 1, date: '2024-12-01', customer: 'Juan Pérez', total: 25000, status: 'Completado', items: ['Multimedia Android', 'Alarma Positron'] },
-  { id: 2, date: '2024-12-02', customer: 'María García', total: 15000, status: 'Pendiente', items: ['Polarizado Completo'] },
-  { id: 3, date: '2024-12-03', customer: 'Carlos López', total: 8500, status: 'Completado', items: ['Alarma Positron G8'] },
-  { id: 4, date: '2024-12-04', customer: 'Ana Rodríguez', total: 32000, status: 'En proceso', items: ['Multimedia Android', 'Polarizado Completo'] },
-];
-
 const SalesManager: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [activeTab, setActiveTab] = useState<'list' | 'stats'>('list');
+  const [orders, setOrders] = useState<Order[]>([]);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleUpdateOrder = (updatedOrder: Order) => {
-    setOrders(orders.map(o => o.id === updatedOrder.id ? updatedOrder : o));
+  // Form state
+  const [formData, setFormData] = useState<Partial<Order>>({
+    customer: '',
+    date: new Date().toISOString().split('T')[0],
+    status: 'Pendiente',
+    total: 0,
+    items: []
+  });
+  const [itemsText, setItemsText] = useState('');
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('sales')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOrders(data || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const orderData = {
+        customer: formData.customer,
+        date: formData.date,
+        status: formData.status,
+        total: formData.total,
+        items: itemsText.split(',').map(item => item.trim()).filter(Boolean)
+      };
+
+      if (editingOrder) {
+        const { error } = await supabase
+          .from('sales')
+          .update(orderData)
+          .eq('id', editingOrder.id);
+        if (error) throw error;
+        toast.success('Pedido actualizado correctamente');
+      } else {
+        const { error } = await supabase
+          .from('sales')
+          .insert([orderData]);
+        if (error) throw error;
+        toast.success('Pedido creado correctamente');
+      }
+
+      fetchOrders();
+      closeModal();
+    } catch (error) {
+      console.error('Error saving order:', error);
+      toast.error('Error al guardar el pedido');
+    }
+  };
+
+  const handleDeleteOrder = async (id: number) => {
+    if (window.confirm('¿Estás seguro de eliminar este pedido?')) {
+      try {
+        const { error } = await supabase
+          .from('sales')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        fetchOrders();
+        toast.success('Pedido eliminado correctamente');
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        toast.error('Error al eliminar el pedido');
+      }
+    }
+  };
+
+  const openCreateModal = () => {
+    setFormData({
+      customer: '',
+      date: new Date().toISOString().split('T')[0],
+      status: 'Pendiente',
+      total: 0,
+      items: []
+    });
+    setItemsText('');
+    setEditingOrder(null);
+    setIsCreating(true);
+  };
+
+  const openEditModal = (order: Order) => {
+    setFormData(order);
+    setItemsText(order.items ? order.items.join(', ') : '');
+    setEditingOrder(order);
+    setIsCreating(true);
+  };
+
+  const closeModal = () => {
+    setIsCreating(false);
     setEditingOrder(null);
   };
 
-  const handleDeleteOrder = (id: number) => {
-    if (window.confirm('¿Estás seguro de eliminar este pedido?')) {
-      setOrders(orders.filter(o => o.id !== id));
-    }
-  };
+  const stats = useMemo(() => {
+    const statusCount = orders.reduce((acc, order) => {
+      const status = order.status || 'Desconocido';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const statusData = Object.entries(statusCount).map(([name, value]) => ({ name, value }));
+
+    const salesByDate = orders.reduce((acc, order) => {
+      if (!order.date) return acc;
+      const date = new Date(order.date).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+      acc[date] = (acc[date] || 0) + (Number(order.total) || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const salesData = Object.entries(salesByDate)
+      .map(([date, total]) => ({ date, total }))
+      // Simple sort by date string (DD/MM) might be tricky if spanning years, but sufficient for simple view
+      .slice(-10); 
+
+    const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+    const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
+
+    return { statusData, salesData, totalRevenue, averageOrderValue };
+  }, [orders]);
+
+  const COLORS = ['#ffffff', '#a1a1aa', '#52525b', '#27272a', '#18181b'];
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl sm:text-2xl font-light text-white uppercase tracking-tight">Gestión de Ventas</h2>
-        <button className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center">
-          <Plus size={16} />
-          Nuevo Pedido
-        </button>
+        <div className="flex items-center gap-4">
+          <h2 className="text-xl sm:text-2xl font-light text-white uppercase tracking-tight">Gestión</h2>
+          <div className="flex border border-zinc-800">
+            <button
+              onClick={() => setActiveTab('list')}
+              className={`px-4 py-2 text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'list' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'}`}
+            >
+              <List size={14} />
+            </button>
+            <div className="w-[1px] bg-zinc-800"></div>
+            <button
+              onClick={() => setActiveTab('stats')}
+              className={`px-4 py-2 text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'stats' ? 'bg-white text-black' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'}`}
+            >
+              <PieChartIcon size={14} />
+            </button>
+          </div>
+        </div>
+        
+        {activeTab === 'list' && (
+          <button 
+            onClick={openCreateModal}
+            className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+          >
+            <Plus size={14} />
+            Nueva Venta
+          </button>
+        )}
       </div>
 
-      <div className="bg-zinc-950 border border-zinc-800 overflow-hidden overflow-x-auto">
+      {activeTab === 'list' ? (
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg overflow-hidden">
         <table className="w-full min-w-[600px]">
           <thead className="bg-zinc-900">
             <tr>
@@ -57,47 +207,138 @@ const SalesManager: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-800">
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">#{order.id}</td>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">{order.date}</td>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">{order.customer}</td>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">${order.total.toLocaleString()}</td>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    order.status === 'Completado' ? 'bg-green-900 text-green-300' :
-                    order.status === 'Pendiente' ? 'bg-yellow-900 text-yellow-300' :
-                    'bg-blue-900 text-blue-300'
-                  }`}>
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">{order.items.join(', ')}</td>
-                <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm">
-                  <div className="flex gap-2">
-                    <button onClick={() => setEditingOrder(order)} className="text-zinc-400 hover:text-white">
-                      <Edit size={16} />
-                    </button>
-                    <button onClick={() => handleDeleteOrder(order.id)} className="text-zinc-400 hover:text-red-500">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {loading ? (
+               <tr><td colSpan={7} className="text-center py-4 text-zinc-400">Cargando...</td></tr>
+            ) : orders.length === 0 ? (
+               <tr><td colSpan={7} className="text-center py-4 text-zinc-400">No hay ventas registradas</td></tr>
+            ) : (
+              orders.map((order) => (
+                <tr key={order.id}>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">#{order.id}</td>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">{order.date}</td>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">{order.customer}</td>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">${order.total.toLocaleString()}</td>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm">
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      order.status === 'Completado' ? 'bg-green-900 text-green-300' :
+                      order.status === 'Pendiente' ? 'bg-yellow-900 text-yellow-300' :
+                      'bg-blue-900 text-blue-300'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    {order.items && order.items.length > 0 ? order.items.join(', ') : '-'}
+                  </td>
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm">
+                    <div className="flex gap-2">
+                      <button onClick={() => openEditModal(order)} className="text-zinc-400 hover:text-white">
+                        <Edit size={16} />
+                      </button>
+                      <button onClick={() => handleDeleteOrder(order.id)} className="text-zinc-400 hover:text-red-500">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Edit Order Modal */}
-      {editingOrder && (
+      ) : (
+        <div className="space-y-6 animate-fade-in">
+          {/* KPI Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-zinc-400 text-sm uppercase tracking-wider">Ingresos Totales</h3>
+                <TrendingUp className="text-green-500" size={20} />
+              </div>
+              <p className="text-3xl font-light text-white">
+                ${stats.totalRevenue.toLocaleString('es-AR')}
+              </p>
+            </div>
+            <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-zinc-400 text-sm uppercase tracking-wider">Ticket Promedio</h3>
+                <TrendingUp className="text-blue-500" size={20} />
+              </div>
+              <p className="text-3xl font-light text-white">
+                ${stats.averageOrderValue.toLocaleString('es-AR', { maximumFractionDigits: 0 })}
+              </p>
+            </div>
+            <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-zinc-400 text-sm uppercase tracking-wider">Total Pedidos</h3>
+                <Calendar className="text-purple-500" size={20} />
+              </div>
+              <p className="text-3xl font-light text-white">
+                {orders.length}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Sales Trend Chart */}
+            <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+              <h3 className="text-white text-sm uppercase tracking-widest mb-6">Tendencia de Ventas</h3>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={stats.salesData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="date" stroke="#71717a" fontSize={12} />
+                    <YAxis stroke="#71717a" fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Bar dataKey="total" fill="#fff" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Status Distribution Chart */}
+            <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+              <h3 className="text-white text-sm uppercase tracking-widest mb-6">Estado de Pedidos</h3>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats.statusData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {stats.statusData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
+                      itemStyle={{ color: '#fff' }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Order Modal */}
+      {isCreating && (
         <Modal
           isOpen={true}
-          onClose={() => setEditingOrder(null)}
-          title={`Editar Pedido #${editingOrder.id}`}
+          onClose={closeModal}
+          title={editingOrder ? `Editar Pedido #${editingOrder.id}` : 'Nuevo Pedido'}
         >
-
-
             {/* Form */}
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -105,7 +346,8 @@ const SalesManager: React.FC = () => {
                   <label className="block text-zinc-400 text-sm mb-2">Cliente</label>
                   <input
                     type="text"
-                    defaultValue={editingOrder.customer}
+                    value={formData.customer}
+                    onChange={(e) => setFormData({...formData, customer: e.target.value})}
                     className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                   />
                 </div>
@@ -113,7 +355,8 @@ const SalesManager: React.FC = () => {
                   <label className="block text-zinc-400 text-sm mb-2">Fecha</label>
                   <input
                     type="date"
-                    defaultValue={editingOrder.date}
+                    value={formData.date}
+                    onChange={(e) => setFormData({...formData, date: e.target.value})}
                     className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                   />
                 </div>
@@ -122,7 +365,8 @@ const SalesManager: React.FC = () => {
               <div>
                 <label className="block text-zinc-400 text-sm mb-2">Estado</label>
                 <select
-                  defaultValue={editingOrder.status}
+                  value={formData.status}
+                  onChange={(e) => setFormData({...formData, status: e.target.value})}
                   className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                 >
                   <option value="Pendiente">Pendiente</option>
@@ -135,7 +379,8 @@ const SalesManager: React.FC = () => {
                 <label className="block text-zinc-400 text-sm mb-2">Total</label>
                 <input
                   type="number"
-                  defaultValue={editingOrder.total}
+                  value={formData.total}
+                  onChange={(e) => setFormData({...formData, total: Number(e.target.value)})}
                   className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                 />
               </div>
@@ -143,7 +388,8 @@ const SalesManager: React.FC = () => {
               <div>
                 <label className="block text-zinc-400 text-sm mb-2">Productos</label>
                 <textarea
-                  defaultValue={editingOrder.items.join(', ')}
+                  value={itemsText}
+                  onChange={(e) => setItemsText(e.target.value)}
                   className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                   placeholder="Lista de productos separados por coma"
                 />
@@ -154,18 +400,16 @@ const SalesManager: React.FC = () => {
             <div className="flex justify-end items-center mt-8 pt-6 border-t border-zinc-800">
               <div className="flex gap-3">
                 <button
-                  onClick={() => setEditingOrder(null)}
+                  onClick={closeModal}
                   className="bg-zinc-800 text-white px-4 sm:px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
-                  onClick={() => {
-                    handleUpdateOrder(editingOrder);
-                  }}
+                  onClick={handleSave}
                   className="bg-white text-black px-4 sm:px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
                 >
-                  Guardar Cambios
+                  {editingOrder ? 'Guardar Cambios' : 'Crear Pedido'}
                 </button>
               </div>
             </div>

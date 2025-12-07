@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingBag, X, MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Product, ViewState } from '../types';
+import { supabase } from '../services/supabase';
 
 interface FeaturedProductsProps {
   onNavigate: (view: ViewState) => void;
@@ -9,47 +10,30 @@ interface FeaturedProductsProps {
 
 const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
-  // Adapted to match global Product type (numeric price)
-  const products: Product[] = [
-    {
-      id: 101,
-      name: "PANTALLA TESLA STYLE",
-      price: 450000,
-      image: "https://images.pexels.com/photos/17345649/pexels-photo-17345649.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "DESTACADO", // Mapping 'tag' to category for simplicity
-      description: "Sistema multimedia vertical de alta definición que transforma completamente la consola central de tu vehículo. Combina control de aire acondicionado táctil con entretenimiento avanzado.",
-      features: ["Android 12 QLED", "4GB RAM + 64GB ROM", "Apple CarPlay & Android Auto Inalámbrico", "Control de climatización digital"]
-    },
-    {
-      id: 102,
-      name: "SEGURIDAD",
-      price: 120000,
-      image: "https://images.pexels.com/photos/13101559/pexels-photo-13101559.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "SEGURIDAD",
-      description: "Sistema de alarma de última generación con sensor de presencia. Bloqueo automático de motor en caso de alejamiento del control remoto.",
-      features: ["Activación por presencia", "Cierre centralizado automático", "Sensores volumétricos", "Sirena bitonal blindada"]
-    },
-    {
-      id: 103,
-      name: "ILUMINACIÓN CREE LED",
-      price: 85000,
-      image: "https://images.pexels.com/photos/13207103/pexels-photo-13207103.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "LUCES",
-      description: "Kit de iluminación LED de alta potencia. Mejora la visibilidad nocturna un 300% sin encandilar. Color blanco puro 6000K para un look moderno.",
-      features: ["30.000 Lúmenes", "Vida útil 50.000 horas", "Sistema Canbus (Sin error de tablero)", "Refrigeración activa"]
-    },
-    {
-      id: 104,
-      name: "AUDIO HIGH-FIDELITY",
-      price: 210000,
-      image: "https://images.pexels.com/photos/326259/pexels-photo-326259.jpeg?auto=compress&cs=tinysrgb&w=800",
-      category: "AUDIO",
-      description: "Componentes de audio de grado audiófilo. Parlantes, potencias y subwoofers calibrados para obtener un sonido cristalino y graves profundos.",
-      features: ["Parlantes Componentes 6.5\"", "Subwoofers Slim", "Potencias Digitales Clase D", "Insonorización de puertas"]
-    }
-  ];
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('featured', true)
+          .limit(4);
+
+        if (error) throw error;
+        setProducts(data || []);
+      } catch (error) {
+        console.error('Error fetching featured products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedProducts();
+  }, []);
 
   return (
     <section id="featured-products" className="py-24 bg-zinc-950 border-t border-zinc-900 relative z-20 scroll-mt-20">
@@ -64,35 +48,41 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
             </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-                <div key={product.id} className="group flex flex-col cursor-pointer" onClick={() => setSelectedProduct(product)}>
-                    <div className="relative aspect-[4/5] overflow-hidden bg-zinc-900 mb-6 border border-zinc-800 group-hover:border-zinc-600 transition-colors">
-                        <img 
-                            src={product.image} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale contrast-110"
-                        />
-                        <div className="absolute top-4 left-4 bg-black text-white text-[9px] px-2 py-1 uppercase tracking-widest border border-zinc-800">
-                            {product.category}
-                        </div>
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                             <span className="bg-white text-black px-6 py-3 text-xs tracking-widest uppercase hover:bg-zinc-200 transition-colors border border-white">
-                                Ver Detalles
-                             </span>
-                        </div>
-                    </div>
-                    
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h3 className="text-white text-sm font-light tracking-wider mb-1">{product.name}</h3>
-                            <p className="text-zinc-500 text-xs tracking-widest">${product.price.toLocaleString()}</p>
-                        </div>
-                        <ShoppingBag size={16} className="text-zinc-600 group-hover:text-white transition-colors" strokeWidth={1} />
-                    </div>
-                </div>
-            ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12 text-zinc-500">Cargando productos destacados...</div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-12 text-zinc-500">No hay productos destacados por el momento.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {products.map((product) => (
+                  <div key={product.id} className="group flex flex-col cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                      <div className="relative aspect-[4/5] overflow-hidden bg-zinc-900 mb-6 border border-zinc-800 group-hover:border-zinc-600 transition-colors">
+                          <img 
+                              src={product.image} 
+                              alt={product.name} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale contrast-110"
+                          />
+                          <div className="absolute top-4 left-4 bg-black text-white text-[9px] px-2 py-1 uppercase tracking-widest border border-zinc-800">
+                              {product.category}
+                          </div>
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                               <span className="bg-white text-black px-6 py-3 text-xs tracking-widest uppercase hover:bg-zinc-200 transition-colors border border-white">
+                                  Ver Detalles
+                               </span>
+                          </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-start">
+                          <div>
+                              <h3 className="text-white text-sm font-light tracking-wider mb-1">{product.name}</h3>
+                              <p className="text-zinc-500 text-xs tracking-widest">${product.price.toLocaleString()}</p>
+                          </div>
+                          <ShoppingBag size={16} className="text-zinc-600 group-hover:text-white transition-colors" strokeWidth={1} />
+                      </div>
+                  </div>
+              ))}
+          </div>
+        )}
       </div>
 
       {/* Product Detail Modal */}

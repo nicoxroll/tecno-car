@@ -196,7 +196,7 @@ const ChatInterface: React.FC = () => {
               </button>
             </div>
             <div className="text-center mt-2">
-                <p className="text-[9px] text-zinc-700 uppercase tracking-widest">IA potenciada por Google Gemini</p>
+                <p className="text-[9px] text-zinc-700 uppercase tracking-widest">IA Potenciada por ARISE</p>
             </div>
           </div>
         </div>

@@ -32,6 +32,11 @@ export interface Product {
   category: string;
   description: string;
   features?: string[]; // Made optional to support catalog items that might add this later
+  stock?: number;
+  available?: boolean;
+  featured?: boolean;
+  year?: number;
+  tags?: string[];
 }
 
 export interface Service {
@@ -42,6 +47,7 @@ export interface Service {
   description: string;
   image: string;
   fullDescription: string;
+  order?: number;
 }
 
 export interface CartItem extends Product {
