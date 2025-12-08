@@ -130,6 +130,22 @@ const About: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Section */}
+      <div className="mt-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative aspect-video border border-zinc-800 bg-black overflow-hidden">
+            <video
+              src="/presentacion.mkv"
+              controls
+              className="w-full h-full object-cover"
+              poster="/placeholder.jpg"
+            >
+              Tu navegador no soporta el elemento de video.
+            </video>
+          </div>
+        </div>
+      </div>
     </section>
   );
 };

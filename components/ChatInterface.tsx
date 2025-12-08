@@ -115,7 +115,7 @@ const ChatInterface: React.FC = () => {
                 <img
                   src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
                   alt="Merlano Assistant"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain filter grayscale"
                 />
               </div>
               <div>
@@ -232,7 +232,7 @@ const ChatInterface: React.FC = () => {
           <img
             src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
             alt="Chat"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain filter grayscale"
           />
         </button>
       )}
