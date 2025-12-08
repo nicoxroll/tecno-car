@@ -84,7 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <img
                 src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
                 alt="Merlano Logo"
-                className="w-full h-full object-cover filter hover:brightness-110 transition-all duration-500"
+                className="w-full h-full object-cover filter grayscale transition-all duration-500"
               />
             </div>
             <div className="flex flex-col">
