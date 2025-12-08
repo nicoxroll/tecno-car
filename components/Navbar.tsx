@@ -39,9 +39,10 @@ const Navbar: React.FC<NavbarProps> = ({
       if (currentView !== "landing") {
         onNavigate("landing");
         // Give React a moment to render the Landing page before calculating scroll position
+        // Increased timeout to allow for data loading and layout shifts
         setTimeout(() => {
           scrollTo(href);
-        }, 300);
+        }, 800);
       } else {
         scrollTo(href);
       }
