@@ -29,11 +29,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
     >
       <div
         data-lenis-prevent
-        className="bg-zinc-950 border border-zinc-800 p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl overscroll-contain"
+        className="bg-black border border-zinc-800 p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl overscroll-contain"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 sticky top-0 bg-zinc-950 z-10 pb-4 border-b border-zinc-800/50">
+        <div className="flex justify-between items-center mb-8 sticky top-0 bg-black z-10 pb-4 border-b border-zinc-800/50">
           <h3 className="text-2xl font-light text-white uppercase tracking-tight">
             {title}
           </h3>

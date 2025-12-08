@@ -37,7 +37,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
 
   return (
     <div className="min-h-screen bg-black pt-4 pb-12 flex items-center justify-center">
-      <div className="max-w-md w-full bg-zinc-950 border border-zinc-800 p-8">
+      <div className="max-w-md w-full bg-black border border-zinc-800 p-8">
         <h1 className="text-2xl font-light text-white mb-6 text-center uppercase tracking-widest">
           Panel de Administración
         </h1>
@@ -53,7 +53,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
+              className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
               required
             />
           </div>
@@ -63,7 +63,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
+              className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
               required
             />
           </div>

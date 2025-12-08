@@ -118,7 +118,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 z-10 text-zinc-500 hover:text-white transition-colors bg-black p-2 rounded-full md:bg-transparent"
+              className="absolute top-4 right-4 z-10 text-zinc-500 hover:text-white transition-colors bg-black p-2 md:bg-transparent"
             >
               <X size={24} strokeWidth={1} />
             </button>

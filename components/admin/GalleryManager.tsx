@@ -170,10 +170,10 @@ const GalleryManager: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+          <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-white rounded-full"></div>
         </div>
       ) : posts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-zinc-800 border-dashed rounded-lg bg-zinc-900/30">
+        <div className="flex flex-col items-center justify-center py-20 border border-zinc-800 border-dashed bg-black">
           <ImageIcon size={48} className="text-zinc-700 mb-4" />
           <p className="text-zinc-500 text-lg font-light">
             Aún no hay publicaciones
@@ -187,7 +187,7 @@ const GalleryManager: React.FC = () => {
           {posts.map((post) => (
             <div
               key={post.id}
-              className="bg-zinc-900 border border-zinc-800 group relative"
+              className="bg-black border border-zinc-800 group relative"
             >
               <div className="aspect-square overflow-hidden relative">
                 <img
@@ -198,13 +198,13 @@ const GalleryManager: React.FC = () => {
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                   <button
                     onClick={() => openEditModal(post)}
-                    className="p-2 bg-white text-black rounded-full hover:bg-zinc-200 transition-colors"
+                    className="p-2 bg-white text-black hover:bg-zinc-200 transition-colors"
                   >
                     <Edit size={18} />
                   </button>
                   <button
                     onClick={() => setDeletingPostId(post.id)}
-                    className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    className="p-2 bg-red-500 text-white hover:bg-red-600 transition-colors"
                   >
                     <Trash2 size={18} />
                   </button>
@@ -253,7 +253,7 @@ const GalleryManager: React.FC = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
                 placeholder="Título de la publicación"
                 required
               />
@@ -269,7 +269,7 @@ const GalleryManager: React.FC = () => {
                     <img
                       src={formData.image_url}
                       alt="Preview"
-                      className="w-20 h-20 object-cover rounded"
+                      className="w-20 h-20 object-cover"
                     />
                   )}
                   <input
@@ -280,7 +280,7 @@ const GalleryManager: React.FC = () => {
                         handleImageUpload(e.target.files[0]);
                       }
                     }}
-                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
+                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-zinc-900"
                   />
                 </div>
                 <input
@@ -289,7 +289,7 @@ const GalleryManager: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, image_url: e.target.value })
                   }
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
                   placeholder="URL de la imagen"
                   required
                 />
@@ -306,7 +306,7 @@ const GalleryManager: React.FC = () => {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={3}
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
                 placeholder="Descripción de la publicación..."
               />
             </div>
@@ -323,7 +323,7 @@ const GalleryManager: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, instagram_url: e.target.value })
                   }
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                  className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
                   placeholder="https://instagram.com/p/..."
                 />
               </div>

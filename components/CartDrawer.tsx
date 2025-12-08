@@ -21,7 +21,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
       ></div>
 
       {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-zinc-950 border-l border-zinc-800 z-[200] shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-black border-l border-zinc-800 z-[200] shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
         {/* Header */}
         <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-black">
           <div className="flex items-center gap-3">
@@ -54,7 +54,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
           ) : (
             cart.map((item) => (
               <div key={item.id} className="flex gap-4 animate-fade-in">
-                <div className="w-20 h-20 bg-zinc-900 border border-zinc-800 flex-shrink-0">
+                <div className="w-20 h-20 bg-black border border-zinc-800 flex-shrink-0">
                   <img
                     src={item.image}
                     alt={item.name}

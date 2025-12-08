@@ -83,7 +83,7 @@ const Hero: React.FC = () => {
           className="mb-8 animate-fade-in opacity-0"
           style={{ animationDelay: "0.2s", animationFillMode: "forwards" }}
         >
-          <div className="w-24 h-24 border border-zinc-500/50 bg-black/50 backdrop-blur-md flex items-center justify-center mx-auto overflow-hidden rounded-full p-2">
+          <div className="w-24 h-24 border border-zinc-500/50 bg-black/50 backdrop-blur-md flex items-center justify-center mx-auto overflow-hidden p-2">
             <img
               src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
               alt="Merlano Logo"

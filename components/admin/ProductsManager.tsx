@@ -274,9 +274,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
             <div className="flex gap-2">
             <button
                 onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                className="flex items-center gap-2 text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+                className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center gap-2 ${isFiltersOpen ? 'bg-white text-black' : 'text-zinc-400 hover:text-white hover:bg-zinc-900'}`}
+                title="Filtros"
             >
-                <Filter size={14} /> {isFiltersOpen ? 'Ocultar Filtros' : 'Mostrar Filtros'}
+                <Filter size={16} />
             </button>
             <button
                 onClick={() => setIsBulkModalOpen(true)}
@@ -320,7 +321,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
           <div className="space-y-6 animate-fade-in">
              {/* KPI Cards */}
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+                <div className="bg-black border border-zinc-800 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-zinc-400 text-sm uppercase tracking-wider">Valor del Inventario</h3>
                     <TrendingUp className="text-green-500" size={20} />
@@ -329,7 +330,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     ${productStats.totalValue.toLocaleString('es-AR')}
                   </p>
                 </div>
-                <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+                <div className="bg-black border border-zinc-800 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-zinc-400 text-sm uppercase tracking-wider">Total Productos</h3>
                     <Package className="text-blue-500" size={20} />
@@ -338,7 +339,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     {products.length} <span className="text-sm text-zinc-500">({productStats.totalStock} unidades)</span>
                   </p>
                 </div>
-                <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+                <div className="bg-black border border-zinc-800 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-zinc-400 text-sm uppercase tracking-wider">Stock Bajo</h3>
                     <AlertTriangle className="text-yellow-500" size={20} />
@@ -351,7 +352,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Category Distribution Chart */}
-                <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+                <div className="bg-black border border-zinc-800 p-6">
                     <h3 className="text-white text-sm uppercase tracking-widest mb-6 flex items-center gap-2">
                         <PieChartIcon size={14} /> Distribución por Categorías
                     </h3>
@@ -372,7 +373,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                             ))}
                             </Pie>
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
+                                contentStyle={{ backgroundColor: '#000000', borderColor: '#27272a', color: '#fff' }}
                                 itemStyle={{ color: '#fff' }}
                             />
                             <Legend />
@@ -382,7 +383,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </div>
 
                 {/* Top Expensive Products Chart */}
-                <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg">
+                <div className="bg-black border border-zinc-800 p-6">
                     <h3 className="text-white text-sm uppercase tracking-widest mb-6 flex items-center gap-2">
                         <TrendingUp size={14} /> Productos de Mayor Valor
                     </h3>
@@ -393,7 +394,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                             <XAxis type="number" stroke="#71717a" fontSize={12} hide />
                             <YAxis dataKey="name" type="category" stroke="#71717a" fontSize={10} width={100} />
                             <Tooltip 
-                                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
+                                contentStyle={{ backgroundColor: '#000000', borderColor: '#27272a', color: '#fff' }}
                                 itemStyle={{ color: '#fff' }}
                                 formatter={(value: number) => [`$${value.toLocaleString()}`, 'Precio']}
                             />
@@ -419,7 +420,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         placeholder="BUSCAR..." 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full bg-zinc-950 border-b border-zinc-800 text-white text-xs py-3 pl-2 focus:outline-none focus:border-white transition-colors"
+                        className="w-full bg-black border-b border-zinc-800 text-white text-xs py-3 pl-2 focus:outline-none focus:border-white transition-colors"
                     />
                     <Search size={14} className="absolute right-2 top-3 text-zinc-500" />
                 </div>
@@ -454,13 +455,13 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                             value={tagInput}
                             onChange={(e) => setTagInput(e.target.value)}
                             onKeyDown={handleTagInput}
-                            className="w-full bg-zinc-950 border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
+                            className="w-full bg-black border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
                         />
                     </div>
                     {searchTags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-3">
                         {searchTags.map(tag => (
-                          <span key={tag} className="bg-zinc-800 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1">
+                          <span key={tag} className="bg-zinc-800 text-white text-[10px] px-2 py-1 flex items-center gap-1">
                             {tag}
                             <button onClick={() => removeTag(tag)} className="hover:text-red-400"><X size={10} /></button>
                           </span>
@@ -482,7 +483,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                             step="10000"
                             value={priceRange} 
                             onChange={(e) => setPriceRange(Number(e.target.value))}
-                            className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
+                            className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
                         />
                         <div className="flex justify-between text-[10px] text-zinc-500 mt-4 font-mono">
                             <span>$50k</span>
@@ -496,7 +497,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
         {/* Products Table/Grid */}
         <div className="flex-1 w-full min-w-0">
-          <div className="bg-zinc-950 border border-zinc-800 overflow-hidden">
+          <div className="bg-black border border-zinc-800 overflow-hidden">
             <div className="px-4 py-3 border-b border-zinc-800 flex justify-between items-center">
               <span className="text-zinc-400 text-sm">{filteredProducts.length} productos encontrados</span>
               <div className="flex border border-zinc-800">
@@ -522,7 +523,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
             {viewMode === 'table' && (
               <div className="overflow-x-auto w-full">
                 <table className="w-full min-w-[800px]">
-                <thead className="bg-zinc-900">
+                <thead className="bg-black">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Producto</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Categoría</th>
@@ -535,7 +536,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </thead>
                 <tbody className="divide-y divide-zinc-800">
                   {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-zinc-900/50 transition-colors">
+                    <tr key={product.id} className="hover:bg-zinc-900 transition-colors">
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-3">
                           <img
@@ -553,7 +554,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       <td className="px-4 py-4 text-sm text-white font-medium">${product.price.toLocaleString()}</td>
                       <td className="px-4 py-4 text-sm text-zinc-400">{product.stock || 'N/A'}</td>
                       <td className="px-4 py-4">
-                        <span className={`px-2 py-1 text-xs rounded-full ${product.available ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+                        <span className={`px-2 py-1 text-xs ${product.available ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
                           {product.available ? 'Disponible' : 'Agotado'}
                         </span>
                       </td>
@@ -587,7 +588,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
             {viewMode === 'grid' && (
               <div className={`grid gap-6 transition-all duration-500 ${isFiltersOpen ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 md:grid-cols-3 xl:grid-cols-4'}`}>
                 {filteredProducts.map((product) => (
-                  <div key={product.id} className="group bg-zinc-950 border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col">
+                  <div key={product.id} className="group bg-black border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col">
                     <div className="relative aspect-square overflow-hidden bg-black cursor-pointer" onClick={() => {
                         setModalTagInput('');
                         setEditingProduct(product);
@@ -709,7 +710,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     type="number"
                     value={bulkConfig.value}
                     onChange={(e) => setBulkConfig({...bulkConfig, value: Number(e.target.value)})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="0"
                 />
             </div>
@@ -775,7 +776,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
               <div className="space-y-6">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-4 uppercase tracking-widest">Imagen del Producto</label>
-                  <div className="aspect-square bg-zinc-900 border border-zinc-800 overflow-hidden group cursor-pointer">
+                  <div className="aspect-square bg-black border border-zinc-800 overflow-hidden group cursor-pointer">
                     <img
                       src={editingProduct.image || '/placeholder.jpg'}
                       alt="Preview"
@@ -791,7 +792,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     type="text"
                     value={editingProduct.image || ''}
                     onChange={(e) => setEditingProduct({...editingProduct, image: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="https://..."
                   />
                 </div>
@@ -811,7 +812,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         }
                       }
                     }}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 file:bg-zinc-800 file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-700 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 file:bg-black file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-900 transition-colors"
                   />
                 </div>
               </div>
@@ -827,7 +828,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         setEditingProduct({...editingProduct, name: e.target.value});
                         if (errors.name) setErrors({...errors, name: ''});
                     }}
-                    className={`w-full bg-zinc-900 border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.name ? 'border-red-500' : 'border-zinc-700'}`}
+                    className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.name ? 'border-red-500' : 'border-zinc-700'}`}
                     placeholder="Nombre del producto"
                   />
                   {errors.name && <span className="text-red-500 text-xs mt-1 block">{errors.name}</span>}
@@ -841,7 +842,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         setEditingProduct({...editingProduct, category: e.target.value});
                         if (errors.category) setErrors({...errors, category: ''});
                     }}
-                    className={`w-full bg-zinc-900 border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.category ? 'border-red-500' : 'border-zinc-700'}`}
+                    className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.category ? 'border-red-500' : 'border-zinc-700'}`}
                   >
                     <option value="Multimedia">Multimedia</option>
                     <option value="Audio">Audio</option>
@@ -863,7 +864,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                           setEditingProduct({...editingProduct, price: parseInt(e.target.value) || 0});
                           if (errors.price) setErrors({...errors, price: ''});
                       }}
-                      className={`w-full bg-zinc-900 border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.price ? 'border-red-500' : 'border-zinc-700'}`}
+                      className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.price ? 'border-red-500' : 'border-zinc-700'}`}
                       placeholder="0"
                     />
                     {errors.price && <span className="text-red-500 text-xs mt-1 block">{errors.price}</span>}
@@ -874,7 +875,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       type="number"
                       value={editingProduct.year || ''}
                       onChange={(e) => setEditingProduct({...editingProduct, year: e.target.value ? parseInt(e.target.value) : undefined})}
-                      className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                       placeholder="Ej: 2024"
                     />
                   </div>
@@ -887,7 +888,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       type="number"
                       value={editingProduct.stock}
                       onChange={(e) => setEditingProduct({...editingProduct, stock: parseInt(e.target.value) || 0})}
-                      className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                       placeholder="0"
                     />
                   </div>
@@ -896,7 +897,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     <select
                       value={editingProduct.available ? 'true' : 'false'}
                       onChange={(e) => setEditingProduct({...editingProduct, available: e.target.value === 'true'})}
-                      className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     >
                       <option value="true">Disponible</option>
                       <option value="false">Agotado</option>
@@ -908,7 +909,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         type="checkbox"
                         checked={editingProduct.featured || false}
                         onChange={(e) => setEditingProduct({...editingProduct, featured: e.target.checked})}
-                        className="w-5 h-5 bg-zinc-900 border border-zinc-700 rounded focus:ring-0 checked:bg-white"
+                        className="w-5 h-5 bg-black border border-zinc-700 rounded focus:ring-0 checked:bg-white"
                       />
                       <span className="text-zinc-400 text-sm">Destacado en Home</span>
                     </label>
@@ -920,7 +921,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <textarea
                     value={editingProduct.description || ''}
                     onChange={(e) => setEditingProduct({...editingProduct, description: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Descripción del producto"
                   />
                 </div>
@@ -930,7 +931,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <textarea
                     value={editingProduct.features ? editingProduct.features.join('\n') : ''}
                     onChange={(e) => setEditingProduct({...editingProduct, features: e.target.value.split('\n').filter(f => f.trim())})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Una característica por línea"
                   />
                 </div>
@@ -942,7 +943,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     value={modalTagInput}
                     onChange={(e) => setModalTagInput(e.target.value)}
                     onKeyDown={(e) => handleModalTagInput(e, true)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="Ej: oferta, nuevo, led"
                   />
                   {editingProduct.tags && editingProduct.tags.length > 0 && (
@@ -1019,7 +1020,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
               {/* Left Column - Image */}
               <div>
                 <label className="block text-zinc-400 text-sm mb-2">Imagen del Producto</label>
-                <div className="aspect-square bg-zinc-900 border border-zinc-700 overflow-hidden mb-4">
+                <div className="aspect-square bg-black border border-zinc-700 overflow-hidden mb-4">
                   <img
                     src={creatingProduct.image || '/placeholder.jpg'}
                     alt="Nuevo producto"
@@ -1030,7 +1031,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   type="url"
                   value={creatingProduct.image || ''}
                   onChange={(e) => setCreatingProduct({...creatingProduct, image: e.target.value})}
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors mb-4"
+                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors mb-4"
                   placeholder="URL de la imagen"
                 />
                 <label className="block text-zinc-400 text-sm mb-2">O subir archivo</label>
@@ -1046,7 +1047,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       }
                     }
                   }}
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 file:bg-zinc-800 file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-700 transition-colors"
+                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 file:bg-black file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-900 transition-colors"
                 />
               </div>
 
@@ -1061,7 +1062,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         setCreatingProduct({...creatingProduct, name: e.target.value});
                         if (errors.name) setErrors({...errors, name: ''});
                     }}
-                    className={`w-full bg-zinc-900 border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.name ? 'border-red-500' : 'border-zinc-700'}`}
+                    className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.name ? 'border-red-500' : 'border-zinc-700'}`}
                     placeholder="Nombre del producto"
                   />
                   {errors.name && <span className="text-red-500 text-xs mt-1 block">{errors.name}</span>}
@@ -1075,7 +1076,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         setCreatingProduct({...creatingProduct, category: e.target.value});
                         if (errors.category) setErrors({...errors, category: ''});
                     }}
-                    className={`w-full bg-zinc-900 border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.category ? 'border-red-500' : 'border-zinc-700'}`}
+                    className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.category ? 'border-red-500' : 'border-zinc-700'}`}
                   >
                     <option value="">Seleccionar categoría</option>
                     <option value="Multimedia">Multimedia</option>
@@ -1098,7 +1099,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                           setCreatingProduct({...creatingProduct, price: Number(e.target.value)});
                           if (errors.price) setErrors({...errors, price: ''});
                       }}
-                      className={`w-full bg-zinc-900 border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.price ? 'border-red-500' : 'border-zinc-700'}`}
+                      className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${errors.price ? 'border-red-500' : 'border-zinc-700'}`}
                       placeholder="0"
                     />
                     {errors.price && <span className="text-red-500 text-xs mt-1 block">{errors.price}</span>}
@@ -1109,7 +1110,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       type="number"
                       value={creatingProduct.year || ''}
                       onChange={(e) => setCreatingProduct({...creatingProduct, year: e.target.value ? Number(e.target.value) : undefined})}
-                      className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                       placeholder="Ej: 2024"
                     />
                   </div>
@@ -1122,7 +1123,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       type="number"
                       value={creatingProduct.stock || 0}
                       onChange={(e) => setCreatingProduct({...creatingProduct, stock: Number(e.target.value)})}
-                      className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                       placeholder="0"
                     />
                   </div>
@@ -1134,7 +1135,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     <select
                       value={creatingProduct.available !== false ? 'true' : 'false'}
                       onChange={(e) => setCreatingProduct({...creatingProduct, available: e.target.value === 'true'})}
-                      className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                      className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     >
                       <option value="true">Disponible</option>
                       <option value="false">Agotado</option>
@@ -1146,7 +1147,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         type="checkbox"
                         checked={creatingProduct.featured || false}
                         onChange={(e) => setCreatingProduct({...creatingProduct, featured: e.target.checked})}
-                        className="w-5 h-5 bg-zinc-900 border border-zinc-700 rounded focus:ring-0 checked:bg-white"
+                        className="w-5 h-5 bg-black border border-zinc-700 rounded focus:ring-0 checked:bg-white"
                       />
                       <span className="text-zinc-400 text-sm">Destacado en Home</span>
                     </label>
@@ -1158,7 +1159,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <textarea
                     value={creatingProduct.description || ''}
                     onChange={(e) => setCreatingProduct({...creatingProduct, description: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Descripción del producto"
                   />
                 </div>
@@ -1168,7 +1169,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <textarea
                     value={creatingProduct.features ? creatingProduct.features.join('\n') : ''}
                     onChange={(e) => setCreatingProduct({...creatingProduct, features: e.target.value.split('\n').filter(f => f.trim())})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Una característica por línea"
                   />
                 </div>
@@ -1180,7 +1181,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     value={modalTagInput}
                     onChange={(e) => setModalTagInput(e.target.value)}
                     onKeyDown={(e) => handleModalTagInput(e, false)}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="Ej: oferta, nuevo, led"
                   />
                   {creatingProduct.tags && creatingProduct.tags.length > 0 && (

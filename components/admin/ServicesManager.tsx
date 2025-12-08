@@ -414,14 +414,14 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       <button 
                         onClick={() => handleMoveService(index, 'up')}
                         disabled={index === 0}
-                        className="w-6 h-6 flex items-center justify-center bg-zinc-800 text-white rounded hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                        className="w-6 h-6 flex items-center justify-center bg-zinc-800 text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
                       >
                         <ArrowUp size={14} />
                       </button>
                       <button 
                         onClick={() => handleMoveService(index, 'down')}
                         disabled={index === services.length - 1}
-                        className="w-6 h-6 flex items-center justify-center bg-zinc-800 text-white rounded hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                        className="w-6 h-6 flex items-center justify-center bg-zinc-800 text-white hover:bg-zinc-700 disabled:opacity-50 transition-colors"
                       >
                         <ArrowDown size={14} />
                       </button>
@@ -430,7 +430,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     {/* Image Side */}
                     <div className={`w-full md:w-1/2 ${isEven ? 'md:pr-16 md:text-right order-1 md:order-1' : 'md:pl-16 order-1 md:order-2'}`}>
                       <div
-                        className="relative group overflow-hidden border border-zinc-800 bg-zinc-950 aspect-[4/3] cursor-pointer"
+                        className="relative group overflow-hidden border border-zinc-800 bg-black aspect-[4/3] cursor-pointer"
                         onClick={() => setEditingService(service)}
                       >
                         <img
@@ -450,7 +450,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     </div>
 
                     {/* Dot on Line - Centered */}
-                    <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center rounded-full transform -translate-x-1/2">
+                    <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center transform -translate-x-1/2 rounded-full">
                       <div className="w-2 h-2 bg-white rounded-full"></div>
                     </div>
 
@@ -490,11 +490,11 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   onChange={(e) => setAppointmentFilters({ ...appointmentFilters, status: e.target.value })}
                   className="w-full bg-transparent border-b border-zinc-800 text-white pl-0 pr-8 py-2 appearance-none focus:outline-none focus:border-white transition-colors text-xs uppercase tracking-widest cursor-pointer"
                 >
-                  <option value="Todos" className="bg-zinc-900">Todos los Estados</option>
-                  <option value="Pendiente" className="bg-zinc-900">Pendiente</option>
-                  <option value="Confirmado" className="bg-zinc-900">Confirmado</option>
-                  <option value="Completado" className="bg-zinc-900">Completado</option>
-                  <option value="Cancelado" className="bg-zinc-900">Cancelado</option>
+                  <option value="Todos" className="bg-black">Todos los Estados</option>
+                  <option value="Pendiente" className="bg-black">Pendiente</option>
+                  <option value="Confirmado" className="bg-black">Confirmado</option>
+                  <option value="Completado" className="bg-black">Completado</option>
+                  <option value="Cancelado" className="bg-black">Cancelado</option>
                 </select>
                 <ChevronDown className="absolute right-0 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none group-hover:text-white transition-colors" size={14} />
               </div>
@@ -535,7 +535,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
 
           {loadingAppointments ? (
             <div className="flex justify-center py-24">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-white rounded-full"></div>
             </div>
           ) : viewMode === 'grid' ? (
             /* Appointments Grid */
@@ -543,17 +543,17 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               {filteredAppointments.map((appointment) => (
                 <div 
                   key={appointment.id} 
-                  className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-lg hover:border-zinc-600 transition-colors group cursor-pointer relative"
+                  className="bg-black border border-zinc-800 p-6 hover:border-zinc-600 transition-colors group cursor-pointer relative"
                   onClick={() => setSelectedAppointment(appointment)}
                 >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden border border-zinc-700">
+                  <div className="w-12 h-12 overflow-hidden border border-zinc-700">
                     <img src={appointment.service_image || '/placeholder.jpg'} alt={appointment.service_name} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h4 className="text-white font-medium">{appointment.service_name}</h4>
-                    <span className={`text-xs uppercase tracking-wider px-2 py-1 rounded-full ${
+                    <span className={`text-xs uppercase tracking-wider px-2 py-1 ${
                       appointment.status === 'Pendiente' ? 'bg-yellow-900/30 text-yellow-500' :
                       appointment.status === 'Confirmado' ? 'bg-green-900/30 text-green-500' :
                       'bg-zinc-800 text-zinc-500'
@@ -604,9 +604,9 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
         </div>
       ) : (
         /* Appointments Table */
-        <div className="overflow-x-auto border border-zinc-800 rounded-lg">
+        <div className="overflow-x-auto border border-zinc-800">
           <table className="w-full text-left text-sm text-zinc-400">
-            <thead className="bg-zinc-900 text-zinc-200 uppercase tracking-wider text-xs">
+            <thead className="bg-black text-zinc-200 uppercase tracking-wider text-xs">
               <tr>
                 <th className="px-6 py-4 font-medium">Servicio</th>
                 <th className="px-6 py-4 font-medium">Cliente</th>
@@ -616,12 +616,12 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 <th className="px-6 py-4 font-medium text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800 bg-zinc-900/30">
+            <tbody className="divide-y divide-zinc-800 bg-black">
               {filteredAppointments.map((appointment) => (
-                <tr key={appointment.id} className="hover:bg-zinc-900/50 transition-colors">
+                <tr key={appointment.id} className="hover:bg-zinc-900 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <img src={appointment.service_image || '/placeholder.jpg'} alt="" className="w-8 h-8 rounded object-cover" />
+                      <img src={appointment.service_image || '/placeholder.jpg'} alt="" className="w-8 h-8 object-cover" />
                       <span className="text-white">{appointment.service_name}</span>
                     </div>
                   </td>
@@ -634,7 +634,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`text-xs uppercase tracking-wider px-2 py-1 rounded-full ${
+                    <span className={`text-xs uppercase tracking-wider px-2 py-1 ${
                       appointment.status === 'Pendiente' ? 'bg-yellow-900/30 text-yellow-500' :
                       appointment.status === 'Confirmado' ? 'bg-green-900/30 text-green-500' :
                       'bg-zinc-800 text-zinc-500'
@@ -646,21 +646,21 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     <div className="flex justify-end gap-2">
                       <button 
                         onClick={() => setSelectedAppointment(appointment)}
-                        className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white transition-colors"
+                        className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                         title="Ver Detalles"
                       >
                         <Eye size={16} />
                       </button>
                       <button 
                         onClick={() => setEditingAppointment(appointment)}
-                        className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white transition-colors"
+                        className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                         title="Editar"
                       >
                         <Edit size={16} />
                       </button>
                       <button 
                         onClick={() => handleDeleteAppointment(appointment.id)}
-                        className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-red-500 transition-colors"
+                        className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-red-500 transition-colors"
                         title="Eliminar"
                       >
                         <Trash2 size={16} />
@@ -701,7 +701,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     const { key, ...otherProps } = props;
                     return (
                       <li key={key} {...otherProps} className="flex items-center gap-3 p-2 hover:bg-zinc-800 cursor-pointer">
-                        <img src={option.image} alt={option.title} className="w-10 h-10 object-cover rounded" />
+                        <img src={option.image} alt={option.title} className="w-10 h-10 object-cover" />
                         <span>{option.title}</span>
                       </li>
                     );
@@ -790,7 +790,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               <div className="space-y-6">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-4 uppercase tracking-widest">Imagen del Servicio</label>
-                  <div className="relative aspect-square bg-zinc-900 border border-zinc-800 overflow-hidden group cursor-pointer">
+                  <div className="relative aspect-square bg-black border border-zinc-800 overflow-hidden group cursor-pointer">
                     <img
                       src={editingService.image}
                       alt="Preview"
@@ -806,7 +806,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     type="text"
                     value={editingService.image}
                     onChange={(e) => setEditingService({...editingService, image: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="https://..."
                   />
                 </div>
@@ -826,7 +826,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                         }
                       }
                     }}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 file:bg-zinc-800 file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-700 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 file:bg-black file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-900 transition-colors"
                   />
                 </div>
               </div>
@@ -839,7 +839,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     type="text"
                     value={editingService.category || ''}
                     onChange={(e) => setEditingService({...editingService, category: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="Ej: 01 / MULTIMEDIA"
                   />
                 </div>
@@ -850,7 +850,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     type="text"
                     value={editingService.title}
                     onChange={(e) => setEditingService({...editingService, title: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="Nombre del servicio"
                   />
                 </div>
@@ -860,7 +860,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   <textarea
                     value={editingService.description}
                     onChange={(e) => setEditingService({...editingService, description: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Descripción detallada del servicio"
                   />
                 </div>
@@ -870,7 +870,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   <textarea
                     value={editingService.fullDescription || ''}
                     onChange={(e) => setEditingService({...editingService, fullDescription: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-40 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-40 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Descripción completa para el modal de detalles"
                   />
                 </div>
@@ -925,7 +925,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               {/* Left Column - Image */}
               <div>
                 <label className="block text-zinc-400 text-sm mb-2">Imagen del Servicio</label>
-                <div className="aspect-square bg-zinc-900 border border-zinc-700 overflow-hidden mb-4">
+                <div className="aspect-square bg-black border border-zinc-700 overflow-hidden mb-4">
                   <img
                     src={creatingService.image || '/placeholder.jpg'}
                     alt="Nuevo servicio"
@@ -936,7 +936,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   type="url"
                   value={creatingService.image || ''}
                   onChange={(e) => setCreatingService({...creatingService, image: e.target.value})}
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors mb-4"
+                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors mb-4"
                   placeholder="URL de la imagen"
                 />
                 <label className="block text-zinc-400 text-sm mb-2">O subir archivo</label>
@@ -952,7 +952,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       }
                     }
                   }}
-                  className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 file:bg-zinc-800 file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-700 transition-colors"
+                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 file:bg-black file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-900 transition-colors"
                 />
               </div>
 
@@ -964,7 +964,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     type="text"
                     value={creatingService.category || ''}
                     onChange={(e) => setCreatingService({...creatingService, category: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="Ej: 01 / MULTIMEDIA"
                   />
                 </div>
@@ -975,7 +975,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     type="text"
                     value={creatingService.title || ''}
                     onChange={(e) => setCreatingService({...creatingService, title: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
                     placeholder="Nombre del servicio"
                     required
                   />
@@ -986,7 +986,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   <textarea
                     value={creatingService.description || ''}
                     onChange={(e) => setCreatingService({...creatingService, description: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Descripción del servicio"
                     required
                   />
@@ -997,7 +997,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   <textarea
                     value={creatingService.fullDescription || ''}
                     onChange={(e) => setCreatingService({...creatingService, fullDescription: e.target.value})}
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-4 py-3 h-40 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-40 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
                     placeholder="Descripción completa para el modal de detalles"
                   />
                 </div>
@@ -1039,12 +1039,12 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
         >
           <div className="space-y-6">
             <div className="flex items-center gap-4 pb-6 border-b border-zinc-800">
-              <div className="w-20 h-20 rounded-lg overflow-hidden border border-zinc-700">
+              <div className="w-20 h-20 overflow-hidden border border-zinc-700">
                 <img src={selectedAppointment.service_image || '/placeholder.jpg'} alt={selectedAppointment.service_name} className="w-full h-full object-cover" />
               </div>
               <div>
                 <h3 className="text-xl text-white font-light">{selectedAppointment.service_name}</h3>
-                <span className={`inline-block mt-2 text-xs uppercase tracking-wider px-2 py-1 rounded-full ${
+                <span className={`inline-block mt-2 text-xs uppercase tracking-wider px-2 py-1 ${
                   selectedAppointment.status === 'Pendiente' ? 'bg-yellow-900/30 text-yellow-500' :
                   selectedAppointment.status === 'Confirmado' ? 'bg-green-900/30 text-green-500' :
                   'bg-zinc-800 text-zinc-500'
@@ -1095,7 +1095,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
             {selectedAppointment.description && (
               <div className="space-y-2 pt-4">
                 <h4 className="text-sm text-zinc-500 uppercase tracking-widest">Notas / Descripción</h4>
-                <div className="bg-zinc-900/50 p-4 rounded border border-zinc-800 text-zinc-300 italic">
+                <div className="bg-black p-4 border border-zinc-800 text-zinc-300 italic">
                   "{selectedAppointment.description}"
                 </div>
               </div>

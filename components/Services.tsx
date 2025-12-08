@@ -117,9 +117,9 @@ const Services: React.FC = () => {
                 </div>
 
                 {/* Dot on Line - Centered */}
-                <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center rounded-full transform -translate-x-1/2">
+                <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center transform -translate-x-1/2">
                   <div
-                    className={`w-2 h-2 bg-white rounded-full transition-all duration-700 delay-300 ${
+                    className={`w-2 h-2 bg-white transition-all duration-700 delay-300 ${
                       isVisible ? "scale-100 opacity-100" : "scale-0 opacity-0"
                     }`}
                   ></div>
@@ -161,7 +161,7 @@ const Services: React.FC = () => {
           >
             <button
               onClick={() => setSelectedService(null)}
-              className="absolute top-4 right-4 z-10 text-white bg-black/50 p-2 rounded-full hover:bg-white hover:text-black transition-all"
+              className="absolute top-4 right-4 z-10 text-white bg-black/50 p-2 hover:bg-white hover:text-black transition-all"
             >
               <X size={20} strokeWidth={1} />
             </button>

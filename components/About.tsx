@@ -106,7 +106,7 @@ const About: React.FC = () => {
                   key={index}
                   className="flex items-center gap-4 text-zinc-400 group"
                 >
-                  <div className="w-10 h-10 border border-zinc-800 bg-black rounded-full flex items-center justify-center text-white group-hover:border-white group-hover:text-white transition-colors">
+                  <div className="w-10 h-10 border border-zinc-800 bg-black flex items-center justify-center text-white group-hover:border-white group-hover:text-white transition-colors">
                     {getIcon(item.icon)}
                   </div>
                   <span className="text-xs uppercase tracking-widest font-light group-hover:text-white transition-colors">

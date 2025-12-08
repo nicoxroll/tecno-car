@@ -77,7 +77,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({ product, onBack, onNavi
                         <ul className="space-y-3">
                             {product.features.map((f, i) => (
                                 <li key={i} className="text-zinc-500 text-xs flex items-center gap-3">
-                                    <div className="w-1.5 h-1.5 bg-zinc-700 rounded-full"></div>
+                                    <div className="w-1.5 h-1.5 bg-zinc-700"></div>
                                     {f}
                                 </li>
                             ))}

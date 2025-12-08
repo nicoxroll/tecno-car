@@ -61,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView, onGoToCheckout
         <div className="flex justify-between items-center">
           {/* Logo */}
           <a href="#home" onClick={(e) => handleLinkClick(e, '#home')} className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-10 h-10 overflow-hidden border border-zinc-800 rounded-full bg-black">
+            <div className="w-10 h-10 overflow-hidden border border-zinc-800 bg-black">
                 <img 
                     src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
                     alt="Merlano Logo" 
@@ -94,7 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView, onGoToCheckout
             >
                 <ShoppingCart size={20} strokeWidth={1} />
                 {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center rounded-full font-bold">
+                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center font-bold">
                         {cartCount}
                     </span>
                 )}
@@ -109,7 +109,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentView, onGoToCheckout
               >
                 <ShoppingCart size={20} strokeWidth={1} />
                 {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center rounded-full font-bold">
+                    <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center font-bold">
                         {cartCount}
                     </span>
                 )}

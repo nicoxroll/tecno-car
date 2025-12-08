@@ -126,7 +126,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+        <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-white rounded-full"></div>
       </div>
     );
   }
@@ -193,7 +193,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                   placeholder="BUSCAR PRODUCTOS..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-zinc-950 border-b border-zinc-800 text-white text-xs py-3 pl-2 focus:outline-none focus:border-white transition-colors"
+                  className="w-full bg-black border-b border-zinc-800 text-white text-xs py-3 pl-2 focus:outline-none focus:border-white transition-colors"
                 />
                 <Search
                   size={14}
@@ -235,7 +235,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={handleTagInput}
-                    className="w-full bg-zinc-950 border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
+                    className="w-full bg-black border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
                   />
                 </div>
                 {searchTags.length > 0 && (
@@ -243,7 +243,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                     {searchTags.map((tag) => (
                       <span
                         key={tag}
-                        className="bg-zinc-800 text-white text-[10px] px-2 py-1 rounded flex items-center gap-1"
+                        className="bg-zinc-800 text-white text-[10px] px-2 py-1 flex items-center gap-1"
                       >
                         {tag}
                         <button
@@ -271,7 +271,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                     step="10000"
                     value={priceRange}
                     onChange={(e) => setPriceRange(Number(e.target.value))}
-                    className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
+                    className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
                   />
                   <div className="flex justify-between text-[10px] text-zinc-500 mt-4 font-mono">
                     <span>$50k</span>
@@ -297,7 +297,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="group bg-zinc-950 border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col"
+                  className="group bg-black border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col"
                 >
                   <div
                     className="relative aspect-square overflow-hidden bg-black cursor-pointer"

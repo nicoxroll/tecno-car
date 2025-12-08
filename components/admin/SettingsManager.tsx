@@ -404,12 +404,12 @@ const SettingsManager: React.FC = () => {
       </h2>
 
       <div className="space-y-8 animate-fade-in mb-8">
-        <div className="flex items-center justify-between bg-zinc-900/50 p-4 border border-zinc-800">
+        <div className="flex items-center justify-between bg-black p-4 border border-zinc-800">
           <button
             onClick={() =>
               setConfigView((v) => (v === "main" ? "catalog" : "main"))
             }
-            className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
+            className="p-2 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
           >
             <ChevronLeft size={20} />
           </button>
@@ -425,7 +425,7 @@ const SettingsManager: React.FC = () => {
             onClick={() =>
               setConfigView((v) => (v === "main" ? "catalog" : "main"))
             }
-            className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-400 hover:text-white"
+            className="p-2 hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-white"
           >
             <ChevronRight size={20} />
           </button>
@@ -522,7 +522,7 @@ const SettingsManager: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
         {/* General Settings */}
-        <div className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6">
+        <div className="bg-black border border-zinc-800 p-4 sm:p-6">
           <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
             Configuración General
           </h3>
@@ -537,7 +537,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, companyName: e.target.value })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
             <div>
@@ -550,7 +550,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, email: e.target.value })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
             <div>
@@ -563,7 +563,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, phone: e.target.value })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
             <div>
@@ -576,14 +576,14 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, address: e.target.value })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
           </div>
         </div>
 
         {/* Business Hours */}
-        <div className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6">
+        <div className="bg-black border border-zinc-800 p-4 sm:p-6">
           <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
             Horarios de Atención
           </h3>
@@ -607,7 +607,7 @@ const SettingsManager: React.FC = () => {
                         hours: { ...settings.hours, [day]: e.target.value },
                       })
                     }
-                    className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
                   />
                 </div>
               ))}
@@ -616,7 +616,7 @@ const SettingsManager: React.FC = () => {
         </div>
 
         {/* Social Media */}
-        <div className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6">
+        <div className="bg-black border border-zinc-800 p-4 sm:p-6">
           <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
             Redes Sociales
           </h3>
@@ -634,7 +634,7 @@ const SettingsManager: React.FC = () => {
                     social: { ...settings.social, instagram: e.target.value },
                   })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
             <div>
@@ -650,7 +650,7 @@ const SettingsManager: React.FC = () => {
                     social: { ...settings.social, facebook: e.target.value },
                   })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
             <div>
@@ -666,14 +666,14 @@ const SettingsManager: React.FC = () => {
                     social: { ...settings.social, whatsapp: e.target.value },
                   })
                 }
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               />
             </div>
           </div>
         </div>
 
         {/* System Settings */}
-        <div className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6">
+        <div className="bg-black border border-zinc-800 p-4 sm:p-6">
           <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
             Configuración del Sistema
           </h3>
@@ -697,7 +697,7 @@ const SettingsManager: React.FC = () => {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-zinc-500"></div>
+                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-zinc-700 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-zinc-500 rounded-full after:rounded-full"></div>
               </label>
             </div>
             <div className="flex items-center justify-between">
@@ -719,7 +719,7 @@ const SettingsManager: React.FC = () => {
                   }
                   className="sr-only peer"
                 />
-                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-zinc-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-zinc-500"></div>
+                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-zinc-700 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-zinc-500 rounded-full after:rounded-full"></div>
               </label>
             </div>
           </div>
@@ -727,7 +727,7 @@ const SettingsManager: React.FC = () => {
       </div>
 
       {/* About Configuration */}
-      <div className="bg-zinc-950 border border-zinc-800 p-4 sm:p-6">
+      <div className="bg-black border border-zinc-800 p-4 sm:p-6">
         <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
           Configuración de Quiénes Somos
         </h3>
@@ -743,7 +743,7 @@ const SettingsManager: React.FC = () => {
                   <img
                     src={aboutImage}
                     alt="About Preview"
-                    className="w-20 h-20 object-cover rounded"
+                    className="w-20 h-20 object-cover"
                   />
                 )}
                 <input
@@ -766,7 +766,7 @@ const SettingsManager: React.FC = () => {
                 type="text"
                 value={aboutImage}
                 onChange={(e) => setAboutImage(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
                 placeholder="https://ejemplo.com/imagen.jpg"
               />
             </div>
@@ -784,7 +784,7 @@ const SettingsManager: React.FC = () => {
               value={aboutDescription1}
               onChange={(e) => setAboutDescription1(e.target.value)}
               rows={3}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+              className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               placeholder="Texto del primer párrafo..."
             />
             <p className="text-xs text-zinc-500 mt-1">
@@ -800,7 +800,7 @@ const SettingsManager: React.FC = () => {
               value={aboutDescription2}
               onChange={(e) => setAboutDescription2(e.target.value)}
               rows={3}
-              className="w-full bg-zinc-900 border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+              className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
               placeholder="Texto del segundo párrafo..."
             />
           </div>
@@ -814,7 +814,7 @@ const SettingsManager: React.FC = () => {
               {aboutAmenities.map((amenity, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded"
+                  className="flex items-center gap-3 p-3 bg-black border border-zinc-800 rounded"
                 >
                   <select
                     value={amenity.icon}
@@ -823,7 +823,7 @@ const SettingsManager: React.FC = () => {
                       newAmenities[index].icon = e.target.value;
                       setAboutAmenities(newAmenities);
                     }}
-                    className="bg-zinc-900 border border-zinc-700 text-white px-2 py-1 text-xs focus:outline-none focus:border-zinc-500"
+                    className="bg-black border border-zinc-700 text-white px-2 py-1 text-xs focus:outline-none focus:border-zinc-500"
                   >
                     <option value="Wind">Viento (Aire)</option>
                     <option value="Coffee">Café</option>
@@ -839,7 +839,7 @@ const SettingsManager: React.FC = () => {
                       newAmenities[index].text = e.target.value;
                       setAboutAmenities(newAmenities);
                     }}
-                    className="flex-1 bg-zinc-900 border border-zinc-700 text-white px-3 py-1 text-sm focus:outline-none focus:border-zinc-500"
+                    className="flex-1 bg-black border border-zinc-700 text-white px-3 py-1 text-sm focus:outline-none focus:border-zinc-500"
                     placeholder="Texto del servicio..."
                   />
                   <button
@@ -862,7 +862,7 @@ const SettingsManager: React.FC = () => {
                     { icon: "CheckCircle", text: "Nuevo servicio" },
                   ]);
                 }}
-                className="w-full bg-zinc-900 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors px-3 py-2 text-sm"
+                className="w-full bg-black border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors px-3 py-2 text-sm"
               >
                 + Agregar Servicio
               </button>
@@ -898,7 +898,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setMainHeroForm({ ...mainHeroForm, title: e.target.value })
                 }
-                className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
               />
             </div>
             <div>
@@ -911,7 +911,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setMainHeroForm({ ...mainHeroForm, subtitle: e.target.value })
                 }
-                className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
               />
             </div>
             <div>
@@ -927,7 +927,7 @@ const SettingsManager: React.FC = () => {
                   })
                 }
                 rows={3}
-                className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white resize-none"
+                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white resize-none"
                 placeholder="Descripción del hero principal..."
               />
             </div>
@@ -952,7 +952,7 @@ const SettingsManager: React.FC = () => {
                         handleHeroImageUpload(e.target.files[0], true);
                       }
                     }}
-                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
+                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-zinc-900"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -968,7 +968,7 @@ const SettingsManager: React.FC = () => {
                         image: e.target.value,
                       })
                     }
-                    className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white text-sm focus:ring-white focus:border-white"
+                    className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white text-sm focus:ring-white focus:border-white"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>
@@ -1004,7 +1004,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, title: e.target.value })
                 }
-                className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
               />
             </div>
             <div>
@@ -1017,7 +1017,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, subtitle: e.target.value })
                 }
-                className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
               />
             </div>
             <div>
@@ -1030,7 +1030,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, year: e.target.value })
                 }
-                className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
               />
             </div>
             <div>
@@ -1054,7 +1054,7 @@ const SettingsManager: React.FC = () => {
                         handleHeroImageUpload(e.target.files[0], false);
                       }
                     }}
-                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
+                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-zinc-900"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -1067,7 +1067,7 @@ const SettingsManager: React.FC = () => {
                     onChange={(e) =>
                       setHeroForm({ ...heroForm, image: e.target.value })
                     }
-                    className="w-full bg-zinc-800 border-zinc-700 rounded-md p-2 text-white text-sm focus:ring-white focus:border-white"
+                    className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white text-sm focus:ring-white focus:border-white"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>

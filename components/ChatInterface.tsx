@@ -98,11 +98,11 @@ const ChatInterface: React.FC = () => {
     <div className="fixed bottom-0 right-4 sm:right-8 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-6 w-[350px] sm:w-[400px] h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in rounded-lg overflow-hidden">
+        <div className="mb-6 w-[350px] sm:w-[400px] h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in overflow-hidden">
           {/* Header */}
           <div className="bg-black p-4 flex justify-between items-center border-b border-zinc-800">
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border border-zinc-700 overflow-hidden bg-zinc-950 p-1.5 flex items-center justify-center">
+                <div className="w-10 h-10 border border-zinc-700 overflow-hidden bg-zinc-950 p-1.5 flex items-center justify-center rounded-full">
                      <img 
                         src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
                         alt="Merlano Assistant" 
@@ -138,9 +138,9 @@ const ChatInterface: React.FC = () => {
                 >
                   {msg.isThinking && msg.text === '' ? (
                      <div className="flex space-x-1 items-center h-4">
-                        <div className="w-1 h-1 bg-zinc-500 rounded-full typing-dot"></div>
-                        <div className="w-1 h-1 bg-zinc-500 rounded-full typing-dot"></div>
-                        <div className="w-1 h-1 bg-zinc-500 rounded-full typing-dot"></div>
+                        <div className="w-1 h-1 bg-zinc-500 typing-dot"></div>
+                        <div className="w-1 h-1 bg-zinc-500 typing-dot"></div>
+                        <div className="w-1 h-1 bg-zinc-500 typing-dot"></div>
                      </div>
                   ) : (
                     <div className="whitespace-pre-wrap">
@@ -206,7 +206,7 @@ const ChatInterface: React.FC = () => {
       {!isOpen && (
         <button
             onClick={() => setIsOpen(true)}
-            className="bg-black w-16 h-16 flex items-center justify-center shadow-lg border border-zinc-700 hover:border-white transition-all duration-300 mb-6 rounded-full overflow-hidden p-2.5"
+            className="bg-black w-16 h-16 flex items-center justify-center shadow-lg border border-zinc-700 hover:border-white transition-all duration-300 mb-6 overflow-hidden p-2.5 rounded-full"
         >
              <img 
                 src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
