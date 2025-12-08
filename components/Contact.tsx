@@ -59,9 +59,7 @@ const Contact: React.FC = () => {
                     Teléfono
                   </h3>
                 </div>
-                <p className="text-zinc-500 font-light pl-8">
-                  {phone}
-                </p>
+                <p className="text-zinc-500 font-light pl-8">{phone}</p>
               </div>
 
               <div className="group">

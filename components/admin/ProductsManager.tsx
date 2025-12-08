@@ -103,7 +103,9 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
     action: "increase" | "decrease";
   }>({ type: "percentage", value: 0, action: "increase" });
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
+    null
+  );
 
   const categoryStats = useMemo(() => {
     const stats = products.reduce((acc, product) => {
@@ -2105,12 +2107,22 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
             <div className="flex items-center gap-4 text-yellow-500 bg-yellow-900/20 p-4 border border-yellow-900/50 rounded">
               <AlertTriangle size={24} />
               <p className="text-sm">
-                Esta acción modificará el precio de <strong>TODOS</strong> los productos.
+                Esta acción modificará el precio de <strong>TODOS</strong> los
+                productos.
               </p>
             </div>
-            
+
             <p className="text-zinc-300 text-lg leading-relaxed">
-              ¿Estás seguro de que deseas <strong>{bulkConfig.action === "increase" ? "aumentar" : "disminuir"}</strong> el precio de todos los productos en un <strong>{bulkConfig.value}{bulkConfig.type === "percentage" ? "%" : "$"}</strong>?
+              ¿Estás seguro de que deseas{" "}
+              <strong>
+                {bulkConfig.action === "increase" ? "aumentar" : "disminuir"}
+              </strong>{" "}
+              el precio de todos los productos en un{" "}
+              <strong>
+                {bulkConfig.value}
+                {bulkConfig.type === "percentage" ? "%" : "$"}
+              </strong>
+              ?
             </p>
 
             <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
@@ -2140,13 +2152,12 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
           <div className="space-y-6">
             <div className="flex items-center gap-4 text-red-500 bg-red-900/20 p-4 border border-red-900/50 rounded">
               <AlertTriangle size={24} />
-              <p className="text-sm">
-                Esta acción no se puede deshacer.
-              </p>
+              <p className="text-sm">Esta acción no se puede deshacer.</p>
             </div>
-            
+
             <p className="text-zinc-300 text-lg leading-relaxed">
-              ¿Estás seguro de que deseas eliminar este producto permanentemente?
+              ¿Estás seguro de que deseas eliminar este producto
+              permanentemente?
             </p>
 
             <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">

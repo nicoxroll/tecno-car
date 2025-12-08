@@ -92,8 +92,11 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   const [creatingService, setCreatingService] =
     useState<Partial<Service> | null>(null);
 
-  const [showDeleteServiceConfirm, setShowDeleteServiceConfirm] = useState<number | null>(null);
-  const [showDeleteAppointmentConfirm, setShowDeleteAppointmentConfirm] = useState<number | null>(null);
+  const [showDeleteServiceConfirm, setShowDeleteServiceConfirm] = useState<
+    number | null
+  >(null);
+  const [showDeleteAppointmentConfirm, setShowDeleteAppointmentConfirm] =
+    useState<number | null>(null);
 
   // Appointments State
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -268,7 +271,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   const confirmDeleteAppointment = async () => {
     if (!showDeleteAppointmentConfirm) return;
     const id = showDeleteAppointmentConfirm;
-    
+
     try {
       const { error } = await supabase
         .from("appointments")

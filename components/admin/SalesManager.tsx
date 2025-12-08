@@ -49,7 +49,9 @@ const SalesManager: React.FC = () => {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
+    null
+  );
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
