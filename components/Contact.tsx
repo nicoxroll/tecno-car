@@ -86,7 +86,7 @@ const Contact: React.FC = () => {
 
             {/* Custom Marker with Logo */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="bg-white/20 backdrop-blur-sm p-2 shadow-lg border border-zinc-300">
+              <div className="bg-white/20 backdrop-blur-sm p-2 shadow-lg border border-zinc-300 rounded-full">
                 <svg
                   version="1.0"
                   xmlns="http://www.w3.org/2000/svg"
