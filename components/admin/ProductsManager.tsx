@@ -1304,6 +1304,64 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   className="w-full bg-black border border-zinc-700 text-white px-4 py-3 file:bg-black file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-900 transition-colors"
                 />
               </div>
+
+              {/* Additional Images Gallery */}
+              <div>
+                <label className="block text-zinc-400 text-sm mb-4 uppercase tracking-widest">
+                  Galería de Imágenes
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {editingProduct.images?.map((img, idx) => (
+                    <div key={idx} className="relative aspect-square group border border-zinc-800">
+                      <img
+                        src={img}
+                        alt={`Gallery ${idx}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => {
+                          const newImages = editingProduct.images?.filter(
+                            (_, i) => i !== idx
+                          );
+                          setEditingProduct({
+                            ...editingProduct,
+                            images: newImages,
+                          });
+                        }}
+                        className="absolute top-1 right-1 bg-black/50 text-white p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="aspect-square border border-zinc-800 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-zinc-600 hover:bg-zinc-900/50 transition-all">
+                    <Plus size={24} className="text-zinc-500 mb-2" />
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                      Agregar
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const imageUrl = await uploadImage(file);
+                          if (imageUrl) {
+                            setEditingProduct({
+                              ...editingProduct,
+                              images: [
+                                ...(editingProduct.images || []),
+                                imageUrl,
+                              ],
+                            });
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Form Section */}
@@ -1684,6 +1742,64 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 }}
                 className="w-full bg-black border border-zinc-700 text-white px-4 py-3 file:bg-black file:border-0 file:text-white file:px-4 file:py-2 file:mr-4 file:uppercase file:text-xs file:tracking-widest hover:file:bg-zinc-900 transition-colors"
               />
+
+              {/* Additional Images Gallery */}
+              <div className="mt-6">
+                <label className="block text-zinc-400 text-sm mb-4 uppercase tracking-widest">
+                  Galería de Imágenes
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {creatingProduct.images?.map((img, idx) => (
+                    <div key={idx} className="relative aspect-square group border border-zinc-800">
+                      <img
+                        src={img}
+                        alt={`Gallery ${idx}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => {
+                          const newImages = creatingProduct.images?.filter(
+                            (_, i) => i !== idx
+                          );
+                          setCreatingProduct({
+                            ...creatingProduct,
+                            images: newImages,
+                          });
+                        }}
+                        className="absolute top-1 right-1 bg-black/50 text-white p-1 hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="aspect-square border border-zinc-800 border-dashed flex flex-col items-center justify-center cursor-pointer hover:border-zinc-600 hover:bg-zinc-900/50 transition-all">
+                    <Plus size={24} className="text-zinc-500 mb-2" />
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest">
+                      Agregar
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const imageUrl = await uploadImage(file);
+                          if (imageUrl) {
+                            setCreatingProduct({
+                              ...creatingProduct,
+                              images: [
+                                ...(creatingProduct.images || []),
+                                imageUrl,
+                              ],
+                            });
+                          }
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
 
             {/* Right Column - Details */}

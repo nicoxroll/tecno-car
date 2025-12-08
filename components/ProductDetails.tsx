@@ -29,10 +29,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 }) => {
   const { addToCart } = useCart();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [selectedImage, setSelectedImage] = useState(product.image);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setSelectedImage(product.image);
   }, [product]);
+
+  // Combine main image with gallery images
+  const allImages = [product.image, ...(product.images || [])];
 
   useEffect(() => {
     const fetchRelated = async () => {
@@ -94,30 +99,55 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24">
           {/* Image Section */}
-          <div className="relative bg-zinc-900 border border-zinc-800 aspect-square lg:aspect-[4/5] overflow-hidden group">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-            />
-            <div className="absolute top-0 left-0 p-4">
-              <span className="bg-white text-black text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
-                {product.category}
-              </span>
+          <div className="space-y-4">
+            <div className="relative bg-zinc-900 border border-zinc-800 aspect-square lg:aspect-[4/5] overflow-hidden group">
+              <img
+                src={selectedImage}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+              <div className="absolute top-0 left-0 p-4">
+                <span className="bg-white text-black text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
+                  {product.category}
+                </span>
+              </div>
+              {product.discount_price &&
+                product.discount_price < product.price && (
+                  <div className="absolute top-0 right-0 p-4">
+                    <span className="bg-white text-black text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
+                      {Math.round(
+                        ((product.price - product.discount_price) /
+                          product.price) *
+                          100
+                      )}
+                      % OFF
+                    </span>
+                  </div>
+                )}
             </div>
-            {product.discount_price &&
-              product.discount_price < product.price && (
-                <div className="absolute top-0 right-0 p-4">
-                  <span className="bg-white text-black text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
-                    {Math.round(
-                      ((product.price - product.discount_price) /
-                        product.price) *
-                        100
-                    )}
-                    % OFF
-                  </span>
-                </div>
-              )}
+
+            {/* Thumbnails */}
+            {allImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-4">
+                {allImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(img)}
+                    className={`aspect-square bg-zinc-900 border overflow-hidden transition-all ${
+                      selectedImage === img
+                        ? "border-white opacity-100"
+                        : "border-zinc-800 opacity-50 hover:opacity-100"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`${product.name} ${idx}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Info Section */}

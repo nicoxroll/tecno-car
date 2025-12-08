@@ -56,6 +56,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -64,6 +65,23 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages, isOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        chatRef.current &&
+        !chatRef.current.contains(event.target as Node) &&
+        isOpen
+      ) {
+        onToggle(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onToggle]);
 
   const processMessage = async (text: string) => {
     if (isLoading) return;
@@ -130,7 +148,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     <div className="fixed bottom-0 right-4 sm:right-8 z-50 flex flex-col items-end">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-6 w-[350px] sm:w-[400px] h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in overflow-hidden">
+        <div
+          ref={chatRef}
+          className="mb-6 w-[350px] sm:w-[400px] h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in overflow-hidden"
+        >
           {/* Header */}
           <div className="bg-black p-4 flex justify-between items-center border-b border-zinc-800">
             <div className="flex items-center gap-3">

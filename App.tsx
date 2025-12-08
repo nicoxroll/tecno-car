@@ -16,18 +16,20 @@ import Highlights from "./components/Highlights";
 import Navbar from "./components/Navbar";
 import Newsletter from "./components/Newsletter";
 import ProductDetails from "./components/ProductDetails";
+import ServiceDetails from "./components/ServiceDetails";
 import Services from "./components/Services";
 import { CartProvider } from "./context/CartContext";
 import { ScrollProvider } from "./context/ScrollContext";
-import { Product, ViewState } from "./types";
+import { Product, Service, ViewState } from "./types";
 
 function App() {
   const [currentView, setCurrentView] = useState<ViewState>("landing");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatPendingMessage, setChatPendingMessage] = useState<string | undefined>(
-    undefined
-  );
+  const [chatPendingMessage, setChatPendingMessage] = useState<
+    string | undefined
+  >(undefined);
 
   // Fixed sections order
   const sectionsOrder = [
@@ -90,6 +92,11 @@ function App() {
     handleNavigate("product-details");
   };
 
+  const handleServiceSelect = (service: Service) => {
+    setSelectedService(service);
+    handleNavigate("service-details");
+  };
+
   const handleOpenChat = (message?: string) => {
     setIsChatOpen(true);
     if (message) {
@@ -101,7 +108,13 @@ function App() {
   const sections = {
     hero: <Hero key="hero" />,
     highlights: <Highlights key="highlights" />,
-    services: <Services key="services" />,
+    services: (
+      <Services
+        key="services"
+        onNavigate={handleNavigate}
+        onServiceSelect={handleServiceSelect}
+      />
+    ),
     about: <About key="about" />,
     "featured-products": (
       <FeaturedProducts
@@ -153,6 +166,14 @@ function App() {
                 onBack={() => handleNavigate("catalog")}
                 onNavigateToCart={() => handleNavigate("checkout")}
                 onProductSelect={handleProductSelect}
+                onOpenChat={handleOpenChat}
+              />
+            )}
+
+            {currentView === "service-details" && selectedService && (
+              <ServiceDetails
+                service={selectedService}
+                onBack={() => handleNavigate("landing")}
                 onOpenChat={handleOpenChat}
               />
             )}

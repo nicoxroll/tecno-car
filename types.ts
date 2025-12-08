@@ -4,6 +4,7 @@ export type ViewState =
   | "landing"
   | "catalog"
   | "product-details"
+  | "service-details"
   | "checkout"
   | "admin";
 
@@ -43,6 +44,13 @@ export interface Product {
   year?: number;
   tags?: string[];
   discount_price?: number;
+  images?: string[];
+}
+
+export interface TimelineStep {
+  title: string;
+  description: string;
+  image: string;
 }
 
 export interface Service {
@@ -54,6 +62,9 @@ export interface Service {
   image: string;
   fullDescription: string;
   order?: number;
+  timeline_images?: string[];
+  timeline?: TimelineStep[];
+  video_url?: string;
 }
 
 export interface CartItem extends Product {

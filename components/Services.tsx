@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { X, MessageCircle } from "lucide-react";
-import { Service } from "../types";
+import { ArrowRight, X } from "lucide-react";
+import { Service, ViewState } from "../types";
 import { loadServices } from "../utils/dataLoader";
 
-const Services: React.FC = () => {
+interface ServicesProps {
+  onNavigate?: (view: ViewState) => void;
+  onServiceSelect?: (service: Service) => void;
+}
+
+const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [services, setServices] = useState<Service[]>([]);
@@ -152,7 +157,7 @@ const Services: React.FC = () => {
       {/* Service Detail Modal */}
       {selectedService && (
         <div
-          className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
           onClick={() => setSelectedService(null)}
         >
           <div
@@ -184,15 +189,18 @@ const Services: React.FC = () => {
               <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
                 {selectedService.fullDescription || selectedService.description}
               </p>
-              <a
-                href={`https://wa.me/5492213334444?text=Hola,%20me%20interesa%20consultar%20sobre%20el%20servicio%20de:%20${selectedService.title}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={() => {
+                  if (onServiceSelect) {
+                    onServiceSelect(selectedService);
+                    setSelectedService(null);
+                  }
+                }}
                 className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
               >
-                <MessageCircle size={16} />
-                Consultar en WhatsApp
-              </a>
+                <ArrowRight size={16} />
+                Más Información
+              </button>
             </div>
           </div>
         </div>

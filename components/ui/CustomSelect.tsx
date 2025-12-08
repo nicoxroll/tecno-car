@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { ChevronDown, Check } from "lucide-react";
 
 interface Option {
   value: string;
@@ -15,42 +15,49 @@ interface CustomSelectProps {
   error?: boolean;
 }
 
-const CustomSelect: React.FC<CustomSelectProps> = ({ 
-  value, 
-  onChange, 
-  options, 
-  placeholder = "Seleccionar", 
+const CustomSelect: React.FC<CustomSelectProps> = ({
+  value,
+  onChange,
+  options,
+  placeholder = "Seleccionar",
   className = "",
-  error = false
+  error = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedOption = options.find(opt => opt.value === value);
+  const selectedOption = options.find((opt) => opt.value === value);
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <div
-        className={`w-full bg-black border-b ${error ? 'border-red-500' : 'border-zinc-800'} text-white px-3 py-2 text-sm cursor-pointer flex justify-between items-center transition-colors hover:border-zinc-600`}
+        className={`w-full bg-black border-b ${
+          error ? "border-red-500" : "border-zinc-800"
+        } text-white px-3 py-2 text-sm cursor-pointer flex justify-between items-center transition-colors hover:border-zinc-600`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className={selectedOption ? 'text-white' : 'text-zinc-700'}>
+        <span className={selectedOption ? "text-white" : "text-zinc-700"}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown 
-          size={16} 
-          className={`text-zinc-500 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          size={16}
+          className={`text-zinc-500 transition-transform duration-300 ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </div>
 
@@ -60,9 +67,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             <div
               key={option.value}
               className={`px-3 py-2 text-sm cursor-pointer transition-colors flex justify-between items-center ${
-                option.value === value 
-                  ? 'bg-zinc-900 text-white' 
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                option.value === value
+                  ? "bg-zinc-900 text-white"
+                  : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
               }`}
               onClick={() => {
                 onChange(option.value);
@@ -70,7 +77,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
               }}
             >
               {option.label}
-              {option.value === value && <Check size={14} className="text-white" />}
+              {option.value === value && (
+                <Check size={14} className="text-white" />
+              )}
             </div>
           ))}
         </div>
