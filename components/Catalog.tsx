@@ -352,6 +352,11 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                           {product.year}
                         </span>
                       )}
+                      {product.model && (
+                        <span className="text-[10px] font-medium text-zinc-600 border-l border-zinc-800 pl-2 ml-2">
+                          {product.model}
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-white font-light text-lg mb-2 group-hover:underline decoration-zinc-500 underline-offset-4">
                       {product.name}

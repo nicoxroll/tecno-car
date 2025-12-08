@@ -190,6 +190,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
 
             <div className="w-full h-[1px] bg-zinc-800 mb-8"></div>
 
+            {product.model && (
+              <div className="mb-6">
+                <span className="text-xs text-zinc-500 uppercase tracking-widest block mb-1">
+                  Modelo
+                </span>
+                <span className="text-white font-light">{product.model}</span>
+              </div>
+            )}
+
             <p className="text-zinc-400 font-light leading-relaxed mb-8 text-sm md:text-base">
               {product.description}
               <br />

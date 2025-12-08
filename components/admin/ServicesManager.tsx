@@ -92,6 +92,9 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   const [creatingService, setCreatingService] =
     useState<Partial<Service> | null>(null);
 
+  const [showDeleteServiceConfirm, setShowDeleteServiceConfirm] = useState<number | null>(null);
+  const [showDeleteAppointmentConfirm, setShowDeleteAppointmentConfirm] = useState<number | null>(null);
+
   // Appointments State
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
@@ -259,7 +262,13 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   };
 
   const handleDeleteAppointment = async (id: number) => {
-    if (!window.confirm("¿Estás seguro de eliminar este turno?")) return;
+    setShowDeleteAppointmentConfirm(id);
+  };
+
+  const confirmDeleteAppointment = async () => {
+    if (!showDeleteAppointmentConfirm) return;
+    const id = showDeleteAppointmentConfirm;
+    
     try {
       const { error } = await supabase
         .from("appointments")
@@ -268,6 +277,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
       if (error) throw error;
       setAppointments(appointments.filter((a) => a.id !== id));
       toast.success("Turno eliminado correctamente");
+      setShowDeleteAppointmentConfirm(null);
     } catch (error) {
       console.error("Error deleting appointment:", error);
       toast.error("Error al eliminar el turno");
@@ -319,7 +329,12 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   };
 
   const handleDeleteService = async (id: number) => {
-    if (!window.confirm("¿Estás seguro de eliminar este servicio?")) return;
+    setShowDeleteServiceConfirm(id);
+  };
+
+  const confirmDeleteService = async () => {
+    if (!showDeleteServiceConfirm) return;
+    const id = showDeleteServiceConfirm;
 
     try {
       // Find service to get image URL
@@ -335,6 +350,8 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
 
       setServices(services.filter((s) => s.id !== id));
       toast.success("Servicio eliminado correctamente");
+      setShowDeleteServiceConfirm(null);
+      setEditingService(null);
     } catch (error) {
       console.error("Error deleting service:", error);
       toast.error("Error al eliminar el servicio");
@@ -1381,16 +1398,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
           {/* Actions */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t border-zinc-800">
             <button
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "¿Estás seguro de que quieres eliminar este servicio?"
-                  )
-                ) {
-                  handleDeleteService(editingService.id);
-                  setEditingService(null);
-                }
-              }}
+              onClick={() => handleDeleteService(editingService.id)}
               className="bg-red-900 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-red-800 transition-colors"
             >
               Eliminar Servicio
@@ -1992,6 +2000,65 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
                 Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Delete Service Confirmation Modal */}
+      {showDeleteServiceConfirm && (
+        <Modal
+          isOpen={!!showDeleteServiceConfirm}
+          onClose={() => setShowDeleteServiceConfirm(null)}
+          title="Eliminar Servicio"
+        >
+          <div className="space-y-6">
+            <p className="text-zinc-300">
+              ¿Estás seguro de que deseas eliminar este servicio? Esta acción no
+              se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteServiceConfirm(null)}
+                className="bg-zinc-800 text-white px-4 py-2 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteService}
+                className="bg-red-600 text-white px-4 py-2 text-sm uppercase tracking-widest hover:bg-red-700 transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Appointment Confirmation Modal */}
+      {showDeleteAppointmentConfirm && (
+        <Modal
+          isOpen={!!showDeleteAppointmentConfirm}
+          onClose={() => setShowDeleteAppointmentConfirm(null)}
+          title="Eliminar Turno"
+        >
+          <div className="space-y-6">
+            <p className="text-zinc-300">
+              ¿Estás seguro de que deseas eliminar este turno? Esta acción no se
+              puede deshacer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteAppointmentConfirm(null)}
+                className="bg-zinc-800 text-white px-4 py-2 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteAppointment}
+                className="bg-red-600 text-white px-4 py-2 text-sm uppercase tracking-widest hover:bg-red-700 transition-colors"
+              >
+                Eliminar
               </button>
             </div>
           </div>

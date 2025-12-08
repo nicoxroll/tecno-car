@@ -82,7 +82,12 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
         customer: `${formData.name} ${formData.lastName}`,
         total: cartTotal,
         status: "Pendiente",
-        items: cart.map((item) => `${item.name} x${item.quantity}`),
+        items: cart.map(
+          (item) =>
+            `${item.name}${item.model ? ` (${item.model})` : ""} x${
+              item.quantity
+            }`
+        ),
         payment_method:
           paymentMethod === "transfer" ? "Transferencia" : "Efectivo",
         date: new Date().toISOString().split("T")[0],
@@ -97,9 +102,9 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
       const itemsList = cart
         .map(
           (item) =>
-            `• ${item.name} (x${item.quantity}) - $${(
-              item.price * item.quantity
-            ).toLocaleString()}`
+            `• ${item.name}${item.model ? ` (${item.model})` : ""} (x${
+              item.quantity
+            }) - $${(item.price * item.quantity).toLocaleString()}`
         )
         .join("%0A");
       const message = `Hola! Quiero confirmar mi pedido:%0A%0A*Código:* ${orderCode}%0A*Cliente:* ${
@@ -223,6 +228,11 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                         </div>
                         <p className="text-zinc-500 text-xs mb-1">
                           {item.category}
+                          {item.model && (
+                            <span className="ml-2 pl-2 border-l border-zinc-800">
+                              {item.model}
+                            </span>
+                          )}
                         </p>
                         <div className="flex justify-between text-xs">
                           <span className="text-zinc-400">

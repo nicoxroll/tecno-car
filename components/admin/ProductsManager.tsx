@@ -102,6 +102,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
     value: number;
     action: "increase" | "decrease";
   }>({ type: "percentage", value: 0, action: "increase" });
+  const [showBulkConfirm, setShowBulkConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   const categoryStats = useMemo(() => {
     const stats = products.reduce((acc, product) => {
@@ -202,15 +204,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
   const handleBulkUpdate = async () => {
     if (bulkConfig.value <= 0) return;
+    setShowBulkConfirm(true);
+  };
 
-    const confirmMessage = `¿Estás seguro de que deseas ${
-      bulkConfig.action === "increase" ? "aumentar" : "disminuir"
-    } el precio de TODOS los productos en un ${bulkConfig.value}${
-      bulkConfig.type === "percentage" ? "%" : "$"
-    }?`;
-
-    if (!window.confirm(confirmMessage)) return;
-
+  const confirmBulkUpdate = async () => {
     try {
       const updates = products.map((p) => {
         let newPrice = Number(p.price);
@@ -234,6 +231,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
       setProducts(updates);
       setIsBulkModalOpen(false);
+      setShowBulkConfirm(false);
       toast.success("Precios actualizados correctamente");
     } catch (error) {
       console.error("Error bulk updating:", error);
@@ -251,8 +249,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
       "Disponible",
       "Destacado",
       "Descripción",
-      "Año",
+      "Modelo",
       "Etiquetas",
+      "Fecha Creación",
+      "Última Modificación",
     ];
     const csvContent = [
       headers.join(";"),
@@ -268,8 +268,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
           `"${(p.description || "")
             .replace(/"/g, '""')
             .replace(/(\r\n|\n|\r)/gm, " ")}"`,
-          p.year || "",
+          `"${(p.model || "").replace(/"/g, '""')}"`,
           `"${(p.tags || []).join(", ")}"`,
+          p.created_at ? new Date(p.created_at).toLocaleDateString() : "",
+          p.updated_at ? new Date(p.updated_at).toLocaleDateString() : "",
         ].join(";")
       ),
     ].join("\r\n");
@@ -1468,21 +1470,19 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </div>
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
-                    Año (Opcional)
+                    Modelo (Opcional)
                   </label>
                   <input
-                    type="number"
-                    value={editingProduct.year || ""}
+                    type="text"
+                    value={editingProduct.model || ""}
                     onChange={(e) =>
                       setEditingProduct({
                         ...editingProduct,
-                        year: e.target.value
-                          ? parseInt(e.target.value)
-                          : undefined,
+                        model: e.target.value,
                       })
                     }
                     className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-                    placeholder="Ej: 2024"
+                    placeholder="Ej: Modelo X"
                   />
                 </div>
               </div>
@@ -1620,16 +1620,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
           {/* Actions */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t border-zinc-800">
             <button
-              onClick={() => {
-                if (
-                  window.confirm(
-                    "¿Estás seguro de que quieres eliminar este producto?"
-                  )
-                ) {
-                  handleDeleteProduct(editingProduct.id);
-                  setEditingProduct(null);
-                }
-              }}
+              onClick={() => setShowDeleteConfirm(editingProduct.id)}
               className="bg-red-900 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-red-800 transition-colors"
             >
               Eliminar Producto
@@ -1909,21 +1900,19 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </div>
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
-                    Año (Opcional)
+                    Modelo (Opcional)
                   </label>
                   <input
-                    type="number"
-                    value={creatingProduct.year || ""}
+                    type="text"
+                    value={creatingProduct.model || ""}
                     onChange={(e) =>
                       setCreatingProduct({
                         ...creatingProduct,
-                        year: e.target.value
-                          ? Number(e.target.value)
-                          : undefined,
+                        model: e.target.value,
                       })
                     }
                     className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-                    placeholder="Ej: 2024"
+                    placeholder="Ej: Modelo X"
                   />
                 </div>
               </div>
@@ -2099,6 +2088,85 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
                 Crear Producto
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Confirmation Modals */}
+      {showBulkConfirm && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowBulkConfirm(false)}
+          title="Confirmar Actualización Masiva"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 text-yellow-500 bg-yellow-900/20 p-4 border border-yellow-900/50 rounded">
+              <AlertTriangle size={24} />
+              <p className="text-sm">
+                Esta acción modificará el precio de <strong>TODOS</strong> los productos.
+              </p>
+            </div>
+            
+            <p className="text-zinc-300 text-lg leading-relaxed">
+              ¿Estás seguro de que deseas <strong>{bulkConfig.action === "increase" ? "aumentar" : "disminuir"}</strong> el precio de todos los productos en un <strong>{bulkConfig.value}{bulkConfig.type === "percentage" ? "%" : "$"}</strong>?
+            </p>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
+              <button
+                onClick={() => setShowBulkConfirm(false)}
+                className="bg-zinc-800 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmBulkUpdate}
+                className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {showDeleteConfirm && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowDeleteConfirm(null)}
+          title="Confirmar Eliminación"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 text-red-500 bg-red-900/20 p-4 border border-red-900/50 rounded">
+              <AlertTriangle size={24} />
+              <p className="text-sm">
+                Esta acción no se puede deshacer.
+              </p>
+            </div>
+            
+            <p className="text-zinc-300 text-lg leading-relaxed">
+              ¿Estás seguro de que deseas eliminar este producto permanentemente?
+            </p>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="bg-zinc-800 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (showDeleteConfirm) {
+                    handleDeleteProduct(showDeleteConfirm);
+                    setShowDeleteConfirm(null);
+                    setEditingProduct(null);
+                  }
+                }}
+                className="bg-red-900 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-red-800 transition-colors"
+              >
+                Eliminar
               </button>
             </div>
           </div>

@@ -126,7 +126,7 @@ const Navbar: React.FC<NavbarProps> = ({
             >
               <ShoppingCart size={20} strokeWidth={1} />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center font-bold">
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center font-bold rounded-full">
                   {cartCount}
                 </span>
               )}
@@ -138,7 +138,7 @@ const Navbar: React.FC<NavbarProps> = ({
             <button onClick={handleCartClick} className="relative text-white">
               <ShoppingCart size={20} strokeWidth={1} />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center font-bold">
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-white text-black text-[9px] flex items-center justify-center font-bold rounded-full">
                   {cartCount}
                 </span>
               )}

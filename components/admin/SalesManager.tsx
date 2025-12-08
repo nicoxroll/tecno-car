@@ -1,6 +1,7 @@
 import {
   Calendar,
   ChevronDown,
+  Download,
   Edit,
   Filter,
   List,
@@ -48,6 +49,7 @@ const SalesManager: React.FC = () => {
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -132,16 +134,22 @@ const SalesManager: React.FC = () => {
   };
 
   const handleDeleteOrder = async (id: number) => {
-    if (window.confirm("¿Estás seguro de eliminar este pedido?")) {
-      try {
-        const { error } = await supabase.from("sales").delete().eq("id", id);
-        if (error) throw error;
-        fetchOrders();
-        toast.success("Pedido eliminado correctamente");
-      } catch (error) {
-        console.error("Error deleting order:", error);
-        toast.error("Error al eliminar el pedido");
-      }
+    setShowDeleteConfirm(id);
+  };
+
+  const confirmDeleteOrder = async () => {
+    if (!showDeleteConfirm) return;
+    const id = showDeleteConfirm;
+
+    try {
+      const { error } = await supabase.from("sales").delete().eq("id", id);
+      if (error) throw error;
+      fetchOrders();
+      toast.success("Pedido eliminado correctamente");
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.error("Error deleting order:", error);
+      toast.error("Error al eliminar el pedido");
     }
   };
 
@@ -297,6 +305,53 @@ const SalesManager: React.FC = () => {
 
         {activeTab === "list" && (
           <div className="flex gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => {
+                const headers = [
+                  "ID",
+                  "Código",
+                  "Fecha",
+                  "Cliente",
+                  "Total",
+                  "Estado",
+                  "Método Pago",
+                  "Items",
+                ];
+                const csvContent = [
+                  headers.join(";"),
+                  ...orders.map((o) =>
+                    [
+                      o.id,
+                      o.code || "",
+                      o.date,
+                      `"${o.customer}"`,
+                      o.total,
+                      o.status,
+                      o.payment_method || "",
+                      `"${(o.items || []).join(", ")}"`,
+                    ].join(";")
+                  ),
+                ].join("\r\n");
+
+                const blob = new Blob(["\uFEFF" + csvContent], {
+                  type: "text/csv;charset=utf-8;",
+                });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute(
+                  "download",
+                  `ventas_merlano_${new Date().toISOString().split("T")[0]}.csv`
+                );
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="px-3 py-2 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors flex items-center gap-2"
+              title="Exportar a Excel"
+            >
+              <Download size={16} />
+            </button>
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center gap-2 ${
@@ -744,6 +799,35 @@ const SalesManager: React.FC = () => {
                 className="bg-white text-black px-4 sm:px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
               >
                 {editingOrder ? "Guardar Cambios" : "Crear Pedido"}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <Modal
+          isOpen={!!showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(null)}
+          title="Eliminar Pedido"
+        >
+          <div className="space-y-6">
+            <p className="text-zinc-300">
+              ¿Estás seguro de que deseas eliminar este pedido? Esta acción no
+              se puede deshacer.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(null)}
+                className="bg-zinc-800 text-white px-4 py-2 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteOrder}
+                className="bg-red-600 text-white px-4 py-2 text-sm uppercase tracking-widest hover:bg-red-700 transition-colors"
+              >
+                Eliminar
               </button>
             </div>
           </div>

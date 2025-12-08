@@ -89,7 +89,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 
         <div className="absolute bottom-0 left-0 w-full p-8 md:p-16 z-10">
           <div className="container mx-auto">
-            <span className="inline-block bg-brand/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1 uppercase tracking-widest border border-white/10 mb-6">
+            <span className="inline-block bg-brand/80 backdrop-blur-md text-black text-xs font-bold px-3 py-1 uppercase tracking-widest border border-white/10 mb-6">
               {service.category}
             </span>
             <h1 className="text-4xl md:text-7xl font-thin text-white uppercase tracking-tight mb-4 max-w-4xl">
@@ -202,7 +202,7 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
 
           {/* Sidebar / CTA */}
           <div className="lg:col-span-4">
-            <div className="sticky top-24 bg-zinc-900/30 border border-zinc-800 p-8 backdrop-blur-sm">
+            <div className="sticky top-24 bg-black border border-zinc-800 p-8">
               <h3 className="text-xl text-white font-light uppercase tracking-wide mb-6">
                 ¿Interesado en este servicio?
               </h3>
@@ -219,11 +219,11 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                       `Quiero saber más sobre el servicio: ${service.title}`
                     )
                   }
-                  className="w-full border border-zinc-700 bg-zinc-800/50 text-white py-4 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-brand hover:border-brand transition-all flex items-center justify-center gap-2 group"
+                  className="w-full border border-zinc-700 bg-zinc-800/50 text-white py-4 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-brand hover:border-brand hover:text-black transition-all flex items-center justify-center gap-2 group"
                 >
                   <Sparkles
                     size={16}
-                    className="text-brand group-hover:text-white transition-colors"
+                    className="text-brand group-hover:text-black transition-colors"
                   />
                   Consultar con IA
                 </button>

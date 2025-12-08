@@ -105,6 +105,11 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
                     <h3 className="text-white text-sm font-light tracking-wider mb-1">
                       {product.name}
                     </h3>
+                    {product.model && (
+                      <p className="text-zinc-500 text-[10px] uppercase tracking-widest mb-1">
+                        {product.model}
+                      </p>
+                    )}
                     <div className="flex flex-col">
                       {product.discount_price &&
                       product.discount_price < product.price ? (
@@ -169,6 +174,11 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
               <h3 className="text-3xl font-light text-white mb-2 uppercase tracking-tight">
                 {selectedProduct.name}
               </h3>
+              {selectedProduct.model && (
+                <p className="text-zinc-500 text-xs uppercase tracking-widest mb-4">
+                  Modelo: {selectedProduct.model}
+                </p>
+              )}
               <div className="mb-6">
                 {selectedProduct.discount_price &&
                 selectedProduct.discount_price < selectedProduct.price ? (

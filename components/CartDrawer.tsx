@@ -66,9 +66,16 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
                     <h4 className="text-white text-sm font-light mb-1 line-clamp-1">
                       {item.name}
                     </h4>
-                    <p className="text-zinc-500 text-[10px] uppercase tracking-wider">
-                      {item.category}
-                    </p>
+                    <div className="flex flex-col">
+                      <p className="text-zinc-500 text-[10px] uppercase tracking-wider">
+                        {item.category}
+                      </p>
+                      {item.model && (
+                        <p className="text-zinc-600 text-[10px] uppercase tracking-wider">
+                          {item.model}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-zinc-300 text-xs font-medium">

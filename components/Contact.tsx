@@ -1,7 +1,25 @@
-import React from "react";
-import { MapPin, Clock, ArrowRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { MapPin, Clock, ArrowRight, Phone } from "lucide-react";
+import { supabase } from "../services/supabase";
 
 const Contact: React.FC = () => {
+  const [phone, setPhone] = useState("+54 221 333 4444");
+
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      const { data } = await supabase
+        .from("site_config")
+        .select("value")
+        .eq("key", "company_phone")
+        .single();
+
+      if (data?.value) {
+        setPhone(data.value);
+      }
+    };
+    fetchContactInfo();
+  }, []);
+
   return (
     <section
       id="contact"
@@ -31,6 +49,18 @@ const Contact: React.FC = () => {
                   Plaza Moreno (Referencia)
                   <br />
                   La Plata, Buenos Aires
+                </p>
+              </div>
+
+              <div className="group">
+                <div className="flex items-center gap-3 mb-2 text-white">
+                  <Phone size={18} strokeWidth={1} />
+                  <h3 className="text-xs font-medium uppercase tracking-[0.2em]">
+                    Teléfono
+                  </h3>
+                </div>
+                <p className="text-zinc-500 font-light pl-8">
+                  {phone}
                 </p>
               </div>
 

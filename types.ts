@@ -45,6 +45,9 @@ export interface Product {
   tags?: string[];
   discount_price?: number;
   images?: string[];
+  model?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface TimelineStep {
