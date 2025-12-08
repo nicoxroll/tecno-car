@@ -1,18 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Instagram, ArrowRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { supabase } from '../services/supabase';
 
 const Gallery: React.FC = () => {
-  const [selectedImage, setSelectedImage] = useState<{ id: number, img: string, title: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<{ id: string, img: string, title: string, permalink: string } | null>(null);
+  const [posts, setPosts] = useState<{ id: string, img: string, title: string, permalink: string }[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Reliable Pexels Modern Automotive Images
-  const posts = [
-    { id: 1, img: 'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BMW TECH' },
-    { id: 2, img: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'INTERIORES' },
-    { id: 3, img: 'https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BLACK SERIES' },
-    { id: 4, img: 'https://images.pexels.com/photos/136872/pexels-photo-136872.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'MERCEDES BENZ' },
-    { id: 5, img: 'https://images.pexels.com/photos/794435/pexels-photo-794435.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'AUDI S-LINE' },
-    { id: 6, img: 'https://images.pexels.com/photos/2526127/pexels-photo-2526127.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'DETALLADO' },
-  ];
+  useEffect(() => {
+    const fetchGalleryPosts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('gallery_posts')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(6);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const mappedPosts = data.map(post => ({
+            id: post.id,
+            img: post.image_url,
+            title: post.title,
+            permalink: post.instagram_url || 'https://instagram.com/merlanotecnologiavehicular'
+          }));
+          setPosts(mappedPosts);
+        } else {
+          // Fallback if no posts in DB
+          const placeholderPosts = [
+            { id: '1', img: 'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BMW TECH', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+            { id: '2', img: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'INTERIORES', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+            { id: '3', img: 'https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BLACK SERIES', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+            { id: '4', img: 'https://images.pexels.com/photos/136872/pexels-photo-136872.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'MERCEDES BENZ', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+            { id: '5', img: 'https://images.pexels.com/photos/794435/pexels-photo-794435.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'AUDI S-LINE', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+            { id: '6', img: 'https://images.pexels.com/photos/2526127/pexels-photo-2526127.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'DETALLADO', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+          ];
+          setPosts(placeholderPosts);
+        }
+      } catch (error) {
+        console.error('Error fetching gallery posts:', error);
+        // Fallback to placeholders on error
+        const placeholderPosts = [
+          { id: '1', img: 'https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BMW TECH', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+          { id: '2', img: 'https://images.pexels.com/photos/120049/pexels-photo-120049.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'INTERIORES', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+          { id: '3', img: 'https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'BLACK SERIES', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+          { id: '4', img: 'https://images.pexels.com/photos/136872/pexels-photo-136872.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'MERCEDES BENZ', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+          { id: '5', img: 'https://images.pexels.com/photos/794435/pexels-photo-794435.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'AUDI S-LINE', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+          { id: '6', img: 'https://images.pexels.com/photos/2526127/pexels-photo-2526127.jpeg?auto=compress&cs=tinysrgb&w=1200', title: 'DETALLADO', permalink: 'https://instagram.com/merlanotecnologiavehicular' },
+        ];
+        setPosts(placeholderPosts);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGalleryPosts();
+  }, []);
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -45,7 +89,18 @@ const Gallery: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5 bg-zinc-900 border border-zinc-900">
-            {posts.map((post) => (
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 6 }).map((_, index) => (
+                <div 
+                  key={index} 
+                  className="group relative aspect-square overflow-hidden bg-zinc-900 animate-pulse"
+                >
+                  <div className="w-full h-full bg-zinc-800"></div>
+                </div>
+              ))
+            ) : (
+              posts.map((post) => (
                 <div 
                   key={post.id} 
                   className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer"
@@ -63,14 +118,15 @@ const Gallery: React.FC = () => {
                         </span>
                     </div>
                 </div>
-            ))}
+              ))
+            )}
         </div>
       </div>
 
       {/* Lightbox Modal */}
       {selectedImage && (
         <div 
-            className="fixed inset-0 z-[100] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
             onClick={() => setSelectedImage(null)}
         >
           <div 

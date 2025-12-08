@@ -76,13 +76,6 @@ const Contact: React.FC = () => {
             </div>
         </div>
 
-        <div className="mt-16 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] uppercase tracking-widest text-zinc-600">
-            <p>&copy; {new Date().getFullYear()} MERLANO TECNOLOGÍA VEHICULAR.</p>
-            <div className="flex gap-8">
-                <a href="#" className="hover:text-white transition-colors">Instagram</a>
-                <a href="#" className="hover:text-white transition-colors">Facebook</a>
-            </div>
-        </div>
       </div>
     </section>
   );

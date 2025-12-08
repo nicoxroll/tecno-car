@@ -9,10 +9,11 @@ import ProductsManager from './admin/ProductsManager';
 import ServicesManager from './admin/ServicesManager';
 import SalesManager from './admin/SalesManager';
 import SettingsManager from './admin/SettingsManager';
+import GalleryManager from './admin/GalleryManager';
 
 const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'sales' | 'products' | 'services' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'sales' | 'products' | 'services' | 'gallery' | 'settings'>('dashboard');
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,12 +123,16 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           />
         )}
 
+        {activeTab === 'gallery' && (
+          <GalleryManager />
+        )}
+
         {activeTab === 'settings' && (
           <SettingsManager />
         )}
       </div>
 
-      <div className="border-t border-zinc-900 py-8 mt-auto">
+      <div className="border-t border-zinc-900 py-8 mt-20">
         <div className="flex justify-center items-center gap-2 opacity-50">
             <span className="text-zinc-600 text-[10px] uppercase tracking-widest">Desarrollado por Arise</span>
         </div>

@@ -88,7 +88,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
       {/* Product Detail Modal */}
       {selectedProduct && (
         <div 
-            className="fixed inset-0 z-[100] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
             onClick={() => setSelectedProduct(null)}
         >
           <div 

@@ -34,7 +34,7 @@ export const loadServices = async (): Promise<Service[]> => {
     const { data, error } = await supabase
       .from('services')
       .select('*')
-      .order('id', { ascending: true });
+      .order('order', { ascending: true });
 
     if (error) {
       throw error;

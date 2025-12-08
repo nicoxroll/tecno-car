@@ -15,12 +15,12 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] animate-fade-in"
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[190] animate-fade-in"
         onClick={() => setIsCartOpen(false)}
       ></div>
 
       {/* Drawer */}
-      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-zinc-950 border-l border-zinc-800 z-[100] shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
+      <div className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-zinc-950 border-l border-zinc-800 z-[200] shadow-2xl flex flex-col transform transition-transform duration-300 ease-in-out">
         
         {/* Header */}
         <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-black">

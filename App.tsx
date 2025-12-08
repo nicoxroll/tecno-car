@@ -9,6 +9,7 @@ import ChatInterface from "./components/ChatInterface";
 import Checkout from "./components/Checkout";
 import Contact from "./components/Contact";
 import FeaturedProducts from "./components/FeaturedProducts";
+import Footer from "./components/Footer";
 import Gallery from "./components/Gallery";
 import Hero from "./components/Hero";
 import Highlights from "./components/Highlights";
@@ -23,6 +24,9 @@ import { Product, ViewState } from "./types";
 function App() {
   const [currentView, setCurrentView] = useState<ViewState>("landing");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  // Fixed sections order
+  const sectionsOrder = ['hero', 'highlights', 'services', 'about', 'featured-products', 'gallery', 'newsletter', 'contact', 'footer'];
 
   useEffect(() => {
     // Initialize Lenis for smooth scrolling
@@ -72,6 +76,19 @@ function App() {
     handleNavigate("product-details");
   };
 
+  // Define all sections
+  const sections = {
+    'hero': <Hero key="hero" />,
+    'highlights': <Highlights key="highlights" />,
+    'services': <Services key="services" />,
+    'about': <About key="about" />,
+    'featured-products': <FeaturedProducts key="featured-products" onNavigate={handleNavigate} />,
+    'gallery': <Gallery key="gallery" />,
+    'newsletter': <Newsletter key="newsletter" />,
+    'contact': <Contact key="contact" />,
+    'footer': <Footer key="footer" />
+  };
+
   return (
     <CartProvider>
       <ScrollProvider>
@@ -88,14 +105,7 @@ function App() {
           <main>
             {currentView === "landing" && (
               <>
-                <Hero />
-                <Highlights />
-                <Services />
-                <About />
-                <FeaturedProducts onNavigate={handleNavigate} />
-                <Gallery />
-                <Newsletter />
-                <Contact />
+                {sectionsOrder.map(sectionId => sections[sectionId as keyof typeof sections])}
               </>
             )}
 

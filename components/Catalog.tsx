@@ -19,6 +19,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   const [heroImage, setHeroImage] = useState('https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1600');
   const [heroTitle, setHeroTitle] = useState('Catálogo');
   const [heroSubtitle, setHeroSubtitle] = useState('Equipamiento Premium Seleccionado');
+  const [heroYear, setHeroYear] = useState('2024');
   const [searchTags, setSearchTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,13 +30,14 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
       const { data } = await supabase
         .from('site_config')
         .select('key, value')
-        .in('key', ['catalog_hero_image', 'catalog_hero_title', 'catalog_hero_subtitle']);
+        .in('key', ['catalog_hero_image', 'catalog_hero_title', 'catalog_hero_subtitle', 'catalog_year']);
       
       if (data) {
         data.forEach(item => {
           if (item.key === 'catalog_hero_image') setHeroImage(item.value);
           if (item.key === 'catalog_hero_title') setHeroTitle(item.value);
           if (item.key === 'catalog_hero_subtitle') setHeroSubtitle(item.value);
+          if (item.key === 'catalog_year') setHeroYear(item.value);
         });
       }
     };
@@ -120,7 +122,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-4"
               style={{ transform: `translateY(${scrollY * 0.2}px)` }}>
             <h1 className="text-5xl md:text-7xl font-thin text-white uppercase tracking-tight mb-6 drop-shadow-lg">
-                {heroTitle} <span className="text-zinc-400">2024</span>
+                {heroTitle} <span className="text-zinc-400">{heroYear}</span>
             </h1>
             <div className="h-[1px] w-24 bg-white mb-6"></div>
             <p className="text-white font-light tracking-[0.3em] text-xs md:text-sm uppercase drop-shadow-md bg-black/50 px-6 py-3 backdrop-blur-md border border-white/20">

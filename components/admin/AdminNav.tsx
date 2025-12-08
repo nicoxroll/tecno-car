@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface AdminNavProps {
-  activeTab: 'dashboard' | 'sales' | 'products' | 'services' | 'settings';
-  setActiveTab: (tab: 'dashboard' | 'sales' | 'products' | 'services' | 'settings') => void;
+  activeTab: 'dashboard' | 'sales' | 'products' | 'services' | 'gallery' | 'settings';
+  setActiveTab: (tab: 'dashboard' | 'sales' | 'products' | 'services' | 'gallery' | 'settings') => void;
 }
 
 const AdminNav: React.FC<AdminNavProps> = ({ activeTab, setActiveTab }) => {
@@ -13,6 +13,7 @@ const AdminNav: React.FC<AdminNavProps> = ({ activeTab, setActiveTab }) => {
         { id: 'sales', label: 'Ventas' },
         { id: 'products', label: 'Productos' },
         { id: 'services', label: 'Servicios' },
+        { id: 'gallery', label: 'Galería' },
         { id: 'settings', label: 'Configuración' },
       ].map((tab) => (
         <button

@@ -8,19 +8,21 @@ const Hero: React.FC = () => {
   const [heroImage, setHeroImage] = useState('https://images.pexels.com/photos/305070/pexels-photo-305070.jpeg?auto=compress&cs=tinysrgb&w=1600');
   const [heroTitle, setHeroTitle] = useState('MERLANO');
   const [heroSubtitle, setHeroSubtitle] = useState('TECNOLOGÍA VEHICULAR');
+  const [heroDescription, setHeroDescription] = useState('Especialistas en electrónica automotriz avanzada. Multimedia, seguridad y confort en Berisso.');
 
   useEffect(() => {
     const fetchHero = async () => {
       const { data } = await supabase
         .from('site_config')
         .select('key, value')
-        .in('key', ['main_hero_image', 'main_hero_title', 'main_hero_subtitle']);
+        .in('key', ['main_hero_image', 'main_hero_title', 'main_hero_subtitle', 'main_hero_description']);
       
       if (data) {
         data.forEach(item => {
           if (item.key === 'main_hero_image') setHeroImage(item.value);
           if (item.key === 'main_hero_title') setHeroTitle(item.value);
           if (item.key === 'main_hero_subtitle') setHeroSubtitle(item.value);
+          if (item.key === 'main_hero_description') setHeroDescription(item.value);
         });
       }
     };
@@ -77,7 +79,7 @@ const Hero: React.FC = () => {
         <div className="w-16 h-[1px] bg-white mx-auto mb-8 opacity-0 animate-fade-in" style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}></div>
 
         <p className="text-zinc-300 font-light max-w-lg mx-auto mb-12 text-sm md:text-base leading-relaxed tracking-wide opacity-0 animate-fade-in" style={{ animationDelay: '0.8s', animationFillMode: 'forwards' }}>
-          Especialistas en electrónica automotriz avanzada. <br/>Multimedia, seguridad y confort en Berisso.
+          {heroDescription}
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fade-in" style={{ animationDelay: '1s', animationFillMode: 'forwards' }}>
