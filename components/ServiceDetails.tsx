@@ -1,10 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  ArrowLeft,
-  MessageCircle,
-  Sparkles,
-  CheckCircle,
-} from "lucide-react";
+import { ArrowLeft, MessageCircle, Sparkles, CheckCircle } from "lucide-react";
 import { Service } from "../types";
 
 interface ServiceDetailsProps {
@@ -37,31 +32,38 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
   };
 
   // Default timeline data if none exists
-  const timelineData = (service.timeline && service.timeline.length > 0)
-    ? service.timeline
-    : (service.timeline_images && service.timeline_images.length > 0) 
+  const timelineData =
+    service.timeline && service.timeline.length > 0
+      ? service.timeline
+      : service.timeline_images && service.timeline_images.length > 0
       ? service.timeline_images.map((img, idx) => ({
           image: img,
           title: `Paso ${idx + 1}`,
-          description: "Descripción del proceso en esta etapa."
+          description: "Descripción del proceso en esta etapa.",
         }))
       : [
-        {
-          image: "https://images.pexels.com/photos/18045866/pexels-photo-18045866.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          title: "Diagnóstico Inicial",
-          description: "Evaluación completa del estado actual para determinar el mejor curso de acción."
-        },
-        {
-          image: "https://images.pexels.com/photos/10566895/pexels-photo-10566895.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          title: "Ejecución del Servicio",
-          description: "Aplicación de técnicas especializadas con equipamiento de última generación."
-        },
-        {
-          image: "https://images.pexels.com/photos/25713617/pexels-photo-25713617.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-          title: "Control de Calidad",
-          description: "Verificación exhaustiva de los resultados para garantizar la máxima satisfacción."
-        }
-      ];
+          {
+            image:
+              "https://images.pexels.com/photos/18045866/pexels-photo-18045866.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            title: "Diagnóstico Inicial",
+            description:
+              "Evaluación completa del estado actual para determinar el mejor curso de acción.",
+          },
+          {
+            image:
+              "https://images.pexels.com/photos/10566895/pexels-photo-10566895.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            title: "Ejecución del Servicio",
+            description:
+              "Aplicación de técnicas especializadas con equipamiento de última generación.",
+          },
+          {
+            image:
+              "https://images.pexels.com/photos/25713617/pexels-photo-25713617.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+            title: "Control de Calidad",
+            description:
+              "Verificación exhaustiva de los resultados para garantizar la máxima satisfacción.",
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-black animate-fade-in">
@@ -75,9 +77,9 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </div>
-        
+
         <div className="absolute top-0 left-0 w-full p-6 z-20">
-           <button
+          <button
             onClick={onBack}
             className="flex items-center gap-2 text-white/80 hover:text-white transition-colors uppercase tracking-widest text-xs bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10"
           >
@@ -117,23 +119,36 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                 <span className="w-8 h-[1px] bg-brand"></span>
                 Proceso de Trabajo
               </h2>
-              
+
               <div className="space-y-24 relative">
                 {/* Vertical Line */}
                 <div className="absolute left-0 md:left-1/2 top-0 bottom-0 w-[1px] bg-zinc-800 transform md:-translate-x-1/2 ml-4 md:ml-0"></div>
 
                 {timelineData.map((item, index) => (
-                  <div key={index} className="relative flex flex-col md:flex-row gap-8 md:gap-0 items-center">
+                  <div
+                    key={index}
+                    className="relative flex flex-col md:flex-row gap-8 md:gap-0 items-center"
+                  >
                     {/* Dot */}
                     <div className="absolute left-0 md:left-1/2 w-9 h-9 bg-black border border-zinc-700 rounded-full flex items-center justify-center transform md:-translate-x-1/2 z-10 ml-0 md:ml-0">
                       <div className="w-3 h-3 bg-brand rounded-full"></div>
                     </div>
 
                     {/* Content */}
-                    <div className={`w-full md:w-1/2 pl-16 md:pl-0 ${index % 2 === 0 ? 'md:pr-16 md:text-right' : 'md:pl-16 md:order-2'}`}>
+                    <div
+                      className={`w-full md:w-1/2 pl-16 md:pl-0 ${
+                        index % 2 === 0
+                          ? "md:pr-16 md:text-right"
+                          : "md:pl-16 md:order-2"
+                      }`}
+                    >
                       <div className="mb-4">
-                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-2 block">Paso 0{index + 1}</span>
-                        <h3 className="text-xl text-white font-light uppercase">{item.title}</h3>
+                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-2 block">
+                          Paso 0{index + 1}
+                        </span>
+                        <h3 className="text-xl text-white font-light uppercase">
+                          {item.title}
+                        </h3>
                       </div>
                       <p className="text-zinc-400 text-sm leading-relaxed hidden md:block">
                         {item.description}
@@ -141,10 +156,16 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                     </div>
 
                     {/* Image */}
-                    <div className={`w-full md:w-1/2 pl-16 md:pl-0 ${index % 2 === 0 ? 'md:pl-16 md:order-2' : 'md:pr-16 md:text-right md:order-1'}`}>
+                    <div
+                      className={`w-full md:w-1/2 pl-16 md:pl-0 ${
+                        index % 2 === 0
+                          ? "md:pl-16 md:order-2"
+                          : "md:pr-16 md:text-right md:order-1"
+                      }`}
+                    >
                       <div className="aspect-video overflow-hidden border border-zinc-800 bg-zinc-900 relative group">
-                        <img 
-                          src={item.image} 
+                        <img
+                          src={item.image}
                           alt={item.title}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
@@ -186,18 +207,24 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                 ¿Interesado en este servicio?
               </h3>
               <p className="text-zinc-400 text-sm mb-8 leading-relaxed">
-                Contáctanos para obtener más información, presupuestos personalizados o agendar una cita.
+                Contáctanos para obtener más información, presupuestos
+                personalizados o agendar una cita.
               </p>
-              
+
               <div className="flex flex-col gap-4">
                 <button
                   onClick={() =>
                     onOpenChat &&
-                    onOpenChat(`Quiero saber más sobre el servicio: ${service.title}`)
+                    onOpenChat(
+                      `Quiero saber más sobre el servicio: ${service.title}`
+                    )
                   }
                   className="w-full border border-zinc-700 bg-zinc-800/50 text-white py-4 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-brand hover:border-brand transition-all flex items-center justify-center gap-2 group"
                 >
-                  <Sparkles size={16} className="text-brand group-hover:text-white transition-colors" />
+                  <Sparkles
+                    size={16}
+                    className="text-brand group-hover:text-white transition-colors"
+                  />
                   Consultar con IA
                 </button>
                 <a

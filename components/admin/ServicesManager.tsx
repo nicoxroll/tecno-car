@@ -1262,52 +1262,90 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 </label>
                 <div className="space-y-4 mb-4">
                   {(editingService.timeline || []).map((step, idx) => (
-                    <div key={idx} className="bg-zinc-900/50 border border-zinc-800 p-4 flex gap-4 items-start">
+                    <div
+                      key={idx}
+                      className="bg-zinc-900/50 border border-zinc-800 p-4 flex gap-4 items-start"
+                    >
                       <div className="w-24 h-24 flex-shrink-0 bg-black border border-zinc-700 relative group">
-                         <img src={step.image} alt="" className="w-full h-full object-cover" />
-                         <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                            <Edit size={16} className="text-white" />
-                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    const url = await uploadImage(file);
-                                    if (url) {
-                                        const newTimeline = [...(editingService.timeline || [])];
-                                        newTimeline[idx] = { ...step, image: url };
-                                        setEditingService({ ...editingService, timeline: newTimeline });
-                                    }
+                        <img
+                          src={step.image}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                        <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                          <Edit size={16} className="text-white" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const url = await uploadImage(file);
+                                if (url) {
+                                  const newTimeline = [
+                                    ...(editingService.timeline || []),
+                                  ];
+                                  newTimeline[idx] = { ...step, image: url };
+                                  setEditingService({
+                                    ...editingService,
+                                    timeline: newTimeline,
+                                  });
                                 }
-                            }} />
-                         </label>
+                              }
+                            }}
+                          />
+                        </label>
                       </div>
                       <div className="flex-grow space-y-2">
-                        <input 
-                            type="text" 
-                            value={step.title} 
-                            onChange={(e) => {
-                                const newTimeline = [...(editingService.timeline || [])];
-                                newTimeline[idx] = { ...step, title: e.target.value };
-                                setEditingService({ ...editingService, timeline: newTimeline });
-                            }}
-                            className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white"
-                            placeholder="Título del paso"
+                        <input
+                          type="text"
+                          value={step.title}
+                          onChange={(e) => {
+                            const newTimeline = [
+                              ...(editingService.timeline || []),
+                            ];
+                            newTimeline[idx] = {
+                              ...step,
+                              title: e.target.value,
+                            };
+                            setEditingService({
+                              ...editingService,
+                              timeline: newTimeline,
+                            });
+                          }}
+                          className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white"
+                          placeholder="Título del paso"
                         />
-                        <textarea 
-                            value={step.description}
-                            onChange={(e) => {
-                                const newTimeline = [...(editingService.timeline || [])];
-                                newTimeline[idx] = { ...step, description: e.target.value };
-                                setEditingService({ ...editingService, timeline: newTimeline });
-                            }}
-                            className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white resize-none"
-                            placeholder="Descripción del paso"
-                            rows={2}
+                        <textarea
+                          value={step.description}
+                          onChange={(e) => {
+                            const newTimeline = [
+                              ...(editingService.timeline || []),
+                            ];
+                            newTimeline[idx] = {
+                              ...step,
+                              description: e.target.value,
+                            };
+                            setEditingService({
+                              ...editingService,
+                              timeline: newTimeline,
+                            });
+                          }}
+                          className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white resize-none"
+                          placeholder="Descripción del paso"
+                          rows={2}
                         />
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
-                            const newTimeline = editingService.timeline?.filter((_, i) => i !== idx);
-                            setEditingService({ ...editingService, timeline: newTimeline });
+                          const newTimeline = editingService.timeline?.filter(
+                            (_, i) => i !== idx
+                          );
+                          setEditingService({
+                            ...editingService,
+                            timeline: newTimeline,
+                          });
                         }}
                         className="text-zinc-500 hover:text-red-500"
                       >
@@ -1315,13 +1353,21 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       </button>
                     </div>
                   ))}
-                  
+
                   <button
                     onClick={() => {
-                        setEditingService({
-                            ...editingService,
-                            timeline: [...(editingService.timeline || []), { title: "", description: "", image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg" }]
-                        });
+                      setEditingService({
+                        ...editingService,
+                        timeline: [
+                          ...(editingService.timeline || []),
+                          {
+                            title: "",
+                            description: "",
+                            image:
+                              "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg",
+                          },
+                        ],
+                      });
                     }}
                     className="w-full py-3 border border-zinc-800 border-dashed text-zinc-500 hover:text-white hover:border-zinc-600 hover:bg-zinc-900/50 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2"
                   >
@@ -1543,52 +1589,90 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 </label>
                 <div className="space-y-4 mb-4">
                   {(creatingService.timeline || []).map((step, idx) => (
-                    <div key={idx} className="bg-zinc-900/50 border border-zinc-800 p-4 flex gap-4 items-start">
+                    <div
+                      key={idx}
+                      className="bg-zinc-900/50 border border-zinc-800 p-4 flex gap-4 items-start"
+                    >
                       <div className="w-24 h-24 flex-shrink-0 bg-black border border-zinc-700 relative group">
-                         <img src={step.image} alt="" className="w-full h-full object-cover" />
-                         <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
-                            <Edit size={16} className="text-white" />
-                            <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    const url = await uploadImage(file);
-                                    if (url) {
-                                        const newTimeline = [...(creatingService.timeline || [])];
-                                        newTimeline[idx] = { ...step, image: url };
-                                        setCreatingService({ ...creatingService, timeline: newTimeline });
-                                    }
+                        <img
+                          src={step.image}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                        <label className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
+                          <Edit size={16} className="text-white" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const url = await uploadImage(file);
+                                if (url) {
+                                  const newTimeline = [
+                                    ...(creatingService.timeline || []),
+                                  ];
+                                  newTimeline[idx] = { ...step, image: url };
+                                  setCreatingService({
+                                    ...creatingService,
+                                    timeline: newTimeline,
+                                  });
                                 }
-                            }} />
-                         </label>
+                              }
+                            }}
+                          />
+                        </label>
                       </div>
                       <div className="flex-grow space-y-2">
-                        <input 
-                            type="text" 
-                            value={step.title} 
-                            onChange={(e) => {
-                                const newTimeline = [...(creatingService.timeline || [])];
-                                newTimeline[idx] = { ...step, title: e.target.value };
-                                setCreatingService({ ...creatingService, timeline: newTimeline });
-                            }}
-                            className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white"
-                            placeholder="Título del paso"
+                        <input
+                          type="text"
+                          value={step.title}
+                          onChange={(e) => {
+                            const newTimeline = [
+                              ...(creatingService.timeline || []),
+                            ];
+                            newTimeline[idx] = {
+                              ...step,
+                              title: e.target.value,
+                            };
+                            setCreatingService({
+                              ...creatingService,
+                              timeline: newTimeline,
+                            });
+                          }}
+                          className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white"
+                          placeholder="Título del paso"
                         />
-                        <textarea 
-                            value={step.description}
-                            onChange={(e) => {
-                                const newTimeline = [...(creatingService.timeline || [])];
-                                newTimeline[idx] = { ...step, description: e.target.value };
-                                setCreatingService({ ...creatingService, timeline: newTimeline });
-                            }}
-                            className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white resize-none"
-                            placeholder="Descripción del paso"
-                            rows={2}
+                        <textarea
+                          value={step.description}
+                          onChange={(e) => {
+                            const newTimeline = [
+                              ...(creatingService.timeline || []),
+                            ];
+                            newTimeline[idx] = {
+                              ...step,
+                              description: e.target.value,
+                            };
+                            setCreatingService({
+                              ...creatingService,
+                              timeline: newTimeline,
+                            });
+                          }}
+                          className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white resize-none"
+                          placeholder="Descripción del paso"
+                          rows={2}
                         />
                       </div>
-                      <button 
+                      <button
                         onClick={() => {
-                            const newTimeline = creatingService.timeline?.filter((_, i) => i !== idx);
-                            setCreatingService({ ...creatingService, timeline: newTimeline });
+                          const newTimeline = creatingService.timeline?.filter(
+                            (_, i) => i !== idx
+                          );
+                          setCreatingService({
+                            ...creatingService,
+                            timeline: newTimeline,
+                          });
                         }}
                         className="text-zinc-500 hover:text-red-500"
                       >
@@ -1596,13 +1680,21 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       </button>
                     </div>
                   ))}
-                  
+
                   <button
                     onClick={() => {
-                        setCreatingService({
-                            ...creatingService,
-                            timeline: [...(creatingService.timeline || []), { title: "", description: "", image: "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg" }]
-                        });
+                      setCreatingService({
+                        ...creatingService,
+                        timeline: [
+                          ...(creatingService.timeline || []),
+                          {
+                            title: "",
+                            description: "",
+                            image:
+                              "https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg",
+                          },
+                        ],
+                      });
                     }}
                     className="w-full py-3 border border-zinc-800 border-dashed text-zinc-500 hover:text-white hover:border-zinc-600 hover:bg-zinc-900/50 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2"
                   >

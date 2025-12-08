@@ -1312,7 +1312,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {editingProduct.images?.map((img, idx) => (
-                    <div key={idx} className="relative aspect-square group border border-zinc-800">
+                    <div
+                      key={idx}
+                      className="relative aspect-square group border border-zinc-800"
+                    >
                       <img
                         src={img}
                         alt={`Gallery ${idx}`}
@@ -1750,7 +1753,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   {creatingProduct.images?.map((img, idx) => (
-                    <div key={idx} className="relative aspect-square group border border-zinc-800">
+                    <div
+                      key={idx}
+                      className="relative aspect-square group border border-zinc-800"
+                    >
                       <img
                         src={img}
                         alt={`Gallery ${idx}`}
