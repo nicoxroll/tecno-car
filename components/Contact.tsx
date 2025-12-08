@@ -4,17 +4,22 @@ import { supabase } from "../services/supabase";
 
 const Contact: React.FC = () => {
   const [phone, setPhone] = useState("+54 221 333 4444");
+  const [hoursDays, setHoursDays] = useState("Lunes a Viernes");
+  const [hoursTime, setHoursTime] = useState("09:00 - 18:00 hs");
 
   useEffect(() => {
     const fetchContactInfo = async () => {
       const { data } = await supabase
         .from("site_config")
-        .select("value")
-        .eq("key", "company_phone")
-        .single();
+        .select("key, value")
+        .in("key", ["company_phone", "company_hours_days", "company_hours_time"]);
 
-      if (data?.value) {
-        setPhone(data.value);
+      if (data) {
+        data.forEach((item) => {
+          if (item.key === "company_phone") setPhone(item.value);
+          if (item.key === "company_hours_days") setHoursDays(item.value);
+          if (item.key === "company_hours_time") setHoursTime(item.value);
+        });
       }
     };
     fetchContactInfo();
@@ -70,9 +75,9 @@ const Contact: React.FC = () => {
                   </h3>
                 </div>
                 <p className="text-zinc-500 font-light pl-8">
-                  Lunes a Viernes
+                  {hoursDays}
                   <br />
-                  09:00 - 18:00 hs
+                  {hoursTime}
                 </p>
               </div>
 

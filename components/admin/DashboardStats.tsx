@@ -208,7 +208,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
                   backgroundColor: "#000000",
                   border: "1px solid #374151",
                   borderRadius: "4px",
+                  color: "#fff",
                 }}
+                itemStyle={{ color: "#fff" }}
               />
               <Bar dataKey="ventas" fill="#FFFFFF" />
             </BarChart>
@@ -229,7 +231,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
                   backgroundColor: "#000000",
                   border: "1px solid #374151",
                   borderRadius: "4px",
+                  color: "#fff",
                 }}
+                itemStyle={{ color: "#fff" }}
               />
               <Line
                 type="monotone"
@@ -275,7 +279,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
                   backgroundColor: "#000000",
                   border: "1px solid #374151",
                   borderRadius: "4px",
+                  color: "#fff",
                 }}
+                itemStyle={{ color: "#fff" }}
               />
             </PieChart>
           </ResponsiveContainer>

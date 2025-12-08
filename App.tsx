@@ -138,7 +138,7 @@ function App() {
           richColors
           style={{ zIndex: 9999 }}
         />
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-brand selection:text-white">
+        <div className="min-h-screen bg-black text-white font-sans selection:bg-zinc-700 selection:text-white">
           {currentView !== "admin" && (
             <Navbar
               onNavigate={handleNavigate}

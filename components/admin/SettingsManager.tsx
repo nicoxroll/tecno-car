@@ -18,12 +18,8 @@ const SettingsManager: React.FC = () => {
     phone: "+54 221 333 4444",
     address: "Calle 7 #4143 e 163 y 164, Berisso",
     hours: {
-      monday: "09:00 - 18:00",
-      tuesday: "09:00 - 18:00",
-      wednesday: "09:00 - 18:00",
-      thursday: "09:00 - 18:00",
-      friday: "09:00 - 18:00",
-      saturday: "Cerrado",
+      days: "Lunes a Viernes",
+      time: "09:00 - 18:00 hs",
     },
     social: {
       instagram: "https://instagram.com/merlanotecnologiavehicular",
@@ -155,6 +151,17 @@ const SettingsManager: React.FC = () => {
             console.warn("Error parsing catalog filters, using default");
           }
         }
+
+        if (configMap.company_hours_days)
+          setSettings((prev) => ({
+            ...prev,
+            hours: { ...prev.hours, days: configMap.company_hours_days },
+          }));
+        if (configMap.company_hours_time)
+          setSettings((prev) => ({
+            ...prev,
+            hours: { ...prev.hours, time: configMap.company_hours_time },
+          }));
 
         // Update general settings state
         setSettings((prev) => ({
@@ -393,6 +400,19 @@ const SettingsManager: React.FC = () => {
           );
 
         // Save social media
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "company_hours_days", value: settings.hours.days },
+            { onConflict: "key" }
+          );
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "company_hours_time", value: settings.hours.time },
+            { onConflict: "key" }
+          );
+
         await supabase
           .from("site_config")
           .upsert(
@@ -654,28 +674,40 @@ const SettingsManager: React.FC = () => {
           </h3>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {Object.entries(settings.hours).map(([day, hours]) => (
-                <div key={day}>
-                  <label className="block text-zinc-400 text-xs sm:text-sm mb-2 capitalize">
-                    {day === "wednesday"
-                      ? "Miércoles"
-                      : day === "saturday"
-                      ? "Sábado"
-                      : day}
-                  </label>
-                  <input
-                    type="text"
-                    value={hours}
-                    onChange={(e) =>
-                      setSettings({
-                        ...settings,
-                        hours: { ...settings.hours, [day]: e.target.value },
-                      })
-                    }
-                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-                  />
-                </div>
-              ))}
+              <div>
+                <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+                  Días de Atención
+                </label>
+                <input
+                  type="text"
+                  value={settings.hours.days}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      hours: { ...settings.hours, days: e.target.value },
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  placeholder="Ej: Lunes a Viernes"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+                  Horario
+                </label>
+                <input
+                  type="text"
+                  value={settings.hours.time}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      hours: { ...settings.hours, time: e.target.value },
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  placeholder="Ej: 09:00 - 18:00 hs"
+                />
+              </div>
             </div>
           </div>
         </div>
