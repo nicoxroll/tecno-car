@@ -1,5 +1,5 @@
+import { ArrowRight, Clock, MapPin, Phone } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { MapPin, Clock, ArrowRight, Phone } from "lucide-react";
 import { supabase } from "../services/supabase";
 
 const Contact: React.FC = () => {
@@ -12,7 +12,11 @@ const Contact: React.FC = () => {
       const { data } = await supabase
         .from("site_config")
         .select("key, value")
-        .in("key", ["company_phone", "company_hours_days", "company_hours_time"]);
+        .in("key", [
+          "company_phone",
+          "company_hours_days",
+          "company_hours_time",
+        ]);
 
       if (data) {
         data.forEach((item) => {
