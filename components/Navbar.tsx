@@ -80,7 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({
             onClick={(e) => handleLinkClick(e, "#home")}
             className="flex items-center gap-3 group cursor-pointer"
           >
-            <div className="w-10 h-10 overflow-hidden border border-zinc-800 bg-black">
+            <div className="w-10 h-10 overflow-hidden border border-zinc-800 bg-black rounded-full">
               <img
                 src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
                 alt="Merlano Logo"
