@@ -1,39 +1,41 @@
-import React, { useState, useEffect, useMemo } from "react";
 import {
-  Edit,
-  Trash2,
-  Plus,
-  X,
-  Filter,
-  Search,
-  Layers,
-  Download,
-  Minus,
-  PieChart as PieChartIcon,
-  List,
-  TrendingUp,
-  Package,
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  Edit,
+  Filter,
   Grid,
+  Layers,
+  List,
+  Minus,
+  Package,
+  PieChart as PieChartIcon,
+  Plus,
+  Search,
   Table as TableIcon,
+  Trash2,
+  TrendingUp,
+  X,
 } from "lucide-react";
-import { toast } from "sonner";
+import React, { useMemo, useState } from "react";
 import {
-  PieChart,
-  Pie,
+  Bar,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
-  Legend,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
 } from "recharts";
+import { toast } from "sonner";
+import { deleteImage, supabase, uploadImage } from "../../services/supabase";
 import { Product } from "../../types";
 import Modal from "./Modal";
-import { supabase, uploadImage } from "../../services/supabase";
 
 interface ProductsManagerProps {
   products: Product[];
@@ -53,6 +55,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
   const [modalTagInput, setModalTagInput] = useState("");
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [sortField, setSortField] = useState<string>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [creatingProduct, setCreatingProduct] =
     useState<Partial<Product> | null>(null);
@@ -258,10 +262,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
   const handleUpdateProduct = async (product: Product) => {
     try {
-      const { error } = await supabase
-        .from("products")
-        .update(product)
-        .eq("id", product.id);
+      const { error } = await supabase.from("products").upsert(product);
 
       if (error) throw error;
 
@@ -276,6 +277,13 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
   const handleDeleteProduct = async (id: number) => {
     try {
+      // Find product to get image URL
+      const productToDelete = products.find((p) => p.id === id);
+
+      if (productToDelete?.image) {
+        await deleteImage(productToDelete.image);
+      }
+
       const { error } = await supabase.from("products").delete().eq("id", id);
 
       if (error) throw error;
@@ -321,21 +329,65 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
     }
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchesCategory =
-      selectedCategory === "Todos" || p.category === selectedCategory;
-    const matchesPrice = p.price <= priceRange;
-    const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesTags =
-      searchTags.length === 0 ||
-      searchTags.every((tag) =>
-        p.tags?.some((pt) => pt.toLowerCase().includes(tag.toLowerCase()))
-      );
+  const filteredProducts = useMemo(() => {
+    let filtered = products.filter((p) => {
+      const matchesCategory =
+        selectedCategory === "Todos" || p.category === selectedCategory;
+      const matchesPrice = p.price <= priceRange;
+      const matchesSearch =
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTags =
+        searchTags.length === 0 ||
+        searchTags.every((tag) =>
+          p.tags?.some((pt) => pt.toLowerCase().includes(tag.toLowerCase()))
+        );
 
-    return matchesCategory && matchesPrice && matchesSearch && matchesTags;
-  });
+      return matchesCategory && matchesPrice && matchesSearch && matchesTags;
+    });
+
+    // Sort the filtered products
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortField as keyof Product];
+      let bValue: any = b[sortField as keyof Product];
+
+      // Handle different data types
+      if (typeof aValue === "string") {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      } else if (typeof aValue === "number") {
+        // Numbers are fine as is
+      } else if (typeof aValue === "boolean") {
+        aValue = aValue ? 1 : 0;
+        bValue = bValue ? 1 : 0;
+      }
+
+      if (sortDirection === "asc") {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [
+    products,
+    selectedCategory,
+    priceRange,
+    searchQuery,
+    searchTags,
+    sortField,
+    sortDirection,
+  ]);
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -709,22 +761,76 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <table className="w-full min-w-[800px]">
                     <thead className="bg-black">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                          Producto
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort("name")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Producto
+                            {sortField === "name" &&
+                              (sortDirection === "asc" ? (
+                                <ChevronUp size={12} />
+                              ) : (
+                                <ChevronDown size={12} />
+                              ))}
+                          </div>
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                          Categoría
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort("category")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Categoría
+                            {sortField === "category" &&
+                              (sortDirection === "asc" ? (
+                                <ChevronUp size={12} />
+                              ) : (
+                                <ChevronDown size={12} />
+                              ))}
+                          </div>
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                          Precio
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort("price")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Precio
+                            {sortField === "price" &&
+                              (sortDirection === "asc" ? (
+                                <ChevronUp size={12} />
+                              ) : (
+                                <ChevronDown size={12} />
+                              ))}
+                          </div>
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                          Stock
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort("stock")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Stock
+                            {sortField === "stock" &&
+                              (sortDirection === "asc" ? (
+                                <ChevronUp size={12} />
+                              ) : (
+                                <ChevronDown size={12} />
+                              ))}
+                          </div>
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                          Estado
+                        <th
+                          className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                          onClick={() => handleSort("available")}
+                        >
+                          <div className="flex items-center gap-1">
+                            Estado
+                            {sortField === "available" &&
+                              (sortDirection === "asc" ? (
+                                <ChevronUp size={12} />
+                              ) : (
+                                <ChevronDown size={12} />
+                              ))}
+                          </div>
                         </th>
-
                         <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                           Acciones
                         </th>
@@ -821,7 +927,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         }}
                       >
                         <img
-                          src={product.image || "/placeholder.jpg"}
+                          src={
+                            product.image ||
+                            "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                          }
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                         />
@@ -998,7 +1107,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     value: Number(e.target.value),
                   })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                 placeholder="0"
               />
             </div>
@@ -1067,7 +1176,10 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 </label>
                 <div className="aspect-square bg-black border border-zinc-800 overflow-hidden group cursor-pointer">
                   <img
-                    src={editingProduct.image || "/placeholder.jpg"}
+                    src={
+                      editingProduct.image ||
+                      "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                    }
                     alt="Preview"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
@@ -1079,18 +1191,33 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 <label className="block text-zinc-400 text-sm mb-2">
                   URL de Imagen
                 </label>
-                <input
-                  type="text"
-                  value={editingProduct.image || ""}
-                  onChange={(e) =>
-                    setEditingProduct({
-                      ...editingProduct,
-                      image: e.target.value,
-                    })
-                  }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
-                  placeholder="https://..."
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editingProduct.image || ""}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        image: e.target.value,
+                      })
+                    }
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="https://..."
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (editingProduct.image) {
+                        await deleteImage(editingProduct.image);
+                        setEditingProduct({ ...editingProduct, image: "" });
+                      }
+                    }}
+                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                    title="Eliminar imagen"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
 
               {/* File Upload */}
@@ -1134,8 +1261,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     });
                     if (errors.name) setErrors({ ...errors, name: "" });
                   }}
-                  className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${
-                    errors.name ? "border-red-500" : "border-zinc-700"
+                  className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 ${
+                    errors.name ? "border-red-500" : "border-zinc-800"
                   }`}
                   placeholder="Nombre del producto"
                 />
@@ -1150,26 +1277,45 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 <label className="block text-zinc-400 text-sm mb-2">
                   Categoría
                 </label>
-                <select
-                  value={editingProduct.category}
-                  onChange={(e) => {
-                    setEditingProduct({
-                      ...editingProduct,
-                      category: e.target.value,
-                    });
-                    if (errors.category) setErrors({ ...errors, category: "" });
-                  }}
-                  className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${
-                    errors.category ? "border-red-500" : "border-zinc-700"
-                  }`}
-                >
-                  <option value="Multimedia">Multimedia</option>
-                  <option value="Audio">Audio</option>
-                  <option value="Iluminación">Iluminación</option>
-                  <option value="Seguridad">Seguridad</option>
-                  <option value="Accesorios">Accesorios</option>
-                  <option value="Limpieza">Limpieza</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={editingProduct.category}
+                    onChange={(e) => {
+                      setEditingProduct({
+                        ...editingProduct,
+                        category: e.target.value,
+                      });
+                      if (errors.category)
+                        setErrors({ ...errors, category: "" });
+                    }}
+                    className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none ${
+                      errors.category ? "border-red-500" : "border-zinc-800"
+                    }`}
+                  >
+                    <option value="Multimedia" className="bg-black">
+                      Multimedia
+                    </option>
+                    <option value="Audio" className="bg-black">
+                      Audio
+                    </option>
+                    <option value="Iluminación" className="bg-black">
+                      Iluminación
+                    </option>
+                    <option value="Seguridad" className="bg-black">
+                      Seguridad
+                    </option>
+                    <option value="Accesorios" className="bg-black">
+                      Accesorios
+                    </option>
+                    <option value="Limpieza" className="bg-black">
+                      Limpieza
+                    </option>
+                  </select>
+                  <ChevronDown
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                    size={16}
+                  />
+                </div>
                 {errors.category && (
                   <span className="text-red-500 text-xs mt-1 block">
                     {errors.category}
@@ -1192,8 +1338,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       });
                       if (errors.price) setErrors({ ...errors, price: "" });
                     }}
-                    className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${
-                      errors.price ? "border-red-500" : "border-zinc-700"
+                    className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 ${
+                      errors.price ? "border-red-500" : "border-zinc-800"
                     }`}
                     placeholder="0"
                   />
@@ -1218,7 +1364,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                           : undefined,
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="Ej: 2024"
                   />
                 </div>
@@ -1238,7 +1384,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         stock: parseInt(e.target.value) || 0,
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="0"
                   />
                 </div>
@@ -1246,19 +1392,29 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <label className="block text-zinc-400 text-sm mb-2">
                     Estado
                   </label>
-                  <select
-                    value={editingProduct.available ? "true" : "false"}
-                    onChange={(e) =>
-                      setEditingProduct({
-                        ...editingProduct,
-                        available: e.target.value === "true",
-                      })
-                    }
-                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
-                  >
-                    <option value="true">Disponible</option>
-                    <option value="false">Agotado</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={editingProduct.available ? "true" : "false"}
+                      onChange={(e) =>
+                        setEditingProduct({
+                          ...editingProduct,
+                          available: e.target.value === "true",
+                        })
+                      }
+                      className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none"
+                    >
+                      <option value="true" className="bg-black">
+                        Disponible
+                      </option>
+                      <option value="false" className="bg-black">
+                        Agotado
+                      </option>
+                    </select>
+                    <ChevronDown
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                      size={16}
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center h-full pt-6">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1292,7 +1448,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm h-32 focus:outline-none focus:border-white transition-colors resize-none placeholder-zinc-700"
                   placeholder="Descripción del producto"
                 />
               </div>
@@ -1315,7 +1471,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         .filter((f) => f.trim()),
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm h-24 focus:outline-none focus:border-white transition-colors resize-none placeholder-zinc-700"
                   placeholder="Una característica por línea"
                 />
               </div>
@@ -1329,7 +1485,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   value={modalTagInput}
                   onChange={(e) => setModalTagInput(e.target.value)}
                   onKeyDown={(e) => handleModalTagInput(e, true)}
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="Ej: oferta, nuevo, led"
                 />
                 {editingProduct.tags && editingProduct.tags.length > 0 && (
@@ -1427,23 +1583,41 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
               </label>
               <div className="aspect-square bg-black border border-zinc-700 overflow-hidden mb-4">
                 <img
-                  src={creatingProduct.image || "/placeholder.jpg"}
+                  src={
+                    creatingProduct.image ||
+                    "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                  }
                   alt="Nuevo producto"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <input
-                type="url"
-                value={creatingProduct.image || ""}
-                onChange={(e) =>
-                  setCreatingProduct({
-                    ...creatingProduct,
-                    image: e.target.value,
-                  })
-                }
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors mb-4"
-                placeholder="URL de la imagen"
-              />
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="url"
+                  value={creatingProduct.image || ""}
+                  onChange={(e) =>
+                    setCreatingProduct({
+                      ...creatingProduct,
+                      image: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  placeholder="URL de la imagen"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (creatingProduct.image) {
+                      await deleteImage(creatingProduct.image);
+                      setCreatingProduct({ ...creatingProduct, image: "" });
+                    }
+                  }}
+                  className="text-zinc-500 hover:text-red-500 transition-colors"
+                  title="Eliminar imagen"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
               <label className="block text-zinc-400 text-sm mb-2">
                 O subir archivo
               </label>
@@ -1482,8 +1656,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     });
                     if (errors.name) setErrors({ ...errors, name: "" });
                   }}
-                  className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${
-                    errors.name ? "border-red-500" : "border-zinc-700"
+                  className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 ${
+                    errors.name ? "border-red-500" : "border-zinc-800"
                   }`}
                   placeholder="Nombre del producto"
                 />
@@ -1507,8 +1681,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                     });
                     if (errors.category) setErrors({ ...errors, category: "" });
                   }}
-                  className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${
-                    errors.category ? "border-red-500" : "border-zinc-700"
+                  className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 ${
+                    errors.category ? "border-red-500" : "border-zinc-800"
                   }`}
                 >
                   <option value="">Seleccionar categoría</option>
@@ -1541,8 +1715,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       });
                       if (errors.price) setErrors({ ...errors, price: "" });
                     }}
-                    className={`w-full bg-black border text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors ${
-                      errors.price ? "border-red-500" : "border-zinc-700"
+                    className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 ${
+                      errors.price ? "border-red-500" : "border-zinc-800"
                     }`}
                     placeholder="0"
                   />
@@ -1567,7 +1741,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                           : undefined,
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="Ej: 2024"
                   />
                 </div>
@@ -1587,7 +1761,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         stock: Number(e.target.value),
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="0"
                   />
                 </div>
@@ -1608,7 +1782,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         available: e.target.value === "true",
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   >
                     <option value="true">Disponible</option>
                     <option value="false">Agotado</option>
@@ -1646,7 +1820,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm h-32 focus:outline-none focus:border-white transition-colors resize-none placeholder-zinc-700"
                   placeholder="Descripción del producto"
                 />
               </div>
@@ -1669,7 +1843,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                         .filter((f) => f.trim()),
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm h-24 focus:outline-none focus:border-white transition-colors resize-none placeholder-zinc-700"
                   placeholder="Una característica por línea"
                 />
               </div>
@@ -1683,7 +1857,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   value={modalTagInput}
                   onChange={(e) => setModalTagInput(e.target.value)}
                   onKeyDown={(e) => handleModalTagInput(e, false)}
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="Ej: oferta, nuevo, led"
                 />
                 {creatingProduct.tags && creatingProduct.tags.length > 0 && (

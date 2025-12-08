@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { loadProducts, loadServices } from "../utils/dataLoader";
-import { Product, Service } from "../types";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
+import { Product, Service } from "../types";
+import { loadProducts, loadServices } from "../utils/dataLoader";
 import AdminLogin from "./admin/AdminLogin";
 import AdminNav from "./admin/AdminNav";
 import DashboardStats from "./admin/DashboardStats";
-import ProductsManager from "./admin/ProductsManager";
-import ServicesManager from "./admin/ServicesManager";
-import SalesManager from "./admin/SalesManager";
-import SettingsManager from "./admin/SettingsManager";
 import GalleryManager from "./admin/GalleryManager";
+import ProductsManager from "./admin/ProductsManager";
+import SalesManager from "./admin/SalesManager";
+import ServicesManager from "./admin/ServicesManager";
+import SettingsManager from "./admin/SettingsManager";
 
 const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -79,22 +79,22 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             <img
               src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
               alt="Merlano Logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain grayscale opacity-80"
             />
-            <h1 className="text-2xl sm:text-3xl font-light text-white uppercase tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-thin text-white uppercase tracking-tight leading-none">
               Panel de Administración
             </h1>
           </div>
           <div className="flex gap-2 sm:gap-4">
             <button
               onClick={handleLogout}
-              className="bg-zinc-800 text-white px-3 py-2 text-xs sm:text-sm hover:bg-zinc-700 transition-colors"
+              className="border border-zinc-800 text-zinc-400 px-4 py-2 text-xs sm:text-sm uppercase tracking-widest hover:text-white hover:border-white transition-all bg-transparent"
             >
               Cerrar Sesión
             </button>
             <button
               onClick={onBack}
-              className="bg-zinc-800 text-white px-3 py-2 text-xs sm:text-sm hover:bg-zinc-700 transition-colors"
+              className="border border-zinc-800 text-zinc-400 px-4 py-2 text-xs sm:text-sm uppercase tracking-widest hover:text-white hover:border-white transition-all bg-transparent"
             >
               ← Volver
             </button>

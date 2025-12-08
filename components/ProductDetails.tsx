@@ -1,30 +1,73 @@
-import React, { useEffect } from "react";
 import {
   ArrowLeft,
-  ShoppingBag,
   Check,
   ShieldCheck,
+  ShoppingBag,
   Truck,
 } from "lucide-react";
-import { Product } from "../types";
+import React, { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
+import { Product } from "../types";
+import { loadProducts } from "../utils/dataLoader";
 
 interface ProductDetailsProps {
   product: Product;
   onBack: () => void;
   onNavigateToCart: () => void;
+  onProductSelect: (product: Product) => void;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
   product,
   onBack,
   onNavigateToCart,
+  onProductSelect,
 }) => {
   const { addToCart } = useCart();
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+  }, [product]);
+
+  useEffect(() => {
+    const fetchRelated = async () => {
+      const allProducts = await loadProducts();
+
+      // Filter and score products
+      const scored = allProducts
+        .filter((p) => p.id !== product.id) // Exclude current
+        .map((p) => {
+          let score = 0;
+          // Category match (high weight)
+          if (p.category === product.category) score += 10;
+
+          // Tag matches (medium weight)
+          if (product.tags && p.tags) {
+            const sharedTags = p.tags.filter((tag) =>
+              product.tags?.includes(tag)
+            );
+            score += sharedTags.length * 2;
+          }
+
+          // Name similarity (simple check)
+          const nameWords = product.name.toLowerCase().split(" ");
+          const pName = p.name.toLowerCase();
+          nameWords.forEach((word) => {
+            if (word.length > 3 && pName.includes(word)) score += 1;
+          });
+
+          return { product: p, score };
+        })
+        .sort((a, b) => b.score - a.score) // Sort by score desc
+        .slice(0, 3) // Take top 3
+        .map((item) => item.product);
+
+      setRelatedProducts(scored);
+    };
+
+    fetchRelated();
+  }, [product]);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -149,6 +192,48 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-24 border-t border-zinc-800 pt-12">
+            <h3 className="text-2xl font-thin text-white uppercase tracking-tight mb-8">
+              Productos Relacionados
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+              {relatedProducts.map((related) => (
+                <div
+                  key={related.id}
+                  className="group cursor-pointer"
+                  onClick={() => onProductSelect(related)}
+                >
+                  <div className="aspect-square bg-zinc-900 border border-zinc-800 overflow-hidden mb-4 relative">
+                    <img
+                      src={related.image}
+                      alt={related.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                    />
+                    <div className="absolute top-0 left-0 p-3">
+                      <span className="bg-black/50 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 uppercase tracking-widest border border-white/10">
+                        {related.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="text-white font-light text-lg mb-1 group-hover:underline decoration-zinc-500 underline-offset-4">
+                      {related.name}
+                    </h4>
+                    <p className="text-zinc-500 text-sm mb-2 line-clamp-2">
+                      {related.description}
+                    </p>
+                    <span className="text-white font-medium">
+                      ${related.price.toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

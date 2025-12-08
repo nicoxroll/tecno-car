@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { X, Edit, ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Plus,
+  Settings,
+  X,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase, uploadImage } from "../../services/supabase";
 import Modal from "./Modal";
@@ -537,7 +544,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, companyName: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -550,7 +557,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, email: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -563,7 +570,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, phone: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -576,7 +583,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setSettings({ ...settings, address: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
           </div>
@@ -607,7 +614,7 @@ const SettingsManager: React.FC = () => {
                         hours: { ...settings.hours, [day]: e.target.value },
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   />
                 </div>
               ))}
@@ -634,7 +641,7 @@ const SettingsManager: React.FC = () => {
                     social: { ...settings.social, instagram: e.target.value },
                   })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -650,7 +657,7 @@ const SettingsManager: React.FC = () => {
                     social: { ...settings.social, facebook: e.target.value },
                   })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -666,7 +673,7 @@ const SettingsManager: React.FC = () => {
                     social: { ...settings.social, whatsapp: e.target.value },
                   })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
           </div>
@@ -766,7 +773,7 @@ const SettingsManager: React.FC = () => {
                 type="text"
                 value={aboutImage}
                 onChange={(e) => setAboutImage(e.target.value)}
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                 placeholder="https://ejemplo.com/imagen.jpg"
               />
             </div>
@@ -784,7 +791,7 @@ const SettingsManager: React.FC = () => {
               value={aboutDescription1}
               onChange={(e) => setAboutDescription1(e.target.value)}
               rows={3}
-              className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+              className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
               placeholder="Texto del primer párrafo..."
             />
             <p className="text-xs text-zinc-500 mt-1">
@@ -800,21 +807,21 @@ const SettingsManager: React.FC = () => {
               value={aboutDescription2}
               onChange={(e) => setAboutDescription2(e.target.value)}
               rows={3}
-              className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+              className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
               placeholder="Texto del segundo párrafo..."
             />
           </div>
 
           {/* Amenities/Services */}
           <div>
-            <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+            <label className="block text-zinc-400 text-xs sm:text-sm mb-4">
               Servicios/Comodidades
             </label>
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {aboutAmenities.map((amenity, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-3 p-3 bg-black border border-zinc-800 rounded"
+                  className="flex items-center gap-2 p-2 bg-black border-b border-zinc-800 hover:border-zinc-600 transition-colors group"
                 >
                   <select
                     value={amenity.icon}
@@ -823,14 +830,25 @@ const SettingsManager: React.FC = () => {
                       newAmenities[index].icon = e.target.value;
                       setAboutAmenities(newAmenities);
                     }}
-                    className="bg-black border border-zinc-700 text-white px-2 py-1 text-xs focus:outline-none focus:border-zinc-500"
+                    className="bg-transparent text-zinc-500 text-xs focus:outline-none cursor-pointer hover:text-zinc-300"
                   >
-                    <option value="Wind">Viento (Aire)</option>
-                    <option value="Coffee">Café</option>
-                    <option value="Wifi">Wi-Fi</option>
-                    <option value="Tv">TV</option>
-                    <option value="CheckCircle">Check</option>
+                    <option value="Wind" className="bg-black">
+                      Aire
+                    </option>
+                    <option value="Coffee" className="bg-black">
+                      Café
+                    </option>
+                    <option value="Wifi" className="bg-black">
+                      Wi-Fi
+                    </option>
+                    <option value="Tv" className="bg-black">
+                      TV
+                    </option>
+                    <option value="CheckCircle" className="bg-black">
+                      Check
+                    </option>
                   </select>
+                  <div className="w-[1px] h-3 bg-zinc-800"></div>
                   <input
                     type="text"
                     value={amenity.text}
@@ -839,8 +857,8 @@ const SettingsManager: React.FC = () => {
                       newAmenities[index].text = e.target.value;
                       setAboutAmenities(newAmenities);
                     }}
-                    className="flex-1 bg-black border border-zinc-700 text-white px-3 py-1 text-sm focus:outline-none focus:border-zinc-500"
-                    placeholder="Texto del servicio..."
+                    className="flex-1 bg-transparent text-white text-xs focus:outline-none placeholder-zinc-700"
+                    placeholder="Servicio..."
                   />
                   <button
                     onClick={() => {
@@ -849,9 +867,9 @@ const SettingsManager: React.FC = () => {
                       );
                       setAboutAmenities(newAmenities);
                     }}
-                    className="text-zinc-400 hover:text-red-400 p-1"
+                    className="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    ✕
+                    <X size={12} />
                   </button>
                 </div>
               ))}
@@ -859,12 +877,12 @@ const SettingsManager: React.FC = () => {
                 onClick={() => {
                   setAboutAmenities([
                     ...aboutAmenities,
-                    { icon: "CheckCircle", text: "Nuevo servicio" },
+                    { icon: "CheckCircle", text: "Nuevo" },
                   ]);
                 }}
-                className="w-full bg-black border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors px-3 py-2 text-sm"
+                className="flex items-center justify-center gap-2 p-2 border border-dashed border-zinc-800 text-zinc-600 hover:text-white hover:border-zinc-600 transition-colors text-xs h-full min-h-[34px]"
               >
-                + Agregar Servicio
+                <Plus size={12} /> Agregar
               </button>
             </div>
           </div>
@@ -898,7 +916,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setMainHeroForm({ ...mainHeroForm, title: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -911,7 +929,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setMainHeroForm({ ...mainHeroForm, subtitle: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -927,7 +945,7 @@ const SettingsManager: React.FC = () => {
                   })
                 }
                 rows={3}
-                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white resize-none"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
                 placeholder="Descripción del hero principal..."
               />
             </div>
@@ -952,7 +970,7 @@ const SettingsManager: React.FC = () => {
                         handleHeroImageUpload(e.target.files[0], true);
                       }
                     }}
-                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-zinc-900"
+                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -968,7 +986,7 @@ const SettingsManager: React.FC = () => {
                         image: e.target.value,
                       })
                     }
-                    className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white text-sm focus:ring-white focus:border-white"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>
@@ -1004,7 +1022,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, title: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -1017,7 +1035,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, subtitle: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -1030,7 +1048,7 @@ const SettingsManager: React.FC = () => {
                 onChange={(e) =>
                   setHeroForm({ ...heroForm, year: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white focus:ring-white focus:border-white"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
             <div>
@@ -1054,7 +1072,7 @@ const SettingsManager: React.FC = () => {
                         handleHeroImageUpload(e.target.files[0], false);
                       }
                     }}
-                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-zinc-900"
+                    className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -1067,7 +1085,7 @@ const SettingsManager: React.FC = () => {
                     onChange={(e) =>
                       setHeroForm({ ...heroForm, image: e.target.value })
                     }
-                    className="w-full bg-black border border-zinc-700 rounded-md p-2 text-white text-sm focus:ring-white focus:border-white"
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>

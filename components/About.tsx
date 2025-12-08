@@ -1,5 +1,5 @@
+import { CheckCircle, Coffee, Tv, Wifi, Wind } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { Wifi, Coffee, Tv, Wind, CheckCircle } from "lucide-react";
 import { supabase } from "../services/supabase";
 
 interface Amenity {

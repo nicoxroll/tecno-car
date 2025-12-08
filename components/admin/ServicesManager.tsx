@@ -1,38 +1,31 @@
-import React, { useState, useEffect } from "react";
-import {
-  Edit,
-  Trash2,
-  Plus,
-  X,
-  Calendar,
-  List,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  FileText,
-  Grid,
-  Table as TableIcon,
-  Eye,
-  Filter,
-  ChevronUp,
-  ChevronDown,
-  ArrowUp,
-  ArrowDown,
-  Search,
-} from "lucide-react";
-import { Service } from "../../types";
-import Modal from "./Modal";
-import { supabase, uploadImage } from "../../services/supabase";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import TextField from "@mui/material/TextField";
-import Autocomplete from "@mui/material/Autocomplete";
+import { createTheme } from "@mui/material/styles";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/es";
+import {
+  ArrowDown,
+  ArrowUp,
+  Calendar,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Edit,
+  Eye,
+  Filter,
+  Grid,
+  List,
+  Mail,
+  Phone,
+  Plus,
+  Search,
+  Table as TableIcon,
+  Trash2,
+  User,
+} from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { deleteImage, supabase, uploadImage } from "../../services/supabase";
+import { Service } from "../../types";
+import Modal from "./Modal";
 
 dayjs.locale("es");
 
@@ -100,6 +93,8 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   // Appointments State
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+  const [sortField, setSortField] = useState<string>("appointment_date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null);
   const [editingAppointment, setEditingAppointment] =
@@ -115,23 +110,59 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
   const [showAppointmentFilters, setShowAppointmentFilters] = useState(true);
   const [loadingAppointments, setLoadingAppointments] = useState(false);
 
-  const filteredAppointments = appointments.filter((app) => {
-    const matchesSearch =
-      (app.customer_name || "")
-        .toLowerCase()
-        .includes(appointmentFilters.search.toLowerCase()) ||
-      (app.service_name || "")
-        .toLowerCase()
-        .includes(appointmentFilters.search.toLowerCase());
-    const matchesStatus =
-      appointmentFilters.status === "Todos" ||
-      app.status === appointmentFilters.status;
-    const matchesDate =
-      !appointmentFilters.date ||
-      dayjs(app.appointment_date).isSame(appointmentFilters.date, "day");
+  const filteredAppointments = useMemo(() => {
+    let filtered = appointments.filter((app) => {
+      const matchesSearch =
+        (app.customer_name || "")
+          .toLowerCase()
+          .includes(appointmentFilters.search.toLowerCase()) ||
+        (app.service_name || "")
+          .toLowerCase()
+          .includes(appointmentFilters.search.toLowerCase());
+      const matchesStatus =
+        appointmentFilters.status === "Todos" ||
+        app.status === appointmentFilters.status;
+      const matchesDate =
+        !appointmentFilters.date ||
+        dayjs(app.appointment_date).isSame(appointmentFilters.date, "day");
 
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+
+    // Sort the filtered appointments
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortField as keyof Appointment];
+      let bValue: any = b[sortField as keyof Appointment];
+
+      // Handle different data types
+      if (typeof aValue === "string") {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      } else if (typeof aValue === "number") {
+        // Numbers are fine as is
+      } else if (typeof aValue === "boolean") {
+        aValue = aValue ? 1 : 0;
+        bValue = bValue ? 1 : 0;
+      }
+
+      if (sortDirection === "asc") {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+      }
+    });
+
+    return filtered;
+  }, [appointments, appointmentFilters, sortField, sortDirection]);
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
   const [newAppointment, setNewAppointment] = useState<{
     service: Service | null;
@@ -245,17 +276,15 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
     if (!editingAppointment) return;
 
     try {
-      const { error } = await supabase
-        .from("appointments")
-        .update({
-          customer_name: editingAppointment.customer_name,
-          customer_phone: editingAppointment.customer_phone,
-          customer_email: editingAppointment.customer_email,
-          description: editingAppointment.description,
-          appointment_date: editingAppointment.appointment_date,
-          status: editingAppointment.status,
-        })
-        .eq("id", editingAppointment.id);
+      const { error } = await supabase.from("appointments").upsert({
+        id: editingAppointment.id,
+        customer_name: editingAppointment.customer_name,
+        customer_phone: editingAppointment.customer_phone,
+        customer_email: editingAppointment.customer_email,
+        description: editingAppointment.description,
+        appointment_date: editingAppointment.appointment_date,
+        status: editingAppointment.status,
+      });
 
       if (error) throw error;
 
@@ -274,10 +303,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
 
   const handleUpdateService = async (service: Service) => {
     try {
-      const { error } = await supabase
-        .from("services")
-        .update(service)
-        .eq("id", service.id);
+      const { error } = await supabase.from("services").upsert(service);
 
       if (error) throw error;
 
@@ -294,6 +320,13 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
     if (!window.confirm("¿Estás seguro de eliminar este servicio?")) return;
 
     try {
+      // Find service to get image URL
+      const serviceToDelete = services.find((s) => s.id === id);
+
+      if (serviceToDelete?.image) {
+        await deleteImage(serviceToDelete.image);
+      }
+
       const { error } = await supabase.from("services").delete().eq("id", id);
 
       if (error) throw error;
@@ -631,53 +664,23 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 />
               </div>
 
-              <ThemeProvider theme={darkTheme}>
-                <LocalizationProvider
-                  dateAdapter={AdapterDayjs}
-                  adapterLocale="es"
-                >
-                  <DateTimePicker
-                    label={null}
-                    value={appointmentFilters.date}
-                    onChange={(newValue) =>
-                      setAppointmentFilters({
-                        ...appointmentFilters,
-                        date: newValue,
-                      })
-                    }
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        variant: "standard",
-                        placeholder: "FECHA",
-                        InputProps: {
-                          disableUnderline: false,
-                          style: {
-                            fontSize: "0.75rem",
-                            textTransform: "uppercase",
-                            letterSpacing: "0.1em",
-                            color: "white",
-                          },
-                        },
-                        sx: {
-                          "& .MuiInput-underline:before": {
-                            borderBottomColor: "#27272a",
-                          },
-                          "& .MuiInput-underline:hover:not(.Mui-disabled):before":
-                            { borderBottomColor: "#52525b" },
-                          "& .MuiInput-underline:after": {
-                            borderBottomColor: "white",
-                          },
-                          "& input::placeholder": {
-                            color: "#52525b",
-                            opacity: 1,
-                          },
-                        },
-                      },
-                    }}
-                  />
-                </LocalizationProvider>
-              </ThemeProvider>
+              <div className="relative group min-w-[150px]">
+                <input
+                  type="date"
+                  value={
+                    appointmentFilters.date
+                      ? appointmentFilters.date.format("YYYY-MM-DD")
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setAppointmentFilters({
+                      ...appointmentFilters,
+                      date: e.target.value ? dayjs(e.target.value) : null,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-0 py-2 text-xs uppercase tracking-widest focus:outline-none focus:border-white transition-colors placeholder-zinc-700 [&::-webkit-calendar-picker-indicator]:invert"
+                />
+              </div>
             </div>
           )}
 
@@ -698,7 +701,10 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 overflow-hidden border border-zinc-700">
                         <img
-                          src={appointment.service_image || "/placeholder.jpg"}
+                          src={
+                            appointment.service_image ||
+                            "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                          }
                           alt={appointment.service_name}
                           className="w-full h-full object-cover"
                         />
@@ -773,11 +779,63 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               <table className="w-full text-left text-sm text-zinc-400">
                 <thead className="bg-black text-zinc-200 uppercase tracking-wider text-xs">
                   <tr>
-                    <th className="px-6 py-4 font-medium">Servicio</th>
-                    <th className="px-6 py-4 font-medium">Cliente</th>
-                    <th className="px-6 py-4 font-medium">Fecha</th>
+                    <th
+                      className="px-6 py-4 font-medium cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort("service_name")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Servicio
+                        {sortField === "service_name" &&
+                          (sortDirection === "asc" ? (
+                            <ChevronUp size={12} />
+                          ) : (
+                            <ChevronDown size={12} />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-6 py-4 font-medium cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort("customer_name")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Cliente
+                        {sortField === "customer_name" &&
+                          (sortDirection === "asc" ? (
+                            <ChevronUp size={12} />
+                          ) : (
+                            <ChevronDown size={12} />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-6 py-4 font-medium cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort("appointment_date")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Fecha
+                        {sortField === "appointment_date" &&
+                          (sortDirection === "asc" ? (
+                            <ChevronUp size={12} />
+                          ) : (
+                            <ChevronDown size={12} />
+                          ))}
+                      </div>
+                    </th>
                     <th className="px-6 py-4 font-medium">Contacto</th>
-                    <th className="px-6 py-4 font-medium">Estado</th>
+                    <th
+                      className="px-6 py-4 font-medium cursor-pointer hover:text-white transition-colors"
+                      onClick={() => handleSort("status")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Estado
+                        {sortField === "status" &&
+                          (sortDirection === "asc" ? (
+                            <ChevronUp size={12} />
+                          ) : (
+                            <ChevronDown size={12} />
+                          ))}
+                      </div>
+                    </th>
                     <th className="px-6 py-4 font-medium text-right">
                       Acciones
                     </th>
@@ -793,7 +851,8 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                         <div className="flex items-center gap-3">
                           <img
                             src={
-                              appointment.service_image || "/placeholder.jpg"
+                              appointment.service_image ||
+                              "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
                             }
                             alt=""
                             className="w-8 h-8 object-cover"
@@ -887,126 +946,150 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
           onClose={() => setIsCreatingAppointment(false)}
           title="Nuevo Turno"
         >
-          <ThemeProvider theme={darkTheme}>
-            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-              <div className="space-y-6">
-                <Autocomplete
-                  options={services}
-                  getOptionLabel={(option) => option.title}
-                  onChange={(_, newValue) =>
-                    setNewAppointment({ ...newAppointment, service: newValue })
-                  }
-                  renderOption={(props, option) => {
-                    const { key, ...otherProps } = props;
-                    return (
-                      <li
-                        key={key}
-                        {...otherProps}
-                        className="flex items-center gap-3 p-2 hover:bg-zinc-800 cursor-pointer"
-                      >
-                        <img
-                          src={option.image}
-                          alt={option.title}
-                          className="w-10 h-10 object-cover"
-                        />
-                        <span>{option.title}</span>
-                      </li>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-zinc-400 text-sm mb-2">
+                Servicio *
+              </label>
+              <div className="relative">
+                <select
+                  value={newAppointment.service?.id || ""}
+                  onChange={(e) => {
+                    const selectedService = services.find(
+                      (s) => s.id === Number(e.target.value)
                     );
+                    setNewAppointment({
+                      ...newAppointment,
+                      service: selectedService || null,
+                    });
                   }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Servicio"
-                      variant="outlined"
-                      fullWidth
-                      required
-                    />
-                  )}
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none"
+                  required
+                >
+                  <option value="" className="bg-black">
+                    Seleccionar Servicio
+                  </option>
+                  {services.map((service) => (
+                    <option
+                      key={service.id}
+                      value={service.id}
+                      className="bg-black"
+                    >
+                      {service.title}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                  size={16}
                 />
+              </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <TextField
-                    label="Nombre Completo"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    value={newAppointment.customer_name}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        customer_name: e.target.value,
-                      })
-                    }
-                  />
-                  <DateTimePicker
-                    label="Fecha y Hora"
-                    value={newAppointment.appointment_date}
-                    onChange={(newValue) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        appointment_date: newValue,
-                      })
-                    }
-                    slotProps={{
-                      textField: { fullWidth: true, required: true },
-                    }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <TextField
-                    label="Teléfono"
-                    variant="outlined"
-                    fullWidth
-                    value={newAppointment.customer_phone}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        customer_phone: e.target.value,
-                      })
-                    }
-                  />
-                  <TextField
-                    label="Email"
-                    variant="outlined"
-                    fullWidth
-                    type="email"
-                    value={newAppointment.customer_email}
-                    onChange={(e) =>
-                      setNewAppointment({
-                        ...newAppointment,
-                        customer_email: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <TextField
-                  label="Descripción / Notas"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={newAppointment.description}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Nombre Completo *
+                </label>
+                <input
+                  type="text"
+                  value={newAppointment.customer_name}
                   onChange={(e) =>
                     setNewAppointment({
                       ...newAppointment,
-                      description: e.target.value,
+                      customer_name: e.target.value,
                     })
                   }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  required
                 />
-
-                <div className="flex justify-end pt-4">
-                  <button
-                    onClick={handleCreateAppointment}
-                    className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                  >
-                    Crear Turno
-                  </button>
-                </div>
               </div>
-            </LocalizationProvider>
-          </ThemeProvider>
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Fecha y Hora *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={
+                    newAppointment.appointment_date
+                      ? newAppointment.appointment_date.format(
+                          "YYYY-MM-DDTHH:mm"
+                        )
+                      : ""
+                  }
+                  onChange={(e) =>
+                    setNewAppointment({
+                      ...newAppointment,
+                      appointment_date: dayjs(e.target.value),
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 [&::-webkit-calendar-picker-indicator]:invert"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  value={newAppointment.customer_phone}
+                  onChange={(e) =>
+                    setNewAppointment({
+                      ...newAppointment,
+                      customer_phone: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={newAppointment.customer_email}
+                  onChange={(e) =>
+                    setNewAppointment({
+                      ...newAppointment,
+                      customer_email: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 text-sm mb-2">
+                Descripción / Notas
+              </label>
+              <textarea
+                value={newAppointment.description}
+                onChange={(e) =>
+                  setNewAppointment({
+                    ...newAppointment,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex justify-end pt-4">
+              <button
+                onClick={handleCreateAppointment}
+                className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Crear Turno
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
 
@@ -1038,18 +1121,33 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 <label className="block text-zinc-400 text-sm mb-2">
                   URL de Imagen
                 </label>
-                <input
-                  type="text"
-                  value={editingService.image}
-                  onChange={(e) =>
-                    setEditingService({
-                      ...editingService,
-                      image: e.target.value,
-                    })
-                  }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
-                  placeholder="https://..."
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editingService.image}
+                    onChange={(e) =>
+                      setEditingService({
+                        ...editingService,
+                        image: e.target.value,
+                      })
+                    }
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="https://..."
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (editingService.image) {
+                        await deleteImage(editingService.image);
+                        setEditingService({ ...editingService, image: "" });
+                      }
+                    }}
+                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                    title="Eliminar imagen"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
 
               {/* File Upload */}
@@ -1092,7 +1190,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       category: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="Ej: 01 / MULTIMEDIA"
                 />
               </div>
@@ -1110,7 +1208,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       title: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="Nombre del servicio"
                 />
               </div>
@@ -1127,7 +1225,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
                   placeholder="Descripción detallada del servicio"
                 />
               </div>
@@ -1144,7 +1242,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       fullDescription: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-40 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[160px] resize-none"
                   placeholder="Descripción completa para el modal de detalles"
                 />
               </div>
@@ -1205,23 +1303,41 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               </label>
               <div className="aspect-square bg-black border border-zinc-700 overflow-hidden mb-4">
                 <img
-                  src={creatingService.image || "/placeholder.jpg"}
+                  src={
+                    creatingService.image ||
+                    "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                  }
                   alt="Nuevo servicio"
                   className="w-full h-full object-cover"
                 />
               </div>
-              <input
-                type="url"
-                value={creatingService.image || ""}
-                onChange={(e) =>
-                  setCreatingService({
-                    ...creatingService,
-                    image: e.target.value,
-                  })
-                }
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors mb-4"
-                placeholder="URL de la imagen"
-              />
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="url"
+                  value={creatingService.image || ""}
+                  onChange={(e) =>
+                    setCreatingService({
+                      ...creatingService,
+                      image: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  placeholder="URL de la imagen"
+                />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (creatingService.image) {
+                      await deleteImage(creatingService.image);
+                      setCreatingService({ ...creatingService, image: "" });
+                    }
+                  }}
+                  className="text-zinc-500 hover:text-red-500 transition-colors"
+                  title="Eliminar imagen"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
               <label className="block text-zinc-400 text-sm mb-2">
                 O subir archivo
               </label>
@@ -1259,7 +1375,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       category: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="Ej: 01 / MULTIMEDIA"
                 />
               </div>
@@ -1277,7 +1393,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       title: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="Nombre del servicio"
                   required
                 />
@@ -1295,7 +1411,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       description: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-32 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
                   placeholder="Descripción del servicio"
                   required
                 />
@@ -1313,7 +1429,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       fullDescription: e.target.value,
                     })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-40 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[160px] resize-none"
                   placeholder="Descripción completa para el modal de detalles"
                 />
               </div>
@@ -1359,7 +1475,10 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
             <div className="flex items-center gap-4 pb-6 border-b border-zinc-800">
               <div className="w-20 h-20 overflow-hidden border border-zinc-700">
                 <img
-                  src={selectedAppointment.service_image || "/placeholder.jpg"}
+                  src={
+                    selectedAppointment.service_image ||
+                    "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                  }
                   alt={selectedAppointment.service_name}
                   className="w-full h-full object-cover"
                 />
@@ -1481,124 +1600,146 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
           onClose={() => setEditingAppointment(null)}
           title="Editar Turno"
         >
-          <ThemeProvider theme={darkTheme}>
-            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <TextField
-                    label="Nombre Completo"
-                    variant="outlined"
-                    fullWidth
-                    required
-                    value={editingAppointment.customer_name}
-                    onChange={(e) =>
-                      setEditingAppointment({
-                        ...editingAppointment,
-                        customer_name: e.target.value,
-                      })
-                    }
-                  />
-                  <DateTimePicker
-                    label="Fecha y Hora"
-                    value={dayjs(editingAppointment.appointment_date)}
-                    onChange={(newValue) =>
-                      newValue &&
-                      setEditingAppointment({
-                        ...editingAppointment,
-                        appointment_date: newValue.toISOString(),
-                      })
-                    }
-                    slotProps={{
-                      textField: { fullWidth: true, required: true },
-                    }}
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <TextField
-                    label="Teléfono"
-                    variant="outlined"
-                    fullWidth
-                    value={editingAppointment.customer_phone}
-                    onChange={(e) =>
-                      setEditingAppointment({
-                        ...editingAppointment,
-                        customer_phone: e.target.value,
-                      })
-                    }
-                  />
-                  <TextField
-                    label="Email"
-                    variant="outlined"
-                    fullWidth
-                    type="email"
-                    value={editingAppointment.customer_email}
-                    onChange={(e) =>
-                      setEditingAppointment({
-                        ...editingAppointment,
-                        customer_email: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <Autocomplete
-                  options={[
-                    "Pendiente",
-                    "Confirmado",
-                    "Completado",
-                    "Cancelado",
-                  ]}
-                  value={editingAppointment.status}
-                  onChange={(_, newValue) =>
-                    newValue &&
-                    setEditingAppointment({
-                      ...editingAppointment,
-                      status: newValue,
-                    })
-                  }
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Estado"
-                      variant="outlined"
-                      fullWidth
-                    />
-                  )}
-                />
-
-                <TextField
-                  label="Descripción / Notas"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={editingAppointment.description}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Nombre Completo *
+                </label>
+                <input
+                  type="text"
+                  value={editingAppointment.customer_name}
                   onChange={(e) =>
                     setEditingAppointment({
                       ...editingAppointment,
-                      description: e.target.value,
+                      customer_name: e.target.value,
                     })
                   }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  required
                 />
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    onClick={() => setEditingAppointment(null)}
-                    className="bg-zinc-800 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleUpdateAppointment}
-                    className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-                  >
-                    Guardar Cambios
-                  </button>
-                </div>
               </div>
-            </LocalizationProvider>
-          </ThemeProvider>
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Fecha y Hora *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={dayjs(editingAppointment.appointment_date).format(
+                    "YYYY-MM-DDTHH:mm"
+                  )}
+                  onChange={(e) =>
+                    setEditingAppointment({
+                      ...editingAppointment,
+                      appointment_date: new Date(e.target.value).toISOString(),
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 [&::-webkit-calendar-picker-indicator]:invert"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  value={editingAppointment.customer_phone}
+                  onChange={(e) =>
+                    setEditingAppointment({
+                      ...editingAppointment,
+                      customer_phone: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editingAppointment.customer_email}
+                  onChange={(e) =>
+                    setEditingAppointment({
+                      ...editingAppointment,
+                      customer_email: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 text-sm mb-2">Estado</label>
+              <div className="relative">
+                <select
+                  value={editingAppointment.status}
+                  onChange={(e) =>
+                    setEditingAppointment({
+                      ...editingAppointment,
+                      status: e.target.value,
+                    })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none"
+                >
+                  <option value="Pendiente" className="bg-black">
+                    Pendiente
+                  </option>
+                  <option value="Confirmado" className="bg-black">
+                    Confirmado
+                  </option>
+                  <option value="Completado" className="bg-black">
+                    Completado
+                  </option>
+                  <option value="Cancelado" className="bg-black">
+                    Cancelado
+                  </option>
+                </select>
+                <ChevronDown
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                  size={16}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 text-sm mb-2">
+                Descripción / Notas
+              </label>
+              <textarea
+                value={editingAppointment.description}
+                onChange={(e) =>
+                  setEditingAppointment({
+                    ...editingAppointment,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <button
+                onClick={() => setEditingAppointment(null)}
+                className="bg-zinc-800 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleUpdateAppointment}
+                className="bg-white text-black px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

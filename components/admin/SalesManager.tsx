@@ -1,33 +1,32 @@
-import React, { useState, useEffect, useMemo } from "react";
 import {
-  Edit,
-  Trash2,
-  Plus,
-  X,
-  PieChart as PieChartIcon,
-  List,
-  TrendingUp,
   Calendar,
-  Filter,
-  Search,
   ChevronDown,
+  Edit,
+  Filter,
+  List,
+  PieChart as PieChartIcon,
+  Plus,
+  Search,
+  Trash2,
+  TrendingUp,
 } from "lucide-react";
-import { toast } from "sonner";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  PieChart,
-  Pie,
+  Bar,
+  BarChart,
+  CartesianGrid,
   Cell,
+  Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
-  Legend,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
 } from "recharts";
-import Modal from "./Modal";
+import { toast } from "sonner";
 import { supabase } from "../../services/supabase";
+import Modal from "./Modal";
 
 interface Order {
   id: number;
@@ -40,6 +39,8 @@ interface Order {
   payment_method?: string;
 }
 
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
+
 const SalesManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"list" | "stats">("list");
   const [orders, setOrders] = useState<Order[]>([]);
@@ -51,6 +52,10 @@ const SalesManager: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Sorting
+  const [sortField, setSortField] = useState<keyof Order>("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   // Form state
   const [formData, setFormData] = useState<Partial<Order>>({
@@ -102,8 +107,7 @@ const SalesManager: React.FC = () => {
       if (editingOrder) {
         const { error } = await supabase
           .from("sales")
-          .update(orderData)
-          .eq("id", editingOrder.id);
+          .upsert({ id: editingOrder.id, ...orderData });
         if (error) throw error;
         toast.success("Pedido actualizado correctamente");
       } else {
@@ -203,19 +207,60 @@ const SalesManager: React.FC = () => {
     return { statusData, salesData, totalRevenue, averageOrderValue };
   }, [orders]);
 
-  const COLORS = ["#ffffff", "#a1a1aa", "#52525b", "#27272a", "#18181b"];
+  const handleSort = (field: keyof Order) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
-  const filteredOrders = orders.filter((order) => {
-    const matchesMethod =
-      filterPaymentMethod === "all" ||
-      order.payment_method === filterPaymentMethod;
-    const matchesSearch =
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.code &&
-        order.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      order.id.toString().includes(searchTerm);
-    return matchesMethod && matchesSearch;
-  });
+  const filteredOrders = useMemo(() => {
+    let filtered = orders.filter((order) => {
+      const matchesMethod =
+        filterPaymentMethod === "all" ||
+        order.payment_method === filterPaymentMethod;
+      const matchesSearch =
+        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.code &&
+          order.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        order.id.toString().includes(searchTerm);
+      return matchesMethod && matchesSearch;
+    });
+
+    // Sort the filtered results
+    filtered.sort((a, b) => {
+      let aValue: any = a[sortField];
+      let bValue: any = b[sortField];
+
+      // Handle null/undefined values
+      if (aValue === undefined || aValue === null) aValue = "";
+      if (bValue === undefined || bValue === null) bValue = "";
+
+      // Handle different data types
+      if (sortField === "total") {
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+      } else if (sortField === "date") {
+        aValue = new Date(aValue).getTime();
+        bValue = new Date(bValue).getTime();
+      } else if (sortField === "code") {
+        // Ensure code is treated as a string for sorting
+        aValue = String(aValue || "").toLowerCase();
+        bValue = String(bValue || "").toLowerCase();
+      } else if (typeof aValue === "string") {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [orders, filterPaymentMethod, searchTerm, sortField, sortDirection]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -320,23 +365,83 @@ const SalesManager: React.FC = () => {
           <table className="w-full min-w-[600px]">
             <thead className="bg-black">
               <tr>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Código
+                <th
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort("code")}
+                >
+                  <div className="flex items-center gap-1">
+                    Código
+                    {sortField === "code" && (
+                      <span className="text-zinc-500">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Fecha
+                <th
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort("date")}
+                >
+                  <div className="flex items-center gap-1">
+                    Fecha
+                    {sortField === "date" && (
+                      <span className="text-zinc-500">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Cliente
+                <th
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort("customer")}
+                >
+                  <div className="flex items-center gap-1">
+                    Cliente
+                    {sortField === "customer" && (
+                      <span className="text-zinc-500">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Total
+                <th
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort("total")}
+                >
+                  <div className="flex items-center gap-1">
+                    Total
+                    {sortField === "total" && (
+                      <span className="text-zinc-500">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Pago
+                <th
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort("payment_method")}
+                >
+                  <div className="flex items-center gap-1">
+                    Pago
+                    {sortField === "payment_method" && (
+                      <span className="text-zinc-500">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Estado
+                <th
+                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center gap-1">
+                    Estado
+                    {sortField === "status" && (
+                      <span className="text-zinc-500">
+                        {sortDirection === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </div>
                 </th>
                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Productos
@@ -560,7 +665,7 @@ const SalesManager: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, customer: e.target.value })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                 />
               </div>
               <div>
@@ -573,7 +678,7 @@ const SalesManager: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, date: e.target.value })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                 />
               </div>
             </div>
@@ -585,7 +690,7 @@ const SalesManager: React.FC = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               >
                 <option value="Pendiente">Pendiente</option>
                 <option value="En proceso">En proceso</option>
@@ -602,7 +707,7 @@ const SalesManager: React.FC = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, payment_method: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               >
                 <option value="Transferencia">Transferencia</option>
                 <option value="Efectivo">Efectivo</option>
@@ -617,7 +722,7 @@ const SalesManager: React.FC = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, total: Number(e.target.value) })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500 transition-colors"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
 
@@ -628,7 +733,7 @@ const SalesManager: React.FC = () => {
               <textarea
                 value={itemsText}
                 onChange={(e) => setItemsText(e.target.value)}
-                className="w-full bg-black border border-zinc-700 text-white px-4 py-3 h-24 focus:outline-none focus:border-zinc-500 transition-colors resize-none"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
                 placeholder="Lista de productos separados por coma"
               />
             </div>

@@ -53,7 +53,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
+              className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+              placeholder="admin@example.com"
               required
             />
           </div>
@@ -65,7 +66,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black border border-zinc-700 text-white px-4 py-3 focus:outline-none focus:border-zinc-500"
+              className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+              placeholder="••••••••"
               required
             />
           </div>

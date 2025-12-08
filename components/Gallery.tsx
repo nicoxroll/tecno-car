@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
 import {
-  Instagram,
   ArrowRight,
-  X,
   ChevronLeft,
   ChevronRight,
+  Facebook,
+  Instagram,
+  X,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
 
 const Gallery: React.FC = () => {
@@ -16,7 +17,13 @@ const Gallery: React.FC = () => {
     permalink: string;
   } | null>(null);
   const [posts, setPosts] = useState<
-    { id: string; img: string; title: string; permalink: string }[]
+    {
+      id: string;
+      img: string;
+      title: string;
+      permalink: string;
+      platform?: string;
+    }[]
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,6 +46,7 @@ const Gallery: React.FC = () => {
             permalink:
               post.instagram_url ||
               "https://instagram.com/merlanotecnologiavehicular",
+            platform: post.platform || "instagram",
           }));
           setPosts(mappedPosts);
         } else {
@@ -197,10 +205,23 @@ const Gallery: React.FC = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100 filter grayscale contrast-110"
                   />
                   {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-4">
                     <span className="text-white font-light tracking-[0.2em] text-xs uppercase border border-white px-4 py-2">
                       {post.title}
                     </span>
+                    {post.platform === "facebook" ? (
+                      <Facebook
+                        className="text-white"
+                        size={24}
+                        strokeWidth={1}
+                      />
+                    ) : (
+                      <Instagram
+                        className="text-white"
+                        size={24}
+                        strokeWidth={1}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
@@ -253,12 +274,20 @@ const Gallery: React.FC = () => {
                 {selectedImage.title}
               </h3>
               <a
-                href="https://instagram.com/merlanotecnologiavehicular"
+                href={selectedImage.permalink}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 px-6 py-3 transition-colors"
+                className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 px-6 py-3 transition-colors flex items-center gap-2"
               >
-                Ver en Instagram
+                {selectedImage.platform === "facebook" ? (
+                  <>
+                    <Facebook size={16} /> Ver en Facebook
+                  </>
+                ) : (
+                  <>
+                    <Instagram size={16} /> Ver en Instagram
+                  </>
+                )}
               </a>
             </div>
           </div>

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
 import {
   Edit,
-  Trash2,
-  Plus,
-  X,
-  Instagram,
+  Facebook,
   Image as ImageIcon,
+  Instagram,
+  Plus,
+  Trash2,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { supabase, uploadImage } from "../../services/supabase";
+import { deleteImage, supabase, uploadImage } from "../../services/supabase";
 import Modal from "./Modal";
 
 interface GalleryPost {
@@ -17,6 +17,7 @@ interface GalleryPost {
   image_url: string;
   description?: string;
   instagram_url?: string;
+  platform?: "instagram" | "facebook";
   created_at?: string;
 }
 
@@ -33,6 +34,7 @@ const GalleryManager: React.FC = () => {
     image_url: "",
     description: "",
     instagram_url: "",
+    platform: "instagram",
   });
 
   useEffect(() => {
@@ -79,15 +81,14 @@ const GalleryManager: React.FC = () => {
 
     try {
       if (editingPost) {
-        const { error } = await supabase
-          .from("gallery_posts")
-          .update({
-            title: formData.title,
-            image_url: formData.image_url,
-            description: formData.description,
-            instagram_url: formData.instagram_url,
-          })
-          .eq("id", editingPost.id);
+        const { error } = await supabase.from("gallery_posts").upsert({
+          id: editingPost.id,
+          title: formData.title,
+          image_url: formData.image_url,
+          description: formData.description,
+          instagram_url: formData.instagram_url,
+          platform: formData.platform,
+        });
 
         if (error) throw error;
         toast.success("Publicación actualizada");
@@ -98,6 +99,7 @@ const GalleryManager: React.FC = () => {
             image_url: formData.image_url,
             description: formData.description,
             instagram_url: formData.instagram_url,
+            platform: formData.platform,
           },
         ]);
 
@@ -139,6 +141,7 @@ const GalleryManager: React.FC = () => {
       image_url: "",
       description: "",
       instagram_url: "",
+      platform: "instagram",
     });
     setIsCreating(false);
     setEditingPost(null);
@@ -226,7 +229,12 @@ const GalleryManager: React.FC = () => {
                     rel="noreferrer"
                     className="flex items-center gap-1 text-xs text-zinc-500 mt-2 hover:text-white transition-colors"
                   >
-                    <Instagram size={12} /> Ver en Instagram
+                    {post.platform === "facebook" ? (
+                      <Facebook size={12} />
+                    ) : (
+                      <Instagram size={12} />
+                    )}
+                    Ver publicación
                   </a>
                 )}
               </div>
@@ -253,7 +261,7 @@ const GalleryManager: React.FC = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                 placeholder="Título de la publicación"
                 required
               />
@@ -283,16 +291,31 @@ const GalleryManager: React.FC = () => {
                     className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-zinc-900"
                   />
                 </div>
-                <input
-                  type="text"
-                  value={formData.image_url}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image_url: e.target.value })
-                  }
-                  className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
-                  placeholder="URL de la imagen"
-                  required
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.image_url}
+                    onChange={(e) =>
+                      setFormData({ ...formData, image_url: e.target.value })
+                    }
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="URL de la imagen"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (formData.image_url) {
+                        await deleteImage(formData.image_url);
+                        setFormData({ ...formData, image_url: "" });
+                      }
+                    }}
+                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                    title="Eliminar imagen"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -306,25 +329,77 @@ const GalleryManager: React.FC = () => {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={3}
-                className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
                 placeholder="Descripción de la publicación..."
               />
             </div>
 
             <div>
               <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
-                Link de Instagram (Opcional)
+                Plataforma
+              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="platform"
+                    value="instagram"
+                    checked={formData.platform === "instagram"}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        platform: e.target.value as "instagram" | "facebook",
+                      })
+                    }
+                    className="accent-white"
+                  />
+                  <span className="text-white text-sm flex items-center gap-1">
+                    <Instagram size={16} /> Instagram
+                  </span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="platform"
+                    value="facebook"
+                    checked={formData.platform === "facebook"}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        platform: e.target.value as "instagram" | "facebook",
+                      })
+                    }
+                    className="accent-white"
+                  />
+                  <span className="text-white text-sm flex items-center gap-1">
+                    <Facebook size={16} /> Facebook
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+                Link de la publicación (Opcional)
               </label>
               <div className="flex items-center gap-2">
-                <Instagram size={18} className="text-zinc-400" />
+                {formData.platform === "facebook" ? (
+                  <Facebook size={18} className="text-zinc-400" />
+                ) : (
+                  <Instagram size={18} className="text-zinc-400" />
+                )}
                 <input
                   type="url"
                   value={formData.instagram_url}
                   onChange={(e) =>
                     setFormData({ ...formData, instagram_url: e.target.value })
                   }
-                  className="w-full bg-black border border-zinc-700 text-white px-3 py-2 text-sm focus:outline-none focus:border-zinc-500"
-                  placeholder="https://instagram.com/p/..."
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  placeholder={
+                    formData.platform === "facebook"
+                      ? "https://facebook.com/..."
+                      : "https://instagram.com/p/..."
+                  }
                 />
               </div>
             </div>

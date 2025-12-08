@@ -1,6 +1,6 @@
-import { Toaster } from "sonner";
 import Lenis from "lenis";
 import { useEffect, useState } from "react";
+import { Toaster } from "sonner";
 import About from "./components/About";
 import Admin from "./components/Admin";
 import CartDrawer from "./components/CartDrawer";
@@ -137,6 +137,7 @@ function App() {
                 product={selectedProduct}
                 onBack={() => handleNavigate("catalog")}
                 onNavigateToCart={() => handleNavigate("checkout")}
+                onProductSelect={handleProductSelect}
               />
             )}
 
