@@ -14,13 +14,16 @@ const Gallery: React.FC = () => {
     id: string;
     img: string;
     title: string;
+    description?: string;
     permalink: string;
+    platform?: string;
   } | null>(null);
   const [posts, setPosts] = useState<
     {
       id: string;
       img: string;
       title: string;
+      description?: string;
       permalink: string;
       platform?: string;
     }[]
@@ -43,6 +46,7 @@ const Gallery: React.FC = () => {
             id: post.id,
             img: post.image_url,
             title: post.title,
+            description: post.description,
             permalink:
               post.instagram_url ||
               "https://instagram.com/merlanotecnologiavehicular",
@@ -269,15 +273,22 @@ const Gallery: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-8 flex justify-between items-center bg-zinc-950">
-              <h3 className="text-xl text-white font-light tracking-[0.2em] uppercase">
-                {selectedImage.title}
-              </h3>
+            <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-zinc-950">
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xl text-white font-light tracking-[0.2em] uppercase">
+                  {selectedImage.title}
+                </h3>
+                {selectedImage.description && (
+                  <p className="text-zinc-400 text-sm font-light max-w-2xl">
+                    {selectedImage.description}
+                  </p>
+                )}
+              </div>
               <a
                 href={selectedImage.permalink}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 px-6 py-3 transition-colors flex items-center gap-2"
+                className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 px-6 py-3 transition-colors flex items-center gap-2 whitespace-nowrap"
               >
                 {selectedImage.platform === "facebook" ? (
                   <>

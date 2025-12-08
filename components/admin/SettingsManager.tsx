@@ -30,11 +30,18 @@ const SettingsManager: React.FC = () => {
       facebook: "https://facebook.com/merlanotecnologiavehicular",
       whatsapp: "https://wa.me/5492213334444",
     },
-    system: {
-      maintenanceMode: false,
-      emailNotifications: true,
-    },
   });
+
+  // Catalog Filters State
+  const [catalogFilters, setCatalogFilters] = useState<string[]>([
+    "Multimedia",
+    "Audio",
+    "Iluminación",
+    "Seguridad",
+    "Accesorios",
+    "Limpieza",
+  ]);
+  const [newFilter, setNewFilter] = useState("");
 
   // Catalog Hero State
   const [catalogHeroImage, setCatalogHeroImage] = useState<string>(
@@ -139,6 +146,29 @@ const SettingsManager: React.FC = () => {
             console.warn("Error parsing about amenities, using default");
           }
         }
+
+        if (configMap.catalog_filters) {
+          try {
+            const parsedFilters = JSON.parse(configMap.catalog_filters);
+            setCatalogFilters(parsedFilters);
+          } catch (e) {
+            console.warn("Error parsing catalog filters, using default");
+          }
+        }
+
+        // Update general settings state
+        setSettings((prev) => ({
+          ...prev,
+          companyName: configMap.company_name || prev.companyName,
+          email: configMap.company_email || prev.email,
+          phone: configMap.company_phone || prev.phone,
+          address: configMap.company_address || prev.address,
+          social: {
+            instagram: configMap.social_instagram || prev.social.instagram,
+            facebook: configMap.social_facebook || prev.social.facebook,
+            whatsapp: configMap.social_whatsapp || prev.social.whatsapp,
+          },
+        }));
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -362,6 +392,26 @@ const SettingsManager: React.FC = () => {
             { onConflict: "key" }
           );
 
+        // Save social media
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "social_instagram", value: settings.social.instagram },
+            { onConflict: "key" }
+          );
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "social_facebook", value: settings.social.facebook },
+            { onConflict: "key" }
+          );
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "social_whatsapp", value: settings.social.whatsapp },
+            { onConflict: "key" }
+          );
+
         // Save about configuration
         if (aboutImage) {
           await supabase
@@ -388,6 +438,14 @@ const SettingsManager: React.FC = () => {
           .from("site_config")
           .upsert(
             { key: "about_amenities", value: JSON.stringify(aboutAmenities) },
+            { onConflict: "key" }
+          );
+
+        // Save catalog filters
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "catalog_filters", value: JSON.stringify(catalogFilters) },
             { onConflict: "key" }
           );
 
@@ -679,55 +737,65 @@ const SettingsManager: React.FC = () => {
           </div>
         </div>
 
-        {/* System Settings */}
+        {/* Catalog Filters */}
         <div className="bg-black border border-zinc-800 p-4 sm:p-6">
           <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
-            Configuración del Sistema
+            Filtros de Catálogo
           </h3>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-400 text-xs sm:text-sm">
-                Modo Mantenimiento
-              </span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.system.maintenanceMode}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      system: {
-                        ...settings.system,
-                        maintenanceMode: e.target.checked,
-                      },
-                    })
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newFilter}
+                onChange={(e) => setNewFilter(e.target.value)}
+                placeholder="Nuevo filtro..."
+                className="flex-1 bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && newFilter.trim()) {
+                    setCatalogFilters([...catalogFilters, newFilter.trim()]);
+                    setNewFilter("");
                   }
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-zinc-700 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-zinc-500 rounded-full after:rounded-full"></div>
-              </label>
+                }}
+              />
+              <button
+                onClick={() => {
+                  if (newFilter.trim()) {
+                    setCatalogFilters([...catalogFilters, newFilter.trim()]);
+                    setNewFilter("");
+                  }
+                }}
+                className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+              >
+                Agregar
+              </button>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-zinc-400 text-xs sm:text-sm">
-                Notificaciones por Email
-              </span>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={settings.system.emailNotifications}
-                  onChange={(e) =>
-                    setSettings({
-                      ...settings,
-                      system: {
-                        ...settings.system,
-                        emailNotifications: e.target.checked,
-                      },
-                    })
-                  }
-                  className="sr-only peer"
-                />
-                <div className="w-9 h-5 sm:w-11 sm:h-6 bg-zinc-700 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-4 after:w-4 sm:after:h-5 sm:after:w-5 after:transition-all peer-checked:bg-zinc-500 rounded-full after:rounded-full"></div>
-              </label>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {catalogFilters.map((filter, index) => (
+                <div key={index} className="relative group">
+                  <input
+                    type="text"
+                    value={filter}
+                    onChange={(e) => {
+                      const newFilters = [...catalogFilters];
+                      newFilters[index] = e.target.value;
+                      setCatalogFilters(newFilters);
+                    }}
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                  />
+                  <button
+                    onClick={() => {
+                      const newFilters = catalogFilters.filter(
+                        (_, i) => i !== index
+                      );
+                      setCatalogFilters(newFilters);
+                    }}
+                    className="absolute right-2 top-2.5 text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -830,21 +898,21 @@ const SettingsManager: React.FC = () => {
                       newAmenities[index].icon = e.target.value;
                       setAboutAmenities(newAmenities);
                     }}
-                    className="bg-transparent text-zinc-500 text-xs focus:outline-none cursor-pointer hover:text-zinc-300"
+                    className="bg-transparent text-zinc-500 text-xs focus:outline-none cursor-pointer hover:text-zinc-300 appearance-none"
                   >
-                    <option value="Wind" className="bg-black">
+                    <option value="Wind" className="bg-black text-white">
                       Aire
                     </option>
-                    <option value="Coffee" className="bg-black">
+                    <option value="Coffee" className="bg-black text-white">
                       Café
                     </option>
-                    <option value="Wifi" className="bg-black">
+                    <option value="Wifi" className="bg-black text-white">
                       Wi-Fi
                     </option>
-                    <option value="Tv" className="bg-black">
+                    <option value="Tv" className="bg-black text-white">
                       TV
                     </option>
-                    <option value="CheckCircle" className="bg-black">
+                    <option value="CheckCircle" className="bg-black text-white">
                       Check
                     </option>
                   </select>

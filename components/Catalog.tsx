@@ -308,6 +308,24 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                       alt={product.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                     />
+                    {product.discount_price &&
+                      product.discount_price < product.price && (
+                        <div className="absolute top-2 right-2 bg-white text-black text-[10px] font-bold px-2 py-1 z-10">
+                          {Math.round(
+                            ((product.price - product.discount_price) /
+                              product.price) *
+                              100
+                          )}
+                          % OFF
+                        </div>
+                      )}
+                    {product.stock !== undefined &&
+                      product.stock < 5 &&
+                      product.stock > 0 && (
+                        <div className="absolute top-2 left-2 bg-zinc-900 border border-zinc-700 text-white text-[10px] font-bold px-2 py-1 z-10 uppercase tracking-wider">
+                          Últimas disponibles
+                        </div>
+                      )}
                     {/* Quick Add Overlay */}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-center">
                       <button
@@ -354,9 +372,23 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                       {product.description}
                     </p>
                     <div className="mt-auto flex justify-between items-center pt-4 border-t border-zinc-900">
-                      <span className="text-white font-medium text-lg">
-                        ${product.price.toLocaleString()}
-                      </span>
+                      <div className="flex flex-col">
+                        {product.discount_price &&
+                        product.discount_price < product.price ? (
+                          <>
+                            <span className="text-zinc-500 line-through text-xs">
+                              ${product.price.toLocaleString()}
+                            </span>
+                            <span className="text-white font-medium text-lg">
+                              ${product.discount_price.toLocaleString()}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-white font-medium text-lg">
+                            ${product.price.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[10px] text-zinc-600 uppercase tracking-widest group-hover:text-white transition-colors">
                         Ver Detalles
                       </span>

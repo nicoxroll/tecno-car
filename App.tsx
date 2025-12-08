@@ -24,6 +24,10 @@ import { Product, ViewState } from "./types";
 function App() {
   const [currentView, setCurrentView] = useState<ViewState>("landing");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatPendingMessage, setChatPendingMessage] = useState<string | undefined>(
+    undefined
+  );
 
   // Fixed sections order
   const sectionsOrder = [
@@ -86,6 +90,13 @@ function App() {
     handleNavigate("product-details");
   };
 
+  const handleOpenChat = (message?: string) => {
+    setIsChatOpen(true);
+    if (message) {
+      setChatPendingMessage(message);
+    }
+  };
+
   // Define all sections
   const sections = {
     hero: <Hero key="hero" />,
@@ -93,7 +104,11 @@ function App() {
     services: <Services key="services" />,
     about: <About key="about" />,
     "featured-products": (
-      <FeaturedProducts key="featured-products" onNavigate={handleNavigate} />
+      <FeaturedProducts
+        key="featured-products"
+        onNavigate={handleNavigate}
+        onProductSelect={handleProductSelect}
+      />
     ),
     gallery: <Gallery key="gallery" />,
     newsletter: <Newsletter key="newsletter" />,
@@ -138,6 +153,7 @@ function App() {
                 onBack={() => handleNavigate("catalog")}
                 onNavigateToCart={() => handleNavigate("checkout")}
                 onProductSelect={handleProductSelect}
+                onOpenChat={handleOpenChat}
               />
             )}
 
@@ -151,7 +167,12 @@ function App() {
           </main>
 
           <CartDrawer onCheckout={() => handleNavigate("checkout")} />
-          <ChatInterface />
+          <ChatInterface
+            isOpen={isChatOpen}
+            onToggle={setIsChatOpen}
+            pendingMessage={chatPendingMessage}
+            onMessageProcessed={() => setChatPendingMessage(undefined)}
+          />
         </div>
       </ScrollProvider>
     </CartProvider>

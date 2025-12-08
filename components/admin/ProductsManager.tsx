@@ -35,6 +35,7 @@ import {
 import { toast } from "sonner";
 import { deleteImage, supabase, uploadImage } from "../../services/supabase";
 import { Product } from "../../types";
+import CustomSelect from "../ui/CustomSelect";
 import Modal from "./Modal";
 
 interface ProductsManagerProps {
@@ -64,6 +65,35 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
     null
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Categories State
+  const [categories, setCategories] = useState<string[]>([
+    "Multimedia",
+    "Audio",
+    "Iluminación",
+    "Seguridad",
+    "Accesorios",
+    "Limpieza",
+  ]);
+
+  React.useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from("site_config")
+        .select("value")
+        .eq("key", "catalog_filters")
+        .single();
+
+      if (data?.value) {
+        try {
+          setCategories(JSON.parse(data.value));
+        } catch (e) {
+          console.error("Error parsing categories", e);
+        }
+      }
+    };
+    fetchCategories();
+  }, []);
 
   // Bulk Update State
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -302,6 +332,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
       const productData = {
         name: product.name,
         price: product.price,
+        discount_price: product.discount_price,
         image: product.image,
         category: product.category,
         description: product.description || "",
@@ -309,6 +340,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
         stock: product.stock || 0,
         available: product.available ?? true,
         featured: product.featured ?? false,
+        tags: product.tags || [],
       };
 
       const { data, error } = await supabase
@@ -635,15 +667,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   Categorías
                 </h3>
                 <div className="space-y-1">
-                  {[
-                    "Todos",
-                    "Multimedia",
-                    "Audio",
-                    "Iluminación",
-                    "Seguridad",
-                    "Accesorios",
-                    "Limpieza",
-                  ].map((cat) => (
+                  {["Todos", ...categories].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -863,7 +887,19 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                             {product.category}
                           </td>
                           <td className="px-4 py-4 text-sm text-white font-medium">
-                            ${product.price.toLocaleString()}
+                            {product.discount_price &&
+                            product.discount_price < product.price ? (
+                              <div className="flex flex-col">
+                                <span className="text-zinc-500 line-through text-xs">
+                                  ${product.price.toLocaleString()}
+                                </span>
+                                <span className="text-green-400">
+                                  ${product.discount_price.toLocaleString()}
+                                </span>
+                              </div>
+                            ) : (
+                              `$${product.price.toLocaleString()}`
+                            )}
                           </td>
                           <td className="px-4 py-4 text-sm text-zinc-400">
                             {product.stock || "N/A"}
@@ -934,6 +970,17 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                         />
+                        {product.discount_price &&
+                          product.discount_price < product.price && (
+                            <div className="absolute top-2 right-2 bg-white text-black text-[10px] font-bold px-2 py-1 z-10">
+                              {Math.round(
+                                ((product.price - product.discount_price) /
+                                  product.price) *
+                                  100
+                              )}
+                              % OFF
+                            </div>
+                          )}
                         {/* Edit/Delete Overlay */}
                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-center gap-3">
                           <button
@@ -974,9 +1021,23 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                           {product.description || "Sin descripción"}
                         </p>
                         <div className="mt-auto flex justify-between items-center pt-4 border-t border-zinc-900">
-                          <span className="text-white font-medium text-lg">
-                            ${product.price.toLocaleString()}
-                          </span>
+                          <div className="flex flex-col">
+                            {product.discount_price &&
+                            product.discount_price < product.price ? (
+                              <>
+                                <span className="text-zinc-500 line-through text-xs">
+                                  ${product.price.toLocaleString()}
+                                </span>
+                                <span className="text-white font-medium text-lg">
+                                  ${product.discount_price.toLocaleString()}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-white font-medium text-lg">
+                                ${product.price.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
                           <span
                             className={`text-[10px] uppercase tracking-widest ${
                               product.available
@@ -1277,45 +1338,21 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 <label className="block text-zinc-400 text-sm mb-2">
                   Categoría
                 </label>
-                <div className="relative">
-                  <select
-                    value={editingProduct.category}
-                    onChange={(e) => {
-                      setEditingProduct({
-                        ...editingProduct,
-                        category: e.target.value,
-                      });
-                      if (errors.category)
-                        setErrors({ ...errors, category: "" });
-                    }}
-                    className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none ${
-                      errors.category ? "border-red-500" : "border-zinc-800"
-                    }`}
-                  >
-                    <option value="Multimedia" className="bg-black">
-                      Multimedia
-                    </option>
-                    <option value="Audio" className="bg-black">
-                      Audio
-                    </option>
-                    <option value="Iluminación" className="bg-black">
-                      Iluminación
-                    </option>
-                    <option value="Seguridad" className="bg-black">
-                      Seguridad
-                    </option>
-                    <option value="Accesorios" className="bg-black">
-                      Accesorios
-                    </option>
-                    <option value="Limpieza" className="bg-black">
-                      Limpieza
-                    </option>
-                  </select>
-                  <ChevronDown
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-                    size={16}
-                  />
-                </div>
+                <CustomSelect
+                  value={editingProduct.category}
+                  onChange={(value) => {
+                    setEditingProduct({
+                      ...editingProduct,
+                      category: value,
+                    });
+                    if (errors.category) setErrors({ ...errors, category: "" });
+                  }}
+                  options={categories.map((cat) => ({
+                    value: cat,
+                    label: cat,
+                  }))}
+                  error={!!errors.category}
+                />
                 {errors.category && (
                   <span className="text-red-500 text-xs mt-1 block">
                     {errors.category}
@@ -1323,7 +1360,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Precio ($)
@@ -1348,6 +1385,25 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       {errors.price}
                     </span>
                   )}
+                </div>
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Rebajado ($)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingProduct.discount_price || ""}
+                    onChange={(e) => {
+                      setEditingProduct({
+                        ...editingProduct,
+                        discount_price: e.target.value
+                          ? parseInt(e.target.value)
+                          : undefined,
+                      });
+                    }}
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="Opcional"
+                  />
                 </div>
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
@@ -1392,29 +1448,19 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <label className="block text-zinc-400 text-sm mb-2">
                     Estado
                   </label>
-                  <div className="relative">
-                    <select
-                      value={editingProduct.available ? "true" : "false"}
-                      onChange={(e) =>
-                        setEditingProduct({
-                          ...editingProduct,
-                          available: e.target.value === "true",
-                        })
-                      }
-                      className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none"
-                    >
-                      <option value="true" className="bg-black">
-                        Disponible
-                      </option>
-                      <option value="false" className="bg-black">
-                        Agotado
-                      </option>
-                    </select>
-                    <ChevronDown
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-                      size={16}
-                    />
-                  </div>
+                  <CustomSelect
+                    value={editingProduct.available ? "true" : "false"}
+                    onChange={(value) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        available: value === "true",
+                      })
+                    }
+                    options={[
+                      { value: "true", label: "Disponible" },
+                      { value: "false", label: "Agotado" },
+                    ]}
+                  />
                 </div>
                 <div className="flex items-center h-full pt-6">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -1672,27 +1718,21 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 <label className="block text-zinc-400 text-sm mb-2">
                   Categoría *
                 </label>
-                <select
+                <CustomSelect
                   value={creatingProduct.category || ""}
-                  onChange={(e) => {
+                  onChange={(value) => {
                     setCreatingProduct({
                       ...creatingProduct,
-                      category: e.target.value,
+                      category: value,
                     });
                     if (errors.category) setErrors({ ...errors, category: "" });
                   }}
-                  className={`w-full bg-transparent border-b text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 ${
-                    errors.category ? "border-red-500" : "border-zinc-800"
-                  }`}
-                >
-                  <option value="">Seleccionar categoría</option>
-                  <option value="Multimedia">Multimedia</option>
-                  <option value="Audio">Audio</option>
-                  <option value="Iluminación">Iluminación</option>
-                  <option value="Seguridad">Seguridad</option>
-                  <option value="Accesorios">Accesorios</option>
-                  <option value="Limpieza">Limpieza</option>
-                </select>
+                  options={[
+                    { value: "", label: "Seleccionar categoría" },
+                    ...categories.map((cat) => ({ value: cat, label: cat })),
+                  ]}
+                  error={!!errors.category}
+                />
                 {errors.category && (
                   <span className="text-red-500 text-xs mt-1 block">
                     {errors.category}
@@ -1700,7 +1740,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Precio *
@@ -1725,6 +1765,25 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       {errors.price}
                     </span>
                   )}
+                </div>
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Rebajado ($)
+                  </label>
+                  <input
+                    type="number"
+                    value={creatingProduct.discount_price || ""}
+                    onChange={(e) => {
+                      setCreatingProduct({
+                        ...creatingProduct,
+                        discount_price: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      });
+                    }}
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="Opcional"
+                  />
                 </div>
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
@@ -1772,21 +1831,21 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   <label className="block text-zinc-400 text-sm mb-2">
                     Estado
                   </label>
-                  <select
+                  <CustomSelect
                     value={
                       creatingProduct.available !== false ? "true" : "false"
                     }
-                    onChange={(e) =>
+                    onChange={(value) =>
                       setCreatingProduct({
                         ...creatingProduct,
-                        available: e.target.value === "true",
+                        available: value === "true",
                       })
                     }
-                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-                  >
-                    <option value="true">Disponible</option>
-                    <option value="false">Agotado</option>
-                  </select>
+                    options={[
+                      { value: "true", label: "Disponible" },
+                      { value: "false", label: "Agotado" },
+                    ]}
+                  />
                 </div>
                 <div className="flex items-center h-full pt-6">
                   <label className="flex items-center gap-2 cursor-pointer">

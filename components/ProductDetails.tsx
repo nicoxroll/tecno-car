@@ -4,6 +4,8 @@ import {
   ShieldCheck,
   ShoppingBag,
   Truck,
+  MessageCircle,
+  Sparkles,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
@@ -15,6 +17,7 @@ interface ProductDetailsProps {
   onBack: () => void;
   onNavigateToCart: () => void;
   onProductSelect: (product: Product) => void;
+  onOpenChat?: (message: string) => void;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({
@@ -22,6 +25,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   onBack,
   onNavigateToCart,
   onProductSelect,
+  onOpenChat,
 }) => {
   const { addToCart } = useCart();
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -101,6 +105,19 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 {product.category}
               </span>
             </div>
+            {product.discount_price &&
+              product.discount_price < product.price && (
+                <div className="absolute top-0 right-0 p-4">
+                  <span className="bg-white text-black text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
+                    {Math.round(
+                      ((product.price - product.discount_price) /
+                        product.price) *
+                        100
+                    )}
+                    % OFF
+                  </span>
+                </div>
+              )}
           </div>
 
           {/* Info Section */}
@@ -110,11 +127,34 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
             </h1>
 
             <div className="flex items-center gap-4 mb-8">
-              <span className="text-3xl text-white font-light">
-                ${product.price.toLocaleString()}
-              </span>
-              <span className="text-green-500 text-xs uppercase tracking-widest flex items-center gap-1">
-                <Check size={14} /> Stock Disponible
+              <div className="flex flex-col">
+                {product.discount_price &&
+                product.discount_price < product.price ? (
+                  <>
+                    <span className="text-xl text-zinc-500 line-through mb-1">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    <span className="text-3xl text-white font-light">
+                      ${product.discount_price.toLocaleString()}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-3xl text-white font-light">
+                    ${product.price.toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <span
+                className={`text-xs uppercase tracking-widest flex items-center gap-1 ${
+                  product.stock && product.stock < 5
+                    ? "text-white"
+                    : "text-zinc-500"
+                }`}
+              >
+                <Check size={14} />
+                {product.stock && product.stock < 5
+                  ? "Últimas disponibles"
+                  : "Stock Disponible"}
               </span>
             </div>
 
@@ -128,6 +168,20 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               garantizar la mejor performance en tu vehículo. Compatible con
               instalación en nuestro taller.
             </p>
+
+            {/* Tags */}
+            {product.tags && product.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-8">
+                {product.tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="text-[10px] uppercase tracking-widest px-2 py-1 border border-zinc-800 text-zinc-400"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {/* Features if available */}
             {product.features && (
@@ -190,6 +244,29 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Consultation Buttons */}
+            <div className="flex flex-col gap-3 mb-8 mt-8">
+              <button
+                onClick={() =>
+                  onOpenChat &&
+                  onOpenChat(`Quiero saber más sobre ${product.name}`)
+                }
+                className="w-full border border-zinc-800 bg-zinc-900/50 text-zinc-300 py-4 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-zinc-800 hover:text-white transition-colors flex items-center justify-center gap-2"
+              >
+                <Sparkles size={16} />
+                Consultar con IA
+              </button>
+              <a
+                href={`https://wa.me/5492213334444?text=Hola,%20me%20interesa%20saber%20m%C3%A1s%20sobre:%20${product.name}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full border border-zinc-800 bg-zinc-900/50 text-zinc-300 py-4 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-zinc-800 hover:text-white transition-colors flex items-center justify-center gap-2"
+              >
+                <MessageCircle size={16} />
+                Consultar por WhatsApp
+              </a>
+            </div>
           </div>
         </div>
 
@@ -225,9 +302,23 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     <p className="text-zinc-500 text-sm mb-2 line-clamp-2">
                       {related.description}
                     </p>
-                    <span className="text-white font-medium">
-                      ${related.price.toLocaleString()}
-                    </span>
+                    <div className="flex flex-col">
+                      {related.discount_price &&
+                      related.discount_price < related.price ? (
+                        <>
+                          <span className="text-zinc-500 line-through text-xs">
+                            ${related.price.toLocaleString()}
+                          </span>
+                          <span className="text-white font-medium">
+                            ${related.discount_price.toLocaleString()}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-white font-medium">
+                          ${related.price.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

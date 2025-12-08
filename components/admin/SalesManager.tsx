@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "../../services/supabase";
 import Modal from "./Modal";
+import CustomSelect from "../ui/CustomSelect";
 
 interface Order {
   id: number;
@@ -336,25 +337,15 @@ const SalesManager: React.FC = () => {
           </div>
 
           {/* Payment Method Filter */}
-          <div className="relative group">
-            <select
+          <div className="relative group w-full">
+            <CustomSelect
               value={filterPaymentMethod}
-              onChange={(e) => setFilterPaymentMethod(e.target.value)}
-              className="w-full bg-transparent border-b border-zinc-800 text-white pl-0 pr-8 py-2 appearance-none focus:outline-none focus:border-white transition-colors text-xs uppercase tracking-widest cursor-pointer"
-            >
-              <option value="all" className="bg-black">
-                Todos los Métodos
-              </option>
-              <option value="Transferencia" className="bg-black">
-                Transferencia
-              </option>
-              <option value="Efectivo" className="bg-black">
-                Efectivo
-              </option>
-            </select>
-            <ChevronDown
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none group-hover:text-white transition-colors"
-              size={14}
+              onChange={(value) => setFilterPaymentMethod(value)}
+              options={[
+                { value: "all", label: "Todos los Métodos" },
+                { value: "Transferencia", label: "Transferencia" },
+                { value: "Efectivo", label: "Efectivo" },
+              ]}
             />
           </div>
         </div>
@@ -685,33 +676,33 @@ const SalesManager: React.FC = () => {
 
             <div>
               <label className="block text-zinc-400 text-sm mb-2">Estado</label>
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({ ...formData, status: e.target.value })
+              <CustomSelect
+                value={formData.status || "Pendiente"}
+                onChange={(value) =>
+                  setFormData({ ...formData, status: value })
                 }
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-              >
-                <option value="Pendiente">Pendiente</option>
-                <option value="En proceso">En proceso</option>
-                <option value="Completado">Completado</option>
-              </select>
+                options={[
+                  { value: "Pendiente", label: "Pendiente" },
+                  { value: "En proceso", label: "En proceso" },
+                  { value: "Completado", label: "Completado" },
+                ]}
+              />
             </div>
 
             <div>
               <label className="block text-zinc-400 text-sm mb-2">
                 Método de Pago
               </label>
-              <select
+              <CustomSelect
                 value={formData.payment_method || "Transferencia"}
-                onChange={(e) =>
-                  setFormData({ ...formData, payment_method: e.target.value })
+                onChange={(value) =>
+                  setFormData({ ...formData, payment_method: value })
                 }
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-              >
-                <option value="Transferencia">Transferencia</option>
-                <option value="Efectivo">Efectivo</option>
-              </select>
+                options={[
+                  { value: "Transferencia", label: "Transferencia" },
+                  { value: "Efectivo", label: "Efectivo" },
+                ]}
+              />
             </div>
 
             <div>

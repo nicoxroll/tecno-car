@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import { deleteImage, supabase, uploadImage } from "../../services/supabase";
 import { Service } from "../../types";
 import Modal from "./Modal";
+import CustomSelect from "../ui/CustomSelect";
 
 dayjs.locale("es");
 
@@ -631,36 +632,22 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                 />
               </div>
 
-              <div className="relative group">
-                <select
+              <div className="relative group w-full">
+                <CustomSelect
                   value={appointmentFilters.status}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setAppointmentFilters({
                       ...appointmentFilters,
-                      status: e.target.value,
+                      status: value,
                     })
                   }
-                  className="w-full bg-transparent border-b border-zinc-800 text-white pl-0 pr-8 py-2 appearance-none focus:outline-none focus:border-white transition-colors text-xs uppercase tracking-widest cursor-pointer"
-                >
-                  <option value="Todos" className="bg-black">
-                    Todos los Estados
-                  </option>
-                  <option value="Pendiente" className="bg-black">
-                    Pendiente
-                  </option>
-                  <option value="Confirmado" className="bg-black">
-                    Confirmado
-                  </option>
-                  <option value="Completado" className="bg-black">
-                    Completado
-                  </option>
-                  <option value="Cancelado" className="bg-black">
-                    Cancelado
-                  </option>
-                </select>
-                <ChevronDown
-                  className="absolute right-0 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none group-hover:text-white transition-colors"
-                  size={14}
+                  options={[
+                    { value: "Todos", label: "Todos los Estados" },
+                    { value: "Pendiente", label: "Pendiente" },
+                    { value: "Confirmado", label: "Confirmado" },
+                    { value: "Completado", label: "Completado" },
+                    { value: "Cancelado", label: "Cancelado" },
+                  ]}
                 />
               </div>
 
@@ -951,39 +938,25 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               <label className="block text-zinc-400 text-sm mb-2">
                 Servicio *
               </label>
-              <div className="relative">
-                <select
-                  value={newAppointment.service?.id || ""}
-                  onChange={(e) => {
-                    const selectedService = services.find(
-                      (s) => s.id === Number(e.target.value)
-                    );
-                    setNewAppointment({
-                      ...newAppointment,
-                      service: selectedService || null,
-                    });
-                  }}
-                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none"
-                  required
-                >
-                  <option value="" className="bg-black">
-                    Seleccionar Servicio
-                  </option>
-                  {services.map((service) => (
-                    <option
-                      key={service.id}
-                      value={service.id}
-                      className="bg-black"
-                    >
-                      {service.title}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-                  size={16}
-                />
-              </div>
+              <CustomSelect
+                value={newAppointment.service?.id?.toString() || ""}
+                onChange={(value) => {
+                  const selectedService = services.find(
+                    (s) => s.id === Number(value)
+                  );
+                  setNewAppointment({
+                    ...newAppointment,
+                    service: selectedService || null,
+                  });
+                }}
+                options={[
+                  { value: "", label: "Seleccionar Servicio" },
+                  ...services.map((service) => ({
+                    value: service.id.toString(),
+                    label: service.title,
+                  })),
+                ]}
+              />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1677,35 +1650,21 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
 
             <div>
               <label className="block text-zinc-400 text-sm mb-2">Estado</label>
-              <div className="relative">
-                <select
-                  value={editingAppointment.status}
-                  onChange={(e) =>
-                    setEditingAppointment({
-                      ...editingAppointment,
-                      status: e.target.value,
-                    })
-                  }
-                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 appearance-none"
-                >
-                  <option value="Pendiente" className="bg-black">
-                    Pendiente
-                  </option>
-                  <option value="Confirmado" className="bg-black">
-                    Confirmado
-                  </option>
-                  <option value="Completado" className="bg-black">
-                    Completado
-                  </option>
-                  <option value="Cancelado" className="bg-black">
-                    Cancelado
-                  </option>
-                </select>
-                <ChevronDown
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
-                  size={16}
-                />
-              </div>
+              <CustomSelect
+                value={editingAppointment.status}
+                onChange={(value) =>
+                  setEditingAppointment({
+                    ...editingAppointment,
+                    status: value,
+                  })
+                }
+                options={[
+                  { value: "Pendiente", label: "Pendiente" },
+                  { value: "Confirmado", label: "Confirmado" },
+                  { value: "Completado", label: "Completado" },
+                  { value: "Cancelado", label: "Cancelado" },
+                ]}
+              />
             </div>
 
             <div>

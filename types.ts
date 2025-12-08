@@ -1,10 +1,15 @@
-import React from 'react';
+import React from "react";
 
-export type ViewState = 'landing' | 'catalog' | 'product-details' | 'checkout' | 'admin';
+export type ViewState =
+  | "landing"
+  | "catalog"
+  | "product-details"
+  | "checkout"
+  | "admin";
 
 export interface ChatMessage {
   id: string;
-  role: 'user' | 'model';
+  role: "user" | "model";
   text: string;
   isThinking?: boolean;
   groundingUrls?: string[];
@@ -37,6 +42,7 @@ export interface Product {
   featured?: boolean;
   year?: number;
   tags?: string[];
+  discount_price?: number;
 }
 
 export interface Service {

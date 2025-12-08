@@ -33,8 +33,19 @@ const FormattedText: React.FC<{ text: string }> = ({ text }) => {
   return <>{renderContent()}</>;
 };
 
-const ChatInterface: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface ChatInterfaceProps {
+  isOpen: boolean;
+  onToggle: (isOpen: boolean) => void;
+  pendingMessage?: string;
+  onMessageProcessed?: () => void;
+}
+
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
+  isOpen,
+  onToggle,
+  pendingMessage,
+  onMessageProcessed,
+}) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "welcome",
@@ -54,17 +65,16 @@ const ChatInterface: React.FC = () => {
     scrollToBottom();
   }, [messages, isOpen]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const processMessage = async (text: string) => {
+    if (isLoading) return;
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      text: input,
+      text: text,
     };
 
     setMessages((prev) => [...prev, userMsg]);
-    setInput("");
     setIsLoading(true);
 
     const tempId = (Date.now() + 1).toString();
@@ -103,6 +113,19 @@ const ChatInterface: React.FC = () => {
     );
   };
 
+  const handleSend = () => {
+    if (!input.trim()) return;
+    processMessage(input);
+    setInput("");
+  };
+
+  useEffect(() => {
+    if (pendingMessage) {
+      processMessage(pendingMessage);
+      if (onMessageProcessed) onMessageProcessed();
+    }
+  }, [pendingMessage]);
+
   return (
     <div className="fixed bottom-0 right-4 sm:right-8 z-50 flex flex-col items-end">
       {/* Chat Window */}
@@ -128,7 +151,7 @@ const ChatInterface: React.FC = () => {
               </div>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={() => onToggle(false)}
               className="text-zinc-500 hover:text-white transition-colors"
             >
               <X size={18} strokeWidth={1} />
@@ -136,7 +159,10 @@ const ChatInterface: React.FC = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-black custom-scrollbar">
+          <div
+            className="flex-1 overflow-y-auto p-6 space-y-6 bg-black custom-scrollbar"
+            data-lenis-prevent
+          >
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -226,7 +252,7 @@ const ChatInterface: React.FC = () => {
       {/* Toggle Button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => onToggle(true)}
           className="bg-black w-16 h-16 flex items-center justify-center shadow-lg border border-zinc-700 hover:border-white transition-all duration-300 mb-6 overflow-hidden p-2.5 rounded-full"
         >
           <img

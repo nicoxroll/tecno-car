@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { ShoppingBag, X, MessageCircle } from "lucide-react";
+import { ShoppingBag, X, MessageCircle, ArrowRight } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { Product, ViewState } from "../types";
 import { supabase } from "../services/supabase";
 
 interface FeaturedProductsProps {
   onNavigate: (view: ViewState) => void;
+  onProductSelect: (product: Product) => void;
 }
 
-const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
+const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
+  onNavigate,
+  onProductSelect,
+}) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +82,17 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
                   <div className="absolute top-4 left-4 bg-black text-white text-[9px] px-2 py-1 uppercase tracking-widest border border-zinc-800">
                     {product.category}
                   </div>
+                  {product.discount_price &&
+                    product.discount_price < product.price && (
+                      <div className="absolute top-4 right-4 bg-white text-black text-[9px] font-bold px-2 py-1 uppercase tracking-widest">
+                        {Math.round(
+                          ((product.price - product.discount_price) /
+                            product.price) *
+                            100
+                        )}
+                        % OFF
+                      </div>
+                    )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <span className="bg-white text-black px-6 py-3 text-xs tracking-widest uppercase hover:bg-zinc-200 transition-colors border border-white">
                       Ver Detalles
@@ -90,9 +105,23 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
                     <h3 className="text-white text-sm font-light tracking-wider mb-1">
                       {product.name}
                     </h3>
-                    <p className="text-zinc-500 text-xs tracking-widest">
-                      ${product.price.toLocaleString()}
-                    </p>
+                    <div className="flex flex-col">
+                      {product.discount_price &&
+                      product.discount_price < product.price ? (
+                        <>
+                          <span className="text-zinc-600 line-through text-[10px]">
+                            ${product.price.toLocaleString()}
+                          </span>
+                          <span className="text-white text-xs tracking-widest">
+                            ${product.discount_price.toLocaleString()}
+                          </span>
+                        </>
+                      ) : (
+                        <p className="text-zinc-500 text-xs tracking-widest">
+                          ${product.price.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
                   </div>
                   <ShoppingBag
                     size={16}
@@ -140,9 +169,23 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
               <h3 className="text-3xl font-light text-white mb-2 uppercase tracking-tight">
                 {selectedProduct.name}
               </h3>
-              <p className="text-xl font-medium text-white mb-6">
-                ${selectedProduct.price.toLocaleString()}
-              </p>
+              <div className="mb-6">
+                {selectedProduct.discount_price &&
+                selectedProduct.discount_price < selectedProduct.price ? (
+                  <div className="flex flex-col">
+                    <span className="text-zinc-500 line-through text-sm">
+                      ${selectedProduct.price.toLocaleString()}
+                    </span>
+                    <span className="text-xl font-medium text-white">
+                      ${selectedProduct.discount_price.toLocaleString()}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-xl font-medium text-white">
+                    ${selectedProduct.price.toLocaleString()}
+                  </p>
+                )}
+              </div>
 
               <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
                 {selectedProduct.description}
@@ -179,15 +222,16 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({ onNavigate }) => {
                   Agregar al Carrito
                 </button>
 
-                <a
-                  href={`https://wa.me/5492213334444?text=Hola,%20me%20interesa%20saber%20m%C3%A1s%20sobre:%20${selectedProduct.name}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={() => {
+                    onProductSelect(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
                   className="flex items-center justify-center gap-3 border border-zinc-700 text-white py-4 px-6 text-xs uppercase tracking-[0.2em] hover:border-white hover:bg-zinc-900 transition-colors"
                 >
-                  <MessageCircle size={16} />
-                  Consultar Precio
-                </a>
+                  <ArrowRight size={16} />
+                  Más Información
+                </button>
               </div>
             </div>
           </div>
