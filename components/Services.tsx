@@ -117,9 +117,9 @@ const Services: React.FC = () => {
                 </div>
 
                 {/* Dot on Line - Centered */}
-                <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center transform -translate-x-1/2">
+                <div className="hidden md:flex absolute left-1/2 w-4 h-4 bg-black border border-zinc-500 z-10 items-center justify-center transform -translate-x-1/2 rounded-full">
                   <div
-                    className={`w-2 h-2 bg-white transition-all duration-700 delay-300 ${
+                    className={`w-2 h-2 bg-white rounded-full transition-all duration-700 delay-300 ${
                       isVisible ? "scale-100 opacity-100" : "scale-0 opacity-0"
                     }`}
                   ></div>

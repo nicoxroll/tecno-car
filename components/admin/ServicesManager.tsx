@@ -524,7 +524,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       }`}
                     >
                       <div
-                        className="relative group overflow-hidden border border-zinc-800 bg-black aspect-square cursor-pointer rounded-full"
+                        className="relative group overflow-hidden border border-zinc-800 bg-black aspect-[4/3] cursor-pointer"
                         onClick={() => setEditingService(service)}
                       >
                         <img
