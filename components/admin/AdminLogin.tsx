@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { supabase } from '../../services/supabase';
+import React, { useState } from "react";
+import { supabase } from "../../services/supabase";
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -7,8 +7,8 @@ interface AdminLoginProps {
 }
 
 const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +29,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
         onLogin();
       }
     } catch (err: any) {
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message || "Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
@@ -58,7 +58,9 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
             />
           </div>
           <div>
-            <label className="block text-zinc-400 text-sm mb-2">Contraseña</label>
+            <label className="block text-zinc-400 text-sm mb-2">
+              Contraseña
+            </label>
             <input
               type="password"
               value={password}
@@ -72,7 +74,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
             disabled={loading}
             className="w-full bg-white text-black py-3 uppercase tracking-widest text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Iniciando...' : 'Iniciar Sesión'}
+            {loading ? "Iniciando..." : "Iniciar Sesión"}
           </button>
         </form>
         <button
