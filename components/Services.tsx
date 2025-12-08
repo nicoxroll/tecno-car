@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
 import { ArrowRight, X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import { Service, ViewState } from "../types";
 import { loadServices } from "../utils/dataLoader";
 
@@ -76,8 +76,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-24">
           <h2 className="text-4xl md:text-5xl font-thin text-white tracking-tight uppercase mb-4">
-            Tecnología{" "}
-            <span className="font-thin text-zinc-400">Aplicada</span>
+            Tecnología <span className="font-thin text-zinc-400">Aplicada</span>
           </h2>
           <div className="w-12 h-[1px] bg-white mx-auto"></div>
         </div>
