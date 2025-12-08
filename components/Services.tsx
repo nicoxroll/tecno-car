@@ -77,7 +77,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
         <div className="text-center mb-24">
           <h2 className="text-4xl md:text-5xl font-thin text-white tracking-tight uppercase mb-4">
             Tecnología{" "}
-            <span className="font-medium text-zinc-500">Aplicada</span>
+            <span className="font-thin text-zinc-400">Aplicada</span>
           </h2>
           <div className="w-12 h-[1px] bg-white mx-auto"></div>
         </div>
