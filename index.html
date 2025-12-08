@@ -22,43 +22,7 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS for Preview -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                DEFAULT: '#ffffff',
-                dark: '#d4d4d8',
-                accent: '#a1a1aa',
-              },
-              dark: {
-                bg: '#000000',
-                card: '#09090b',
-                text: '#fafafa',
-                muted: '#71717a'
-              }
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.5s ease-out',
-              'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              'bounce': 'bounce 1s infinite',
-            },
-            keyframes: {
-              fadeIn: {
-                'from': { opacity: '0', transform: 'translateY(10px)' },
-                'to': { opacity: '1', transform: 'translateY(0)' },
-              }
-            }
-          },
-        },
-      }
-    </script>
+    <!-- Tailwind CSS for Preview removed to avoid conflicts with build -->
     
     <style>
       /* BASE STYLES - CRITICAL FOR SCROLLING */

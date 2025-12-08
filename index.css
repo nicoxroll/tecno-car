@@ -6,6 +6,12 @@
   color-scheme: dark;
 }
 
+@layer base {
+  body {
+    @apply font-sans antialiased text-dark-text bg-dark-bg;
+  }
+}
+
 /* 
   Note: Core styles and theme config are currently handled in index.html 
   to ensure immediate preview rendering without a build step.
