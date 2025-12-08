@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { loadProducts, loadServices } from '../utils/dataLoader';
-import { Product, Service } from '../types';
-import { supabase } from '../services/supabase';
-import AdminLogin from './admin/AdminLogin';
-import AdminNav from './admin/AdminNav';
-import DashboardStats from './admin/DashboardStats';
-import ProductsManager from './admin/ProductsManager';
-import ServicesManager from './admin/ServicesManager';
-import SalesManager from './admin/SalesManager';
-import SettingsManager from './admin/SettingsManager';
-import GalleryManager from './admin/GalleryManager';
+import React, { useState, useEffect } from "react";
+import { loadProducts, loadServices } from "../utils/dataLoader";
+import { Product, Service } from "../types";
+import { supabase } from "../services/supabase";
+import AdminLogin from "./admin/AdminLogin";
+import AdminNav from "./admin/AdminNav";
+import DashboardStats from "./admin/DashboardStats";
+import ProductsManager from "./admin/ProductsManager";
+import ServicesManager from "./admin/ServicesManager";
+import SalesManager from "./admin/SalesManager";
+import SettingsManager from "./admin/SettingsManager";
+import GalleryManager from "./admin/GalleryManager";
 
 const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'sales' | 'products' | 'services' | 'gallery' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<
+    "dashboard" | "sales" | "products" | "services" | "gallery" | "settings"
+  >("dashboard");
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,12 +38,12 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       try {
         const [productsData, servicesData] = await Promise.all([
           loadProducts(),
-          loadServices()
+          loadServices(),
         ]);
         setProducts(productsData);
         setServices(servicesData);
       } catch (error) {
-        console.error('Error loading data:', error);
+        console.error("Error loading data:", error);
       }
     };
     loadData();
@@ -74,9 +76,9 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div className="flex items-center gap-4">
-            <img 
-              src="https://i.ibb.co/dJgTzQQP/merlano-modified.png" 
-              alt="Merlano Logo" 
+            <img
+              src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
+              alt="Merlano Logo"
               className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
             />
             <h1 className="text-2xl sm:text-3xl font-light text-white uppercase tracking-tight">
@@ -101,40 +103,30 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
         <AdminNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === 'dashboard' && (
+        {activeTab === "dashboard" && (
           <DashboardStats products={products} services={services} />
         )}
 
-        {activeTab === 'sales' && (
-          <SalesManager />
+        {activeTab === "sales" && <SalesManager />}
+
+        {activeTab === "products" && (
+          <ProductsManager products={products} setProducts={setProducts} />
         )}
 
-        {activeTab === 'products' && (
-          <ProductsManager 
-            products={products} 
-            setProducts={setProducts} 
-          />
+        {activeTab === "services" && (
+          <ServicesManager services={services} setServices={setServices} />
         )}
 
-        {activeTab === 'services' && (
-          <ServicesManager 
-            services={services} 
-            setServices={setServices} 
-          />
-        )}
+        {activeTab === "gallery" && <GalleryManager />}
 
-        {activeTab === 'gallery' && (
-          <GalleryManager />
-        )}
-
-        {activeTab === 'settings' && (
-          <SettingsManager />
-        )}
+        {activeTab === "settings" && <SettingsManager />}
       </div>
 
       <div className="border-t border-zinc-900 py-8 mt-20">
         <div className="flex justify-center items-center gap-2 opacity-50">
-            <span className="text-zinc-600 text-[10px] uppercase tracking-widest">Desarrollado por Arise</span>
+          <span className="text-zinc-600 text-[10px] uppercase tracking-widest">
+            Desarrollado por Arise
+          </span>
         </div>
       </div>
     </div>

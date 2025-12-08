@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { X } from 'lucide-react';
+import React, { useEffect } from "react";
+import { X } from "lucide-react";
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,12 +11,12 @@ interface ModalProps {
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -34,7 +34,9 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       >
         {/* Header */}
         <div className="flex justify-between items-center mb-8 sticky top-0 bg-zinc-950 z-10 pb-4 border-b border-zinc-800/50">
-          <h3 className="text-2xl font-light text-white uppercase tracking-tight">{title}</h3>
+          <h3 className="text-2xl font-light text-white uppercase tracking-tight">
+            {title}
+          </h3>
           <button
             onClick={onClose}
             className="text-zinc-400 hover:text-white transition-colors p-2"

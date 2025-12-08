@@ -1,4 +1,4 @@
-import { Toaster } from 'sonner';
+import { Toaster } from "sonner";
 import Lenis from "lenis";
 import { useEffect, useState } from "react";
 import About from "./components/About";
@@ -24,9 +24,19 @@ import { Product, ViewState } from "./types";
 function App() {
   const [currentView, setCurrentView] = useState<ViewState>("landing");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  
+
   // Fixed sections order
-  const sectionsOrder = ['hero', 'highlights', 'services', 'about', 'featured-products', 'gallery', 'newsletter', 'contact', 'footer'];
+  const sectionsOrder = [
+    "hero",
+    "highlights",
+    "services",
+    "about",
+    "featured-products",
+    "gallery",
+    "newsletter",
+    "contact",
+    "footer",
+  ];
 
   useEffect(() => {
     // Initialize Lenis for smooth scrolling
@@ -43,8 +53,8 @@ function App() {
     (window as any).lenis = lenis;
 
     // Check if URL contains /admin
-    if (window.location.pathname === '/admin') {
-      setCurrentView('admin');
+    if (window.location.pathname === "/admin") {
+      setCurrentView("admin");
     }
 
     return () => {
@@ -64,10 +74,10 @@ function App() {
     }
 
     // Update URL for admin
-    if (view === 'admin') {
-      window.history.pushState({}, '', '/admin');
+    if (view === "admin") {
+      window.history.pushState({}, "", "/admin");
     } else {
-      window.history.pushState({}, '', '/');
+      window.history.pushState({}, "", "/");
     }
   };
 
@@ -78,23 +88,30 @@ function App() {
 
   // Define all sections
   const sections = {
-    'hero': <Hero key="hero" />,
-    'highlights': <Highlights key="highlights" />,
-    'services': <Services key="services" />,
-    'about': <About key="about" />,
-    'featured-products': <FeaturedProducts key="featured-products" onNavigate={handleNavigate} />,
-    'gallery': <Gallery key="gallery" />,
-    'newsletter': <Newsletter key="newsletter" />,
-    'contact': <Contact key="contact" />,
-    'footer': <Footer key="footer" />
+    hero: <Hero key="hero" />,
+    highlights: <Highlights key="highlights" />,
+    services: <Services key="services" />,
+    about: <About key="about" />,
+    "featured-products": (
+      <FeaturedProducts key="featured-products" onNavigate={handleNavigate} />
+    ),
+    gallery: <Gallery key="gallery" />,
+    newsletter: <Newsletter key="newsletter" />,
+    contact: <Contact key="contact" />,
+    footer: <Footer key="footer" />,
   };
 
   return (
     <CartProvider>
       <ScrollProvider>
-        <Toaster position="top-center" theme="dark" richColors style={{ zIndex: 9999 }} />
+        <Toaster
+          position="top-center"
+          theme="dark"
+          richColors
+          style={{ zIndex: 9999 }}
+        />
         <div className="min-h-screen bg-black text-white font-sans selection:bg-brand selection:text-white">
-          {currentView !== 'admin' && (
+          {currentView !== "admin" && (
             <Navbar
               onNavigate={handleNavigate}
               currentView={currentView}
@@ -105,7 +122,9 @@ function App() {
           <main>
             {currentView === "landing" && (
               <>
-                {sectionsOrder.map(sectionId => sections[sectionId as keyof typeof sections])}
+                {sectionsOrder.map(
+                  (sectionId) => sections[sectionId as keyof typeof sections]
+                )}
               </>
             )}
 

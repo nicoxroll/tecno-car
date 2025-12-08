@@ -1,13 +1,13 @@
-import { Product, Service } from '../types';
-import { supabase } from '../services/supabase';
+import { Product, Service } from "../types";
+import { supabase } from "../services/supabase";
 
 // Load products from Supabase
 export const loadProducts = async (): Promise<Product[]> => {
   try {
     const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('id', { ascending: true });
+      .from("products")
+      .select("*")
+      .order("id", { ascending: true });
 
     if (error) {
       throw error;
@@ -15,14 +15,14 @@ export const loadProducts = async (): Promise<Product[]> => {
 
     return data || [];
   } catch (error) {
-    console.error('Error loading products from Supabase:', error);
+    console.error("Error loading products from Supabase:", error);
     // Fallback to local JSON if Supabase fails (optional, or just return empty)
     try {
-      const response = await fetch('/data/products.json');
-      if (!response.ok) throw new Error('Failed to load local products');
+      const response = await fetch("/data/products.json");
+      if (!response.ok) throw new Error("Failed to load local products");
       return await response.json();
     } catch (localError) {
-      console.error('Error loading local products:', localError);
+      console.error("Error loading local products:", localError);
       return [];
     }
   }
@@ -32,9 +32,9 @@ export const loadProducts = async (): Promise<Product[]> => {
 export const loadServices = async (): Promise<Service[]> => {
   try {
     const { data, error } = await supabase
-      .from('services')
-      .select('*')
-      .order('order', { ascending: true });
+      .from("services")
+      .select("*")
+      .order("order", { ascending: true });
 
     if (error) {
       throw error;
@@ -42,14 +42,14 @@ export const loadServices = async (): Promise<Service[]> => {
 
     return data || [];
   } catch (error) {
-    console.error('Error loading services from Supabase:', error);
+    console.error("Error loading services from Supabase:", error);
     // Fallback to local JSON
     try {
-      const response = await fetch('/data/services.json');
-      if (!response.ok) throw new Error('Failed to load local services');
+      const response = await fetch("/data/services.json");
+      if (!response.ok) throw new Error("Failed to load local services");
       return await response.json();
     } catch (localError) {
-      console.error('Error loading local services:', localError);
+      console.error("Error loading local services:", localError);
       return [];
     }
   }

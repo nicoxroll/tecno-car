@@ -1,28 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useScroll } from '../context/ScrollContext';
-import { supabase } from '../services/supabase';
-import { Instagram, Facebook } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useScroll } from "../context/ScrollContext";
+import { supabase } from "../services/supabase";
+import { Instagram, Facebook } from "lucide-react";
 
 const Footer: React.FC = () => {
   const { scrollTo } = useScroll();
-  const [developedBy, setDevelopedBy] = useState('Desarrollado por Arise');
+  const [developedBy, setDevelopedBy] = useState("Desarrollado por Arise");
   const [socialLinks, setSocialLinks] = useState({
-    instagram: 'https://instagram.com/merlanotecnologiavehicular',
-    facebook: 'https://facebook.com/merlanotecnologiavehicular'
+    instagram: "https://instagram.com/merlanotecnologiavehicular",
+    facebook: "https://facebook.com/merlanotecnologiavehicular",
   });
 
   useEffect(() => {
     const fetchFooterConfig = async () => {
       const { data } = await supabase
-        .from('site_config')
-        .select('key, value')
-        .in('key', ['footer_developed_by', 'social_instagram', 'social_facebook']);
-      
+        .from("site_config")
+        .select("key, value")
+        .in("key", [
+          "footer_developed_by",
+          "social_instagram",
+          "social_facebook",
+        ]);
+
       if (data) {
-        data.forEach(item => {
-          if (item.key === 'footer_developed_by') setDevelopedBy(item.value);
-          if (item.key === 'social_instagram') setSocialLinks(prev => ({ ...prev, instagram: item.value }));
-          if (item.key === 'social_facebook') setSocialLinks(prev => ({ ...prev, facebook: item.value }));
+        data.forEach((item) => {
+          if (item.key === "footer_developed_by") setDevelopedBy(item.value);
+          if (item.key === "social_instagram")
+            setSocialLinks((prev) => ({ ...prev, instagram: item.value }));
+          if (item.key === "social_facebook")
+            setSocialLinks((prev) => ({ ...prev, facebook: item.value }));
         });
       }
     };
@@ -48,7 +54,7 @@ const Footer: React.FC = () => {
           className="text-zinc-600"
         >
           <g transform="translate(0.000000,109.000000) scale(0.100000,-0.100000)">
-            <path d="M416 1074 c-334 -81 -513 -465 -358 -770 168 -332 595 -406 862 -148 224 216 225 561 1 777 -138 133 -323 185 -505 141z m-59 -363 c80 -80 118 -101 188 -101 70 0 108 21 186 100 121 125 139 104 139 -164 0 -185 -8 -218 -50 -224 -41 -6 -50 20 -50 146 l0 114 -39 -31 c-120 -96 -263 -94 -378 3 l-33 28 0 -113 c0 -119 -10 -149 -51 -149 -42 0 -49 34 -49 227 0 188 6 228 37 236 10 3 19 5 20 6 1 0 37 -35 80 -78z m218 -295 c37 -27 15 -106 -30 -106 -25 0 -48 28 -48 58 0 55 37 78 78 48z"/>
+            <path d="M416 1074 c-334 -81 -513 -465 -358 -770 168 -332 595 -406 862 -148 224 216 225 561 1 777 -138 133 -323 185 -505 141z m-59 -363 c80 -80 118 -101 188 -101 70 0 108 21 186 100 121 125 139 104 139 -164 0 -185 -8 -218 -50 -224 -41 -6 -50 20 -50 146 l0 114 -39 -31 c-120 -96 -263 -94 -378 3 l-33 28 0 -113 c0 -119 -10 -149 -51 -149 -42 0 -49 34 -49 227 0 188 6 228 37 236 10 3 19 5 20 6 1 0 37 -35 80 -78z m218 -295 c37 -27 15 -106 -30 -106 -25 0 -48 28 -48 58 0 55 37 78 78 48z" />
           </g>
         </svg>
       </div>
@@ -65,7 +71,7 @@ const Footer: React.FC = () => {
           className="text-zinc-600"
         >
           <g transform="translate(0.000000,109.000000) scale(0.100000,-0.100000)">
-            <path d="M416 1074 c-334 -81 -513 -465 -358 -770 168 -332 595 -406 862 -148 224 216 225 561 1 777 -138 133 -323 185 -505 141z m-59 -363 c80 -80 118 -101 188 -101 70 0 108 21 186 100 121 125 139 104 139 -164 0 -185 -8 -218 -50 -224 -41 -6 -50 20 -50 146 l0 114 -39 -31 c-120 -96 -263 -94 -378 3 l-33 28 0 -113 c0 -119 -10 -149 -51 -149 -42 0 -49 34 -49 227 0 188 6 228 37 236 10 3 19 5 20 6 1 0 37 -35 80 -78z m218 -295 c37 -27 15 -106 -30 -106 -25 0 -48 28 -48 58 0 55 37 78 78 48z"/>
+            <path d="M416 1074 c-334 -81 -513 -465 -358 -770 168 -332 595 -406 862 -148 224 216 225 561 1 777 -138 133 -323 185 -505 141z m-59 -363 c80 -80 118 -101 188 -101 70 0 108 21 186 100 121 125 139 104 139 -164 0 -185 -8 -218 -50 -224 -41 -6 -50 20 -50 146 l0 114 -39 -31 c-120 -96 -263 -94 -378 3 l-33 28 0 -113 c0 -119 -10 -149 -51 -149 -42 0 -49 34 -49 227 0 188 6 228 37 236 10 3 19 5 20 6 1 0 37 -35 80 -78z m218 -295 c37 -27 15 -106 -30 -106 -25 0 -48 28 -48 58 0 55 37 78 78 48z" />
           </g>
         </svg>
       </div>
@@ -82,17 +88,17 @@ const Footer: React.FC = () => {
               <p>Calle 7 #4143 e 163 y 164, Berisso</p>
             </div>
             <div className="flex items-center gap-6">
-              <a 
-                href={socialLinks.instagram} 
-                target="_blank" 
+              <a
+                href={socialLinks.instagram}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-600 hover:text-white transition-colors"
               >
                 <Instagram size={20} strokeWidth={1} />
               </a>
-              <a 
-                href={socialLinks.facebook} 
-                target="_blank" 
+              <a
+                href={socialLinks.facebook}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-zinc-600 hover:text-white transition-colors"
               >
@@ -103,11 +109,13 @@ const Footer: React.FC = () => {
 
           {/* Services */}
           <div>
-            <h4 className="text-white text-sm uppercase tracking-widest mb-4">Servicios</h4>
+            <h4 className="text-white text-sm uppercase tracking-widest mb-4">
+              Servicios
+            </h4>
             <ul className="space-y-2">
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#services')}
+                  onClick={(e) => handleLinkClick(e, "#services")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Multimedia
@@ -115,7 +123,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#services')}
+                  onClick={(e) => handleLinkClick(e, "#services")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Cerrajería
@@ -123,7 +131,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#services')}
+                  onClick={(e) => handleLinkClick(e, "#services")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Electrónica
@@ -131,7 +139,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#services')}
+                  onClick={(e) => handleLinkClick(e, "#services")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Seguridad
@@ -142,11 +150,13 @@ const Footer: React.FC = () => {
 
           {/* Navigation */}
           <div>
-            <h4 className="text-white text-sm uppercase tracking-widest mb-4">Navegación</h4>
+            <h4 className="text-white text-sm uppercase tracking-widest mb-4">
+              Navegación
+            </h4>
             <ul className="space-y-2">
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#home')}
+                  onClick={(e) => handleLinkClick(e, "#home")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Inicio
@@ -154,7 +164,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#services')}
+                  onClick={(e) => handleLinkClick(e, "#services")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Servicios
@@ -162,7 +172,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#gallery')}
+                  onClick={(e) => handleLinkClick(e, "#gallery")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Galería
@@ -170,7 +180,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button
-                  onClick={(e) => handleLinkClick(e, '#contact')}
+                  onClick={(e) => handleLinkClick(e, "#contact")}
                   className="text-zinc-400 hover:text-white text-sm transition-colors text-left"
                 >
                   Contacto
@@ -193,10 +203,12 @@ const Footer: React.FC = () => {
               className="text-zinc-600 opacity-50"
             >
               <g transform="translate(0.000000,109.000000) scale(0.100000,-0.100000)">
-                <path d="M416 1074 c-334 -81 -513 -465 -358 -770 168 -332 595 -406 862 -148 224 216 225 561 1 777 -138 133 -323 185 -505 141z m-59 -363 c80 -80 118 -101 188 -101 70 0 108 21 186 100 121 125 139 104 139 -164 0 -185 -8 -218 -50 -224 -41 -6 -50 20 -50 146 l0 114 -39 -31 c-120 -96 -263 -94 -378 3 l-33 28 0 -113 c0 -119 -10 -149 -51 -149 -42 0 -49 34 -49 227 0 188 6 228 37 236 10 3 19 5 20 6 1 0 37 -35 80 -78z m218 -295 c37 -27 15 -106 -30 -106 -25 0 -48 28 -48 58 0 55 37 78 78 48z"/>
+                <path d="M416 1074 c-334 -81 -513 -465 -358 -770 168 -332 595 -406 862 -148 224 216 225 561 1 777 -138 133 -323 185 -505 141z m-59 -363 c80 -80 118 -101 188 -101 70 0 108 21 186 100 121 125 139 104 139 -164 0 -185 -8 -218 -50 -224 -41 -6 -50 20 -50 146 l0 114 -39 -31 c-120 -96 -263 -94 -378 3 l-33 28 0 -113 c0 -119 -10 -149 -51 -149 -42 0 -49 34 -49 227 0 188 6 228 37 236 10 3 19 5 20 6 1 0 37 -35 80 -78z m218 -295 c37 -27 15 -106 -30 -106 -25 0 -48 28 -48 58 0 55 37 78 78 48z" />
               </g>
             </svg>
-            <span className="text-zinc-600 text-[10px] uppercase tracking-widest">{developedBy}</span>
+            <span className="text-zinc-600 text-[10px] uppercase tracking-widest">
+              {developedBy}
+            </span>
           </div>
         </div>
       </div>
