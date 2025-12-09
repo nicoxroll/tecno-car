@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { ArrowRight, ShoppingBag, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ShoppingBag, X, MessageCircle, ArrowRight } from "lucide-react";
 import { useCart } from "../context/CartContext";
-import { Product, ViewState } from "../types";
 import { supabase } from "../services/supabase";
+import { Product, ViewState } from "../types";
 
 interface FeaturedProductsProps {
   onNavigate: (view: ViewState) => void;
