@@ -1,3 +1,4 @@
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   ChevronLeft,
   ChevronRight,
@@ -815,17 +816,23 @@ const SettingsManager: React.FC = () => {
                     }}
                     className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   />
-                  <button
-                    onClick={() => {
-                      const newFilters = catalogFilters.filter(
-                        (_, i) => i !== index
-                      );
-                      setCatalogFilters(newFilters);
-                    }}
-                    className="absolute right-2 top-2.5 text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  <MuiTooltip
+                    title="Eliminar filtro"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <X size={14} />
-                  </button>
+                    <button
+                      onClick={() => {
+                        const newFilters = catalogFilters.filter(
+                          (_, i) => i !== index
+                        );
+                        setCatalogFilters(newFilters);
+                      }}
+                      className="absolute right-2 top-2.5 text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <X size={14} />
+                    </button>
+                  </MuiTooltip>
                 </div>
               ))}
             </div>
@@ -960,17 +967,23 @@ const SettingsManager: React.FC = () => {
                     className="flex-1 bg-transparent text-white text-xs focus:outline-none placeholder-zinc-700"
                     placeholder="Servicio..."
                   />
-                  <button
-                    onClick={() => {
-                      const newAmenities = aboutAmenities.filter(
-                        (_, i) => i !== index
-                      );
-                      setAboutAmenities(newAmenities);
-                    }}
-                    className="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                  <MuiTooltip
+                    title="Eliminar servicio"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <X size={12} />
-                  </button>
+                    <button
+                      onClick={() => {
+                        const newAmenities = aboutAmenities.filter(
+                          (_, i) => i !== index
+                        );
+                        setAboutAmenities(newAmenities);
+                      }}
+                      className="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={12} />
+                    </button>
+                  </MuiTooltip>
                 </div>
               ))}
               <button

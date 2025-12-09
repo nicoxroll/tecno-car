@@ -1,3 +1,4 @@
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/es";
@@ -20,14 +21,13 @@ import {
   Table as TableIcon,
   Trash2,
   User,
-  X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { deleteImage, supabase, uploadImage } from "../../services/supabase";
 import { Service } from "../../types";
-import Modal from "./Modal";
 import CustomSelect from "../ui/CustomSelect";
+import Modal from "./Modal";
 
 dayjs.locale("es");
 
@@ -461,65 +461,90 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
         </div>
 
         {activeTab === "services" ? (
-          <button
-            onClick={() =>
-              setCreatingService({
-                title: "",
-                description: "",
-                image: "",
-                category: "",
-              })
-            }
-            className="bg-white text-black px-4 py-2 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
+          <MuiTooltip
+            title="Agregar Servicio"
+            TransitionComponent={Fade}
+            TransitionProps={{ timeout: 600 }}
           >
-            <Plus size={16} />
-            Agregar Servicio
-          </button>
-        ) : (
-          <div className="flex items-center gap-4">
             <button
-              onClick={() => setShowAppointmentFilters(!showAppointmentFilters)}
-              className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center gap-2 ${
-                showAppointmentFilters
-                  ? "bg-white text-black"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-              }`}
-              title="Filtros"
-            >
-              <Filter size={16} />
-            </button>
-            <div className="flex border border-zinc-800">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`px-3 py-2 transition-colors ${
-                  viewMode === "grid"
-                    ? "bg-white text-black"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-                }`}
-                title="Vista Cuadrícula"
-              >
-                <Grid size={16} />
-              </button>
-              <div className="w-[1px] bg-zinc-800"></div>
-              <button
-                onClick={() => setViewMode("table")}
-                className={`px-3 py-2 transition-colors ${
-                  viewMode === "table"
-                    ? "bg-white text-black"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-                }`}
-                title="Vista Tabla"
-              >
-                <TableIcon size={16} />
-              </button>
-            </div>
-            <button
-              onClick={() => setIsCreatingAppointment(true)}
-              className="bg-white text-black px-4 py-2 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
+              onClick={() =>
+                setCreatingService({
+                  title: "",
+                  description: "",
+                  image: "",
+                  category: "",
+                })
+              }
+              className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center"
             >
               <Plus size={16} />
-              Nuevo Turno
             </button>
+          </MuiTooltip>
+        ) : (
+          <div className="flex items-center gap-4">
+            <MuiTooltip
+              title="Filtros"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
+            >
+              <button
+                onClick={() => setShowAppointmentFilters(!showAppointmentFilters)}
+                className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center justify-center ${
+                  showAppointmentFilters
+                    ? "bg-white text-black"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                }`}
+              >
+                <Filter size={16} />
+              </button>
+            </MuiTooltip>
+            <div className="flex border border-zinc-800">
+              <MuiTooltip
+                title="Vista Cuadrícula"
+                TransitionComponent={Fade}
+                TransitionProps={{ timeout: 600 }}
+              >
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`px-3 py-2 transition-colors ${
+                    viewMode === "grid"
+                      ? "bg-white text-black"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                  }`}
+                >
+                  <Grid size={16} />
+                </button>
+              </MuiTooltip>
+              <div className="w-[1px] bg-zinc-800"></div>
+              <MuiTooltip
+                title="Vista Tabla"
+                TransitionComponent={Fade}
+                TransitionProps={{ timeout: 600 }}
+              >
+                <button
+                  onClick={() => setViewMode("table")}
+                  className={`px-3 py-2 transition-colors ${
+                    viewMode === "table"
+                      ? "bg-white text-black"
+                      : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                  }`}
+                >
+                  <TableIcon size={16} />
+                </button>
+              </MuiTooltip>
+            </div>
+            <MuiTooltip
+              title="Nuevo Turno"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
+            >
+              <button
+                onClick={() => setIsCreatingAppointment(true)}
+                className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center"
+              >
+                <Plus size={16} />
+              </button>
+            </MuiTooltip>
           </div>
         )}
       </div>
@@ -918,29 +943,44 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => setSelectedAppointment(appointment)}
-                            className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                          <MuiTooltip
                             title="Ver Detalles"
+                            TransitionComponent={Fade}
+                            TransitionProps={{ timeout: 600 }}
                           >
-                            <Eye size={16} />
-                          </button>
-                          <button
-                            onClick={() => setEditingAppointment(appointment)}
-                            className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                            <button
+                              onClick={() => setSelectedAppointment(appointment)}
+                              className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                            >
+                              <Eye size={16} />
+                            </button>
+                          </MuiTooltip>
+                          <MuiTooltip
                             title="Editar"
+                            TransitionComponent={Fade}
+                            TransitionProps={{ timeout: 600 }}
                           >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeleteAppointment(appointment.id)
-                            }
-                            className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-red-500 transition-colors"
+                            <button
+                              onClick={() => setEditingAppointment(appointment)}
+                              className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          </MuiTooltip>
+                          <MuiTooltip
                             title="Eliminar"
+                            TransitionComponent={Fade}
+                            TransitionProps={{ timeout: 600 }}
                           >
-                            <Trash2 size={16} />
-                          </button>
+                            <button
+                              onClick={() =>
+                                handleDeleteAppointment(appointment.id)
+                              }
+                              className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-red-500 transition-colors"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </MuiTooltip>
                         </div>
                       </td>
                     </tr>
@@ -1143,19 +1183,24 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                     className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="https://..."
                   />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (editingService.image) {
-                        await deleteImage(editingService.image);
-                        setEditingService({ ...editingService, image: "" });
-                      }
-                    }}
-                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                  <MuiTooltip
                     title="Eliminar imagen"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <Trash2 size={18} />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (editingService.image) {
+                          await deleteImage(editingService.image);
+                          setEditingService({ ...editingService, image: "" });
+                        }
+                      }}
+                      className="text-zinc-500 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </MuiTooltip>
                 </div>
               </div>
 
@@ -1464,19 +1509,24 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                   className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                   placeholder="URL de la imagen"
                 />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (creatingService.image) {
-                      await deleteImage(creatingService.image);
-                      setCreatingService({ ...creatingService, image: "" });
-                    }
-                  }}
-                  className="text-zinc-500 hover:text-red-500 transition-colors"
+                <MuiTooltip
                   title="Eliminar imagen"
+                  TransitionComponent={Fade}
+                  TransitionProps={{ timeout: 600 }}
                 >
-                  <Trash2 size={18} />
-                </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (creatingService.image) {
+                        await deleteImage(creatingService.image);
+                        setCreatingService({ ...creatingService, image: "" });
+                      }
+                    }}
+                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </MuiTooltip>
               </div>
               <label className="block text-zinc-400 text-sm mb-2">
                 O subir archivo

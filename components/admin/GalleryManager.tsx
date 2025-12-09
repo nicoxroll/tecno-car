@@ -1,12 +1,17 @@
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
+  ChevronLeft,
+  ChevronRight,
   Edit,
   Facebook,
   Image as ImageIcon,
   Instagram,
   Plus,
   Trash2,
+  X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { deleteImage, supabase, uploadImage } from "../../services/supabase";
 import Modal from "./Modal";
@@ -27,6 +32,7 @@ const GalleryManager: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [editingPost, setEditingPost] = useState<GalleryPost | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryPost | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<Partial<GalleryPost>>({
@@ -154,7 +160,24 @@ const GalleryManager: React.FC = () => {
       image_url: post.image_url,
       description: post.description || "",
       instagram_url: post.instagram_url || "",
+      platform: post.platform || "instagram",
     });
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedImage) return;
+    const currentIndex = posts.findIndex((p) => p.id === selectedImage.id);
+    const nextIndex = (currentIndex + 1) % posts.length;
+    setSelectedImage(posts[nextIndex]);
+  };
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!selectedImage) return;
+    const currentIndex = posts.findIndex((p) => p.id === selectedImage.id);
+    const prevIndex = (currentIndex - 1 + posts.length) % posts.length;
+    setSelectedImage(posts[prevIndex]);
   };
 
   return (
@@ -163,12 +186,18 @@ const GalleryManager: React.FC = () => {
         <h2 className="text-2xl font-light text-white uppercase tracking-tight">
           Galería de Instagram
         </h2>
-        <button
-          onClick={() => setIsCreating(true)}
-          className="bg-white text-black px-4 py-2 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
+        <MuiTooltip
+          title="Nueva Publicación"
+          TransitionComponent={Fade}
+          TransitionProps={{ timeout: 600 }}
         >
-          <Plus size={16} /> Nueva Publicación
-        </button>
+          <button
+            onClick={() => setIsCreating(true)}
+            className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center"
+          >
+            <Plus size={16} />
+          </button>
+        </MuiTooltip>
       </div>
 
       {loading ? (
@@ -192,25 +221,46 @@ const GalleryManager: React.FC = () => {
               key={post.id}
               className="bg-black border border-zinc-800 group relative"
             >
-              <div className="aspect-square overflow-hidden relative">
+              <div
+                className="aspect-square overflow-hidden relative cursor-pointer"
+                onClick={() => setSelectedImage(post)}
+              >
                 <img
                   src={post.image_url}
                   alt={post.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                  <button
-                    onClick={() => openEditModal(post)}
-                    className="p-2 bg-white text-black hover:bg-zinc-200 transition-colors"
+                  <MuiTooltip
+                    title="Editar"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <Edit size={18} />
-                  </button>
-                  <button
-                    onClick={() => setDeletingPostId(post.id)}
-                    className="p-2 bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(post);
+                      }}
+                      className="p-2 bg-white text-black hover:bg-zinc-200 transition-colors"
+                    >
+                      <Edit size={18} />
+                    </button>
+                  </MuiTooltip>
+                  <MuiTooltip
+                    title="Eliminar"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <Trash2 size={18} />
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeletingPostId(post.id);
+                      }}
+                      className="p-2 bg-red-500 text-white hover:bg-red-600 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </MuiTooltip>
                 </div>
               </div>
               <div className="p-4">
@@ -242,6 +292,85 @@ const GalleryManager: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Preview Modal */}
+      {selectedImage &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={() => setSelectedImage(null)}
+          >
+            <div
+              className="relative max-w-5xl w-full max-h-[90vh] bg-zinc-950 border border-zinc-800 flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedImage(null)}
+                className="absolute -top-12 right-0 text-white hover:text-zinc-300 transition-colors flex items-center gap-2"
+              >
+                <span className="text-xs tracking-widest uppercase">
+                  Cerrar
+                </span>
+                <X size={24} strokeWidth={1} />
+              </button>
+
+              <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden border-b border-zinc-900 group">
+                <img
+                  src={selectedImage.image_url}
+                  alt={selectedImage.title}
+                  className="max-h-[70vh] w-auto object-contain"
+                />
+
+                {/* Navigation Arrows */}
+                <button
+                  onClick={handlePrev}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft size={24} strokeWidth={1} />
+                </button>
+
+                <button
+                  onClick={handleNext}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight size={24} strokeWidth={1} />
+                </button>
+              </div>
+
+              <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-zinc-950">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl text-white font-light tracking-[0.2em] uppercase">
+                    {selectedImage.title}
+                  </h3>
+                  {selectedImage.description && (
+                    <p className="text-zinc-400 text-sm font-light max-w-2xl">
+                      {selectedImage.description}
+                    </p>
+                  )}
+                </div>
+                {selectedImage.instagram_url && (
+                  <a
+                    href={selectedImage.instagram_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-zinc-500 hover:text-white uppercase tracking-widest border border-zinc-800 px-6 py-3 transition-colors flex items-center gap-2 whitespace-nowrap"
+                  >
+                    {selectedImage.platform === "facebook" ? (
+                      <>
+                        <Facebook size={16} /> Ver en Facebook
+                      </>
+                    ) : (
+                      <>
+                        <Instagram size={16} /> Ver en Instagram
+                      </>
+                    )}
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
 
       {/* Create/Edit Modal */}
       {(isCreating || editingPost) && (
@@ -302,19 +431,24 @@ const GalleryManager: React.FC = () => {
                     placeholder="URL de la imagen"
                     required
                   />
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (formData.image_url) {
-                        await deleteImage(formData.image_url);
-                        setFormData({ ...formData, image_url: "" });
-                      }
-                    }}
-                    className="text-zinc-500 hover:text-red-500 transition-colors"
+                  <MuiTooltip
                     title="Eliminar imagen"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <Trash2 size={18} />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (formData.image_url) {
+                          await deleteImage(formData.image_url);
+                          setFormData({ ...formData, image_url: "" });
+                        }
+                      }}
+                      className="text-zinc-500 hover:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </MuiTooltip>
                 </div>
               </div>
             </div>

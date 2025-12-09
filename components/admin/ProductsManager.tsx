@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   Bar,
   BarChart,
@@ -459,50 +460,73 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
 
         {activeTab === "products" && (
           <div className="flex gap-2">
-            <button
-              onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-              className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center gap-2 ${
-                isFiltersOpen
-                  ? "bg-white text-black"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-              }`}
+            <MuiTooltip
+              title="Exportar CSV"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
+            >
+              <button
+                onClick={handleExportCSV}
+                className="flex items-center justify-center text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+              >
+                <Download size={16} />
+              </button>
+            </MuiTooltip>
+            <MuiTooltip
               title="Filtros"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
             >
-              <Filter size={16} />
-            </button>
-            <button
-              onClick={() => setIsBulkModalOpen(true)}
-              className="flex items-center gap-2 text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+              <button
+                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+                className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center justify-center ${
+                  isFiltersOpen
+                    ? "bg-white text-black"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                }`}
+              >
+                <Filter size={16} />
+              </button>
+            </MuiTooltip>
+            <MuiTooltip
+              title="Actualización Masiva"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
             >
-              <Layers size={14} /> Bulk
-            </button>
-            <button
-              onClick={handleExportCSV}
-              className="flex items-center gap-2 text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+              <button
+                onClick={() => setIsBulkModalOpen(true)}
+                className="flex items-center justify-center text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+              >
+                <Layers size={16} />
+              </button>
+            </MuiTooltip>
+
+            <MuiTooltip
+              title="Nuevo Producto"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
             >
-              <Download size={14} /> Exportar
-            </button>
-            <button
-              onClick={() => {
-                setModalTagInput("");
-                setCreatingProduct({
-                  name: "",
-                  category: "Multimedia",
-                  price: 0,
-                  image:
-                    "https://images.pexels.com/photos/17345649/pexels-photo-17345649.jpeg?auto=compress&cs=tinysrgb&w=800",
-                  description: "",
-                  features: [],
-                  stock: 0,
-                  available: true,
-                  featured: false,
-                });
-              }}
-              className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
-            >
-              <Plus size={14} />
-              Agregar
-            </button>
+              <button
+                onClick={() => {
+                  setModalTagInput("");
+                  setCreatingProduct({
+                    name: "",
+                    category: "Multimedia",
+                    price: 0,
+                    image:
+                      "https://images.pexels.com/photos/17345649/pexels-photo-17345649.jpeg?auto=compress&cs=tinysrgb&w=800",
+                    description: "",
+                    features: [],
+                    stock: 0,
+                    available: true,
+                    featured: false,
+                  });
+                }}
+                className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center"
+              >
+                <Plus size={16} />
+              </button>
+            </MuiTooltip>
           </div>
         )}
       </div>
@@ -757,29 +781,39 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   {filteredProducts.length} productos encontrados
                 </span>
                 <div className="flex border border-zinc-800">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`px-3 py-2 transition-colors ${
-                      viewMode === "grid"
-                        ? "bg-white text-black"
-                        : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-                    }`}
+                  <MuiTooltip
                     title="Vista Cuadrícula"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <Grid size={16} />
-                  </button>
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className={`px-3 py-2 transition-colors ${
+                        viewMode === "grid"
+                          ? "bg-white text-black"
+                          : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                      }`}
+                    >
+                      <Grid size={16} />
+                    </button>
+                  </MuiTooltip>
                   <div className="w-[1px] bg-zinc-800"></div>
-                  <button
-                    onClick={() => setViewMode("table")}
-                    className={`px-3 py-2 transition-colors ${
-                      viewMode === "table"
-                        ? "bg-white text-black"
-                        : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-                    }`}
+                  <MuiTooltip
                     title="Vista Tabla"
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
                   >
-                    <TableIcon size={16} />
-                  </button>
+                    <button
+                      onClick={() => setViewMode("table")}
+                      className={`px-3 py-2 transition-colors ${
+                        viewMode === "table"
+                          ? "bg-white text-black"
+                          : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                      }`}
+                    >
+                      <TableIcon size={16} />
+                    </button>
+                  </MuiTooltip>
                 </div>
               </div>
 

@@ -1,6 +1,5 @@
 import {
   Calendar,
-  ChevronDown,
   Download,
   Edit,
   Filter,
@@ -12,6 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   Bar,
   BarChart,
@@ -27,8 +27,8 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { supabase } from "../../services/supabase";
-import Modal from "./Modal";
 import CustomSelect from "../ui/CustomSelect";
+import Modal from "./Modal";
 
 interface Order {
   id: number;
@@ -307,71 +307,86 @@ const SalesManager: React.FC = () => {
 
         {activeTab === "list" && (
           <div className="flex gap-2 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                const headers = [
-                  "ID",
-                  "Código",
-                  "Fecha",
-                  "Cliente",
-                  "Total",
-                  "Estado",
-                  "Método Pago",
-                  "Items",
-                ];
-                const csvContent = [
-                  headers.join(";"),
-                  ...orders.map((o) =>
-                    [
-                      o.id,
-                      o.code || "",
-                      o.date,
-                      `"${o.customer}"`,
-                      o.total,
-                      o.status,
-                      o.payment_method || "",
-                      `"${(o.items || []).join(", ")}"`,
-                    ].join(";")
-                  ),
-                ].join("\r\n");
-
-                const blob = new Blob(["\uFEFF" + csvContent], {
-                  type: "text/csv;charset=utf-8;",
-                });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute(
-                  "download",
-                  `ventas_merlano_${new Date().toISOString().split("T")[0]}.csv`
-                );
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-              className="px-3 py-2 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors flex items-center gap-2"
+            <MuiTooltip
               title="Exportar a Excel"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
             >
-              <Download size={16} />
-            </button>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center gap-2 ${
-                showFilters
-                  ? "bg-white text-black"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-              }`}
+              <button
+                onClick={() => {
+                  const headers = [
+                    "ID",
+                    "Código",
+                    "Fecha",
+                    "Cliente",
+                    "Total",
+                    "Estado",
+                    "Método Pago",
+                    "Items",
+                  ];
+                  const csvContent = [
+                    headers.join(";"),
+                    ...orders.map((o) =>
+                      [
+                        o.id,
+                        o.code || "",
+                        o.date,
+                        `"${o.customer}"`,
+                        o.total,
+                        o.status,
+                        o.payment_method || "",
+                        `"${(o.items || []).join(", ")}"`,
+                      ].join(";")
+                    ),
+                  ].join("\r\n");
+
+                  const blob = new Blob(["\uFEFF" + csvContent], {
+                    type: "text/csv;charset=utf-8;",
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const link = document.createElement("a");
+                  link.setAttribute("href", url);
+                  link.setAttribute(
+                    "download",
+                    `ventas_merlano_${new Date().toISOString().split("T")[0]}.csv`
+                  );
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="flex items-center justify-center text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+              >
+                <Download size={16} />
+              </button>
+            </MuiTooltip>
+            <MuiTooltip
               title="Filtros"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
             >
-              <Filter size={16} />
-            </button>
-            <button
-              onClick={openCreateModal}
-              className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 justify-center flex-1 sm:flex-none"
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center justify-center ${
+                  showFilters
+                    ? "bg-white text-black"
+                    : "text-zinc-400 hover:text-white hover:bg-zinc-900"
+                }`}
+              >
+                <Filter size={16} />
+              </button>
+            </MuiTooltip>
+            <MuiTooltip
+              title="Nueva Venta"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
             >
-              <Plus size={14} />
-              Nueva Venta
-            </button>
+              <button
+                onClick={openCreateModal}
+                className="bg-white text-black px-3 py-2 text-xs sm:text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center justify-center"
+              >
+                <Plus size={16} />
+              </button>
+            </MuiTooltip>
           </div>
         )}
       </div>
@@ -413,18 +428,8 @@ const SalesManager: React.FC = () => {
           <table className="w-full min-w-[600px]">
             <thead className="bg-black">
               <tr>
-                <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort("code")}
-                >
-                  <div className="flex items-center gap-1">
-                    Código
-                    {sortField === "code" && (
-                      <span className="text-zinc-500">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </div>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  <div className="flex items-center gap-1">Código</div>
                 </th>
                 <th
                   className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
