@@ -1,11 +1,9 @@
-import { Order, Product, SaleItem } from "../../types";
 import {
   Autocomplete,
-  Avatar,
   Chip,
   Fade,
-  TextField,
   Tooltip as MuiTooltip,
+  TextField,
 } from "@mui/material";
 import {
   Calendar,
@@ -36,6 +34,7 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { supabase } from "../../services/supabase";
+import { Order, Product, SaleItem } from "../../types";
 import CustomSelect from "../ui/CustomSelect";
 import Modal from "./Modal";
 
@@ -127,8 +126,8 @@ const SalesManager: React.FC = () => {
         // Actually, user asked for auto-sum but editable.
         // If we recalculate here, we ignore manual edits.
         // So we should use formData.total which is updated by the effect or the user.
-        calculatedTotal = formData.total; 
-        
+        calculatedTotal = formData.total;
+
         itemsSummary = formSaleItems.map(
           (item) => `${item.product_name} x${item.quantity}`
         );
@@ -495,7 +494,11 @@ const SalesManager: React.FC = () => {
                 <TextField
                   {...params}
                   variant="standard"
-                  placeholder={filterProducts.length === 0 ? "FILTRAR POR PRODUCTOS..." : ""}
+                  placeholder={
+                    filterProducts.length === 0
+                      ? "FILTRAR POR PRODUCTOS..."
+                      : ""
+                  }
                   sx={{
                     "& .MuiInput-underline:before": {
                       borderBottomColor: "#27272a",
@@ -1091,8 +1094,7 @@ const SalesManager: React.FC = () => {
                               ${item.unit_price}
                             </td>
                             <td className="px-4 py-2 text-right">
-                              $
-                              {(item.quantity || 0) * (item.unit_price || 0)}
+                              ${(item.quantity || 0) * (item.unit_price || 0)}
                             </td>
                             <td className="px-4 py-2 text-right">
                               <button

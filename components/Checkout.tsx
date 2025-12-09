@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
 import {
   ArrowLeft,
-  Trash2,
-  CreditCard,
-  CheckCircle,
   Banknote,
   Building2,
+  CheckCircle,
+  CreditCard,
   MessageCircle,
+  Trash2,
 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { supabase } from "../services/supabase";
-import { toast } from "sonner";
 
 interface CheckoutProps {
   onBack: () => void;
