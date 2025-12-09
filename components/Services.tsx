@@ -1,5 +1,6 @@
 import { ArrowRight, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Service, ViewState } from "../types";
 import { loadServices } from "../utils/dataLoader";
 
@@ -154,56 +155,59 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
       </div>
 
       {/* Service Detail Modal */}
-      {selectedService && (
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
-          onClick={() => setSelectedService(null)}
-        >
+      {selectedService &&
+        createPortal(
           <div
-            className="relative max-w-3xl w-full bg-zinc-950 border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={() => setSelectedService(null)}
           >
-            <button
-              onClick={() => setSelectedService(null)}
-              className="absolute top-4 right-4 z-10 text-white bg-black/50 p-2 hover:bg-white hover:text-black transition-all"
+            <div
+              className="relative max-w-3xl w-full bg-zinc-950 border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={20} strokeWidth={1} />
-            </button>
-
-            <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
-              <img
-                src={selectedService.image}
-                alt={selectedService.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-              <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4">
-                {selectedService.category}
-              </span>
-              <h3 className="text-2xl text-white font-light uppercase tracking-tight mb-6">
-                {selectedService.title}
-              </h3>
-              <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
-                {selectedService.fullDescription || selectedService.description}
-              </p>
               <button
-                onClick={() => {
-                  if (onServiceSelect) {
-                    onServiceSelect(selectedService);
-                    setSelectedService(null);
-                  }
-                }}
-                className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
+                onClick={() => setSelectedService(null)}
+                className="absolute top-4 right-4 z-10 text-white bg-black/50 p-2 hover:bg-white hover:text-black transition-all"
               >
-                <ArrowRight size={16} />
-                Más Información
+                <X size={20} strokeWidth={1} />
               </button>
+
+              <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
+                <img
+                  src={selectedService.image}
+                  alt={selectedService.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
+                <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4">
+                  {selectedService.category}
+                </span>
+                <h3 className="text-2xl text-white font-light uppercase tracking-tight mb-6">
+                  {selectedService.title}
+                </h3>
+                <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
+                  {selectedService.fullDescription ||
+                    selectedService.description}
+                </p>
+                <button
+                  onClick={() => {
+                    if (onServiceSelect) {
+                      onServiceSelect(selectedService);
+                      setSelectedService(null);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
+                >
+                  <ArrowRight size={16} />
+                  Más Información
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </section>
   );
 };

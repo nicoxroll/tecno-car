@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ShoppingBag, X, MessageCircle, ArrowRight } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { Product, ViewState } from "../types";
@@ -141,112 +142,114 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
       </div>
 
       {/* Product Detail Modal */}
-      {selectedProduct && (
-        <div
-          className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
-          onClick={() => setSelectedProduct(null)}
-        >
+      {selectedProduct &&
+        createPortal(
           <div
-            className="relative max-w-4xl w-full bg-black border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={() => setSelectedProduct(null)}
           >
-            <button
-              onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 z-10 text-zinc-500 hover:text-white transition-colors bg-black p-2 md:bg-transparent"
+            <div
+              className="relative max-w-4xl w-full bg-black border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={24} strokeWidth={1} />
-            </button>
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-4 right-4 z-10 text-zinc-500 hover:text-white transition-colors bg-black p-2 md:bg-transparent"
+              >
+                <X size={24} strokeWidth={1} />
+              </button>
 
-            {/* Image Side - Full Color in Modal */}
-            <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
-              <img
-                src={selectedProduct.image}
-                alt={selectedProduct.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+              {/* Image Side - Full Color in Modal */}
+              <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
+                <img
+                  src={selectedProduct.image}
+                  alt={selectedProduct.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
-            {/* Content Side */}
-            <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-              <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4 border-l border-white pl-3">
-                {selectedProduct.category}
-              </span>
-              <h3 className="text-3xl font-light text-white mb-2 uppercase tracking-tight">
-                {selectedProduct.name}
-              </h3>
-              {selectedProduct.model && (
-                <p className="text-zinc-500 text-xs uppercase tracking-widest mb-4">
-                  Modelo: {selectedProduct.model}
-                </p>
-              )}
-              <div className="mb-6">
-                {selectedProduct.discount_price &&
-                selectedProduct.discount_price < selectedProduct.price ? (
-                  <div className="flex flex-col">
-                    <span className="text-zinc-500 line-through text-sm">
-                      ${selectedProduct.price.toLocaleString()}
-                    </span>
-                    <span className="text-xl font-medium text-white">
-                      ${selectedProduct.discount_price.toLocaleString()}
-                    </span>
-                  </div>
-                ) : (
-                  <p className="text-xl font-medium text-white">
-                    ${selectedProduct.price.toLocaleString()}
+              {/* Content Side */}
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+                <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4 border-l border-white pl-3">
+                  {selectedProduct.category}
+                </span>
+                <h3 className="text-3xl font-light text-white mb-2 uppercase tracking-tight">
+                  {selectedProduct.name}
+                </h3>
+                {selectedProduct.model && (
+                  <p className="text-zinc-500 text-xs uppercase tracking-widest mb-4">
+                    Modelo: {selectedProduct.model}
                   </p>
                 )}
-              </div>
-
-              <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
-                {selectedProduct.description}
-              </p>
-
-              {selectedProduct.features && (
-                <div className="mb-10">
-                  <h4 className="text-xs text-white uppercase tracking-widest mb-4">
-                    Características
-                  </h4>
-                  <ul className="space-y-2">
-                    {selectedProduct.features.map((feature, idx) => (
-                      <li
-                        key={idx}
-                        className="text-zinc-500 text-xs font-light flex items-center gap-3"
-                      >
-                        <div className="w-1 h-1 bg-white"></div>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="mb-6">
+                  {selectedProduct.discount_price &&
+                  selectedProduct.discount_price < selectedProduct.price ? (
+                    <div className="flex flex-col">
+                      <span className="text-zinc-500 line-through text-sm">
+                        ${selectedProduct.price.toLocaleString()}
+                      </span>
+                      <span className="text-xl font-medium text-white">
+                        ${selectedProduct.discount_price.toLocaleString()}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-xl font-medium text-white">
+                      ${selectedProduct.price.toLocaleString()}
+                    </p>
+                  )}
                 </div>
-              )}
 
-              <div className="flex flex-col gap-4">
-                <button
-                  onClick={() => {
-                    addToCart(selectedProduct);
-                    setSelectedProduct(null);
-                  }}
-                  className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
-                >
-                  <ShoppingBag size={16} />
-                  Agregar al Carrito
-                </button>
+                <p className="text-zinc-400 font-light text-sm leading-relaxed mb-8">
+                  {selectedProduct.description}
+                </p>
 
-                <button
-                  onClick={() => {
-                    onProductSelect(selectedProduct);
-                    setSelectedProduct(null);
-                  }}
-                  className="flex items-center justify-center gap-3 border border-zinc-700 text-white py-4 px-6 text-xs uppercase tracking-[0.2em] hover:border-white hover:bg-zinc-900 transition-colors"
-                >
-                  <ArrowRight size={16} />
-                  Más Información
-                </button>
+                {selectedProduct.features && (
+                  <div className="mb-10">
+                    <h4 className="text-xs text-white uppercase tracking-widest mb-4">
+                      Características
+                    </h4>
+                    <ul className="space-y-2">
+                      {selectedProduct.features.map((feature, idx) => (
+                        <li
+                          key={idx}
+                          className="text-zinc-500 text-xs font-light flex items-center gap-3"
+                        >
+                          <div className="w-1 h-1 bg-white"></div>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-4">
+                  <button
+                    onClick={() => {
+                      addToCart(selectedProduct);
+                      setSelectedProduct(null);
+                    }}
+                    className="flex items-center justify-center gap-3 bg-white text-black py-4 px-6 text-xs uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors border border-white"
+                  >
+                    <ShoppingBag size={16} />
+                    Agregar al Carrito
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      onProductSelect(selectedProduct);
+                      setSelectedProduct(null);
+                    }}
+                    className="flex items-center justify-center gap-3 border border-zinc-700 text-white py-4 px-6 text-xs uppercase tracking-[0.2em] hover:border-white hover:bg-zinc-900 transition-colors"
+                  >
+                    <ArrowRight size={16} />
+                    Más Información
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </section>
   );
 };
