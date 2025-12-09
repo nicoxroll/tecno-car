@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import { ArrowRight, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -60,7 +61,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
   if (loading) {
     return (
       <section className="py-32 bg-black flex items-center justify-center">
-        <div className="text-white text-lg">Cargando servicios...</div>
+        <CircularProgress size={40} sx={{ color: "white" }} />
       </section>
     );
   }

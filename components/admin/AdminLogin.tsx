@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import React, { useState } from "react";
 import { supabase } from "../../services/supabase";
 
@@ -74,9 +75,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onBack }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-black py-3 uppercase tracking-widest text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-white text-black py-3 uppercase tracking-widest text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
           >
-            {loading ? "Iniciando..." : "Iniciar Sesión"}
+            {loading ? (
+              <CircularProgress size={20} sx={{ color: "black" }} />
+            ) : (
+              "Iniciar Sesión"
+            )}
           </button>
         </form>
         <button

@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import {
   ArrowLeft,
   Banknote,
@@ -429,7 +430,7 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                     }`}
                   >
                     {loading ? (
-                      "Procesando..."
+                      <CircularProgress size={16} sx={{ color: "inherit" }} />
                     ) : (
                       <>
                         <CreditCard size={16} /> Confirmar Pedido

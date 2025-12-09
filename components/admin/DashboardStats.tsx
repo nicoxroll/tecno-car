@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import { Calendar, Clock, User } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -15,10 +16,9 @@ import {
   YAxis,
 } from "recharts";
 import { supabase } from "../../services/supabase";
-import { Product, Service } from "../../types";
+import { Service } from "../../types";
 
 interface DashboardStatsProps {
-  products: Product[];
   services: Service[];
 }
 
@@ -46,12 +46,10 @@ const COLORS = [
   "#82ca9d",
 ];
 
-const DashboardStats: React.FC<DashboardStatsProps> = ({
-  products,
-  services,
-}) => {
+const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [products, setProducts] = useState<{ category: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -64,6 +62,13 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
           .order("created_at", { ascending: false });
 
         if (ordersData) setOrders(ordersData);
+
+        // Fetch Products (Categories only)
+        const { data: productsData } = await supabase
+          .from("products")
+          .select("category");
+
+        if (productsData) setProducts(productsData);
 
         // Fetch Appointments
         const { data: appointmentsData } = await supabase
@@ -149,7 +154,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({
   if (loading) {
     return (
       <div className="flex justify-center py-24">
-        <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-white rounded-full"></div>
+        <CircularProgress sx={{ color: "white" }} />
       </div>
     );
   }

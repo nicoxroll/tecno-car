@@ -1,7 +1,8 @@
+import { CircularProgress, Fade } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
-import { Product, Service } from "../types";
-import { loadProducts, loadServices } from "../utils/dataLoader";
+import { Service } from "../types";
+import { loadServices } from "../utils/dataLoader";
 import AdminLogin from "./admin/AdminLogin";
 import AdminNav from "./admin/AdminNav";
 import DashboardStats from "./admin/DashboardStats";
@@ -16,7 +17,6 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<
     "dashboard" | "sales" | "products" | "services" | "gallery" | "settings"
   >("dashboard");
-  const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -36,11 +36,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
     const loadData = async () => {
       try {
-        const [productsData, servicesData] = await Promise.all([
-          loadProducts(),
-          loadServices(),
-        ]);
-        setProducts(productsData);
+        const servicesData = await loadServices();
         setServices(servicesData);
       } catch (error) {
         console.error("Error loading data:", error);
@@ -66,7 +62,7 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-white rounded-full"></div>
+        <CircularProgress sx={{ color: "white" }} />
       </div>
     );
   }
@@ -103,23 +99,58 @@ const Admin: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
         <AdminNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {activeTab === "dashboard" && (
-          <DashboardStats products={products} services={services} />
-        )}
+        <div className="relative min-h-[400px]">
+          {activeTab === "dashboard" && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <DashboardStats services={services} />
+              </div>
+            </Fade>
+          )}
 
-        {activeTab === "sales" && <SalesManager />}
+          {activeTab === "sales" && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <SalesManager />
+              </div>
+            </Fade>
+          )}
 
-        {activeTab === "products" && (
-          <ProductsManager products={products} setProducts={setProducts} />
-        )}
+          {activeTab === "products" && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <ProductsManager />
+              </div>
+            </Fade>
+          )}
 
-        {activeTab === "services" && (
-          <ServicesManager services={services} setServices={setServices} />
-        )}
+          {activeTab === "services" && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <ServicesManager
+                  services={services}
+                  setServices={setServices}
+                />
+              </div>
+            </Fade>
+          )}
 
-        {activeTab === "gallery" && <GalleryManager />}
+          {activeTab === "gallery" && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <GalleryManager />
+              </div>
+            </Fade>
+          )}
 
-        {activeTab === "settings" && <SettingsManager />}
+          {activeTab === "settings" && (
+            <Fade in={true} timeout={500}>
+              <div>
+                <SettingsManager />
+              </div>
+            </Fade>
+          )}
+        </div>
       </div>
 
       <div className="border-t border-zinc-900 py-8 mt-20">

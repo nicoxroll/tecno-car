@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import { ArrowRight, ShoppingBag, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -59,8 +60,8 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-zinc-500">
-            Cargando productos destacados...
+          <div className="flex justify-center py-12">
+            <CircularProgress size={30} sx={{ color: "white" }} />
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-12 text-zinc-500">

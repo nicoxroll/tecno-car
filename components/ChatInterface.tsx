@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
-import { X, ArrowRight, ExternalLink, Loader2 } from "lucide-react";
+import { CircularProgress } from "@mui/material";
+import { ArrowRight, ExternalLink, X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import { streamChat } from "../services/geminiService";
 import { ChatMessage } from "../types";
 
@@ -255,7 +256,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 } transition-all duration-200`}
               >
                 {isLoading ? (
-                  <Loader2 size={18} className="animate-spin" />
+                  <CircularProgress size={18} sx={{ color: "inherit" }} />
                 ) : (
                   <ArrowRight size={18} strokeWidth={1} />
                 )}

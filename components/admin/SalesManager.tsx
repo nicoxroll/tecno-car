@@ -1,12 +1,15 @@
 import {
   Autocomplete,
   Chip,
+  CircularProgress,
   Fade,
   Tooltip as MuiTooltip,
   TextField,
 } from "@mui/material";
 import {
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   Download,
   Edit,
   Filter,
@@ -51,6 +54,11 @@ const SalesManager: React.FC = () => {
     null
   );
 
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage] = useState(6);
+  const [totalCount, setTotalCount] = useState(0);
+
   // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
@@ -77,9 +85,20 @@ const SalesManager: React.FC = () => {
   const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
   useEffect(() => {
-    fetchOrders();
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [
+    page,
+    rowsPerPage,
+    filterPaymentMethod,
+    searchTerm,
+    filterProducts,
+    sortField,
+    sortDirection,
+  ]);
 
   const fetchProducts = async () => {
     const { data } = await supabase.from("products").select("*").order("name");
@@ -89,13 +108,60 @@ const SalesManager: React.FC = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+
+      let saleIds: number[] | null = null;
+
+      if (filterProducts.length > 0) {
+        const { data: items } = await supabase
+          .from("sale_items")
+          .select("sale_id")
+          .in(
+            "product_id",
+            filterProducts.map((p) => p.id)
+          );
+
+        if (items) {
+          saleIds = [...new Set(items.map((i) => i.sale_id))];
+        } else {
+          saleIds = [];
+        }
+      }
+
+      let query = supabase
         .from("sales")
-        .select("*, sale_items(*)")
-        .order("created_at", { ascending: false });
+        .select("*, sale_items(*)", { count: "exact" });
+
+      if (saleIds !== null) {
+        query = query.in("id", saleIds);
+      }
+
+      if (filterPaymentMethod !== "all") {
+        query = query.eq("payment_method", filterPaymentMethod);
+      }
+
+      if (searchTerm) {
+        if (!isNaN(Number(searchTerm))) {
+          query = query.or(
+            `customer.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%,id.eq.${searchTerm}`
+          );
+        } else {
+          query = query.or(
+            `customer.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%`
+          );
+        }
+      }
+
+      query = query.order(sortField, { ascending: sortDirection === "asc" });
+
+      const from = page * rowsPerPage;
+      const to = from + rowsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
       setOrders(data || []);
+      setTotalCount(count || 0);
     } catch (error) {
       console.error("Error fetching orders:", error);
     } finally {
@@ -290,60 +356,6 @@ const SalesManager: React.FC = () => {
       setSortDirection("asc");
     }
   };
-
-  const filteredOrders = useMemo(() => {
-    let filtered = orders.filter((order) => {
-      const matchesMethod =
-        filterPaymentMethod === "all" ||
-        order.payment_method === filterPaymentMethod;
-      const matchesSearch =
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (order.code &&
-          order.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        order.id.toString().includes(searchTerm);
-
-      const matchesProducts =
-        filterProducts.length === 0 ||
-        (order.sale_items &&
-          order.sale_items.some((item) =>
-            filterProducts.some((p) => p.id === item.product_id)
-          ));
-
-      return matchesMethod && matchesSearch && matchesProducts;
-    });
-
-    // Sort the filtered results
-    filtered.sort((a, b) => {
-      let aValue: any = a[sortField];
-      let bValue: any = b[sortField];
-
-      // Handle null/undefined values
-      if (aValue === undefined || aValue === null) aValue = "";
-      if (bValue === undefined || bValue === null) bValue = "";
-
-      // Handle different data types
-      if (sortField === "total") {
-        aValue = Number(aValue) || 0;
-        bValue = Number(bValue) || 0;
-      } else if (sortField === "date") {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
-      } else if (sortField === "code") {
-        // Ensure code is treated as a string for sorting
-        aValue = String(aValue || "").toLowerCase();
-        bValue = String(bValue || "").toLowerCase();
-      } else if (typeof aValue === "string") {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      }
-
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    return filtered;
-  }, [orders, filterPaymentMethod, searchTerm, sortField, sortDirection]);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -661,18 +673,18 @@ const SalesManager: React.FC = () => {
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4 text-zinc-400">
-                    Cargando...
+                  <td colSpan={8} className="text-center py-12">
+                    <CircularProgress size={30} sx={{ color: "white" }} />
                   </td>
                 </tr>
-              ) : filteredOrders.length === 0 ? (
+              ) : orders.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="text-center py-4 text-zinc-400">
                     No hay ventas registradas
                   </td>
                 </tr>
               ) : (
-                filteredOrders.map((order) => (
+                orders.map((order) => (
                   <tr key={order.id}>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white font-mono">
                       {order.code || `#${order.id}`}
@@ -732,6 +744,37 @@ const SalesManager: React.FC = () => {
               )}
             </tbody>
           </table>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800">
+            <div className="text-sm text-zinc-400">
+              Mostrando {page * rowsPerPage + 1} a{" "}
+              {Math.min((page + 1) * rowsPerPage, totalCount)} de {totalCount}{" "}
+              resultados
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
+                className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <span className="text-sm text-zinc-400">
+                Página {page + 1} de{" "}
+                {Math.max(1, Math.ceil(totalCount / rowsPerPage))}
+              </span>
+              <button
+                onClick={() =>
+                  setPage(
+                    Math.min(Math.ceil(totalCount / rowsPerPage) - 1, page + 1)
+                  )
+                }
+                disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-6 animate-fade-in">

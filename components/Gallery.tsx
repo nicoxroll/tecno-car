@@ -1,3 +1,4 @@
+import { CircularProgress } from "@mui/material";
 import {
   ArrowRight,
   ChevronLeft,
@@ -188,17 +189,17 @@ const Gallery: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 gap-0.5 bg-zinc-900 border border-zinc-900">
-          {loading
-            ? // Loading skeleton
-              Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="group relative aspect-square overflow-hidden bg-zinc-900 animate-pulse"
-                >
-                  <div className="w-full h-full bg-zinc-800"></div>
-                </div>
-              ))
-            : posts.map((post) => (
+          {loading ? (
+            <div className="col-span-full flex justify-center py-24 bg-black">
+              <CircularProgress sx={{ color: "white" }} />
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="col-span-full py-24 text-center text-zinc-500">
+              No hay publicaciones disponibles.
+            </div>
+          ) : (
+            <>
+              {posts.map((post) => (
                 <div
                   key={post.id}
                   className="group relative aspect-square overflow-hidden bg-zinc-900 cursor-pointer"
@@ -230,6 +231,8 @@ const Gallery: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </>
+          )}
         </div>
       </div>
 

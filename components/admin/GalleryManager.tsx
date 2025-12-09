@@ -1,4 +1,4 @@
-import { Fade, Tooltip as MuiTooltip } from "@mui/material";
+import { CircularProgress, Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   ChevronLeft,
   ChevronRight,
@@ -202,7 +202,7 @@ const GalleryManager: React.FC = () => {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-white rounded-full"></div>
+          <CircularProgress size={30} sx={{ color: "white" }} />
         </div>
       ) : posts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border border-zinc-800 border-dashed bg-black">

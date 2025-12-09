@@ -1,7 +1,9 @@
-import { Fade, Tooltip as MuiTooltip } from "@mui/material";
+import { CircularProgress, Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   AlertTriangle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   Download,
   Edit,
@@ -19,7 +21,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -39,15 +41,17 @@ import { Product } from "../../types";
 import CustomSelect from "../ui/CustomSelect";
 import Modal from "./Modal";
 
-interface ProductsManagerProps {
-  products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
-}
+interface ProductsManagerProps {}
 
-const ProductsManager: React.FC<ProductsManagerProps> = ({
-  products,
-  setProducts,
-}) => {
+const ProductsManager: React.FC<ProductsManagerProps> = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage] = useState(6);
+  const [totalCount, setTotalCount] = useState(0);
+
   const [activeTab, setActiveTab] = useState<"products" | "stats">("products");
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
   const [priceRange, setPriceRange] = useState<number>(1000000);
@@ -95,6 +99,59 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
     };
     fetchCategories();
   }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      let query = supabase.from("products").select("*", { count: "exact" });
+
+      if (selectedCategory !== "Todos") {
+        query = query.eq("category", selectedCategory);
+      }
+
+      if (priceRange < 1000000) {
+        query = query.lte("price", priceRange);
+      }
+
+      if (searchQuery) {
+        query = query.ilike("name", `%${searchQuery}%`);
+      }
+
+      if (searchTags.length > 0) {
+        query = query.contains("tags", searchTags);
+      }
+
+      query = query.order(sortField, { ascending: sortDirection === "asc" });
+
+      const from = page * rowsPerPage;
+      const to = from + rowsPerPage - 1;
+      query = query.range(from, to);
+
+      const { data, error, count } = await query;
+
+      if (error) throw error;
+      setProducts(data || []);
+      setTotalCount(count || 0);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      toast.error("Error al cargar productos");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [
+    page,
+    rowsPerPage,
+    selectedCategory,
+    priceRange,
+    searchQuery,
+    searchTags,
+    sortField,
+    sortDirection,
+  ]);
 
   // Bulk Update State
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -365,57 +422,6 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
       toast.error("Error al crear el producto: " + (error as any).message);
     }
   };
-
-  const filteredProducts = useMemo(() => {
-    let filtered = products.filter((p) => {
-      const matchesCategory =
-        selectedCategory === "Todos" || p.category === selectedCategory;
-      const matchesPrice = p.price <= priceRange;
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTags =
-        searchTags.length === 0 ||
-        searchTags.every((tag) =>
-          p.tags?.some((pt) => pt.toLowerCase().includes(tag.toLowerCase()))
-        );
-
-      return matchesCategory && matchesPrice && matchesSearch && matchesTags;
-    });
-
-    // Sort the filtered products
-    filtered.sort((a, b) => {
-      let aValue: any = a[sortField as keyof Product];
-      let bValue: any = b[sortField as keyof Product];
-
-      // Handle different data types
-      if (typeof aValue === "string") {
-        aValue = aValue.toLowerCase();
-        bValue = bValue.toLowerCase();
-      } else if (typeof aValue === "number") {
-        // Numbers are fine as is
-      } else if (typeof aValue === "boolean") {
-        aValue = aValue ? 1 : 0;
-        bValue = bValue ? 1 : 0;
-      }
-
-      if (sortDirection === "asc") {
-        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
-      } else {
-        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
-      }
-    });
-
-    return filtered;
-  }, [
-    products,
-    selectedCategory,
-    priceRange,
-    searchQuery,
-    searchTags,
-    sortField,
-    sortDirection,
-  ]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -778,7 +784,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
             <div className="bg-black border border-zinc-800 overflow-hidden">
               <div className="px-4 py-3 border-b border-zinc-800 flex justify-between items-center">
                 <span className="text-zinc-400 text-sm">
-                  {filteredProducts.length} productos encontrados
+                  {totalCount} productos encontrados
                 </span>
                 <div className="flex border border-zinc-800">
                   <MuiTooltip
@@ -899,81 +905,94 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-800">
-                      {filteredProducts.map((product) => (
-                        <tr
-                          key={product.id}
-                          className="hover:bg-zinc-900 transition-colors"
-                        >
-                          <td className="px-4 py-4">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-12 h-12 object-cover border border-zinc-700"
-                              />
-                              <div>
-                                <div className="text-white text-sm font-medium">
-                                  {product.name}
-                                </div>
-                                <div className="text-zinc-500 text-xs">
-                                  {product.description.substring(0, 50)}...
-                                </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 text-sm text-zinc-400">
-                            {product.category}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-white font-medium">
-                            {product.discount_price &&
-                            product.discount_price < product.price ? (
-                              <div className="flex flex-col">
-                                <span className="text-zinc-500 line-through text-xs">
-                                  ${product.price.toLocaleString()}
-                                </span>
-                                <span className="text-green-400">
-                                  ${product.discount_price.toLocaleString()}
-                                </span>
-                              </div>
-                            ) : (
-                              `$${product.price.toLocaleString()}`
-                            )}
-                          </td>
-                          <td className="px-4 py-4 text-sm text-zinc-400">
-                            {product.stock || "N/A"}
-                          </td>
-                          <td className="px-4 py-4">
-                            <span
-                              className={`px-2 py-1 text-xs ${
-                                product.available
-                                  ? "bg-green-900 text-green-300"
-                                  : "bg-red-900 text-red-300"
-                              }`}
-                            >
-                              {product.available ? "Disponible" : "Agotado"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => {
-                                  setModalTagInput("");
-                                  setEditingProduct(product);
-                                }}
-                                className="text-zinc-400 hover:text-white transition-colors"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                onClick={() => setDeletingProductId(product.id)}
-                                className="text-zinc-400 hover:text-red-500 transition-colors"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
+                      {loading ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-12">
+                            <CircularProgress
+                              size={30}
+                              sx={{ color: "white" }}
+                            />
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        products.map((product) => (
+                          <tr
+                            key={product.id}
+                            className="hover:bg-zinc-900 transition-colors"
+                          >
+                            <td className="px-4 py-4">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-12 h-12 object-cover border border-zinc-700"
+                                />
+                                <div>
+                                  <div className="text-white text-sm font-medium">
+                                    {product.name}
+                                  </div>
+                                  <div className="text-zinc-500 text-xs">
+                                    {product.description.substring(0, 50)}...
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-sm text-zinc-400">
+                              {product.category}
+                            </td>
+                            <td className="px-4 py-4 text-sm text-white font-medium">
+                              {product.discount_price &&
+                              product.discount_price < product.price ? (
+                                <div className="flex flex-col">
+                                  <span className="text-zinc-500 line-through text-xs">
+                                    ${product.price.toLocaleString()}
+                                  </span>
+                                  <span className="text-green-400">
+                                    ${product.discount_price.toLocaleString()}
+                                  </span>
+                                </div>
+                              ) : (
+                                `$${product.price.toLocaleString()}`
+                              )}
+                            </td>
+                            <td className="px-4 py-4 text-sm text-zinc-400">
+                              {product.stock || "N/A"}
+                            </td>
+                            <td className="px-4 py-4">
+                              <span
+                                className={`px-2 py-1 text-xs ${
+                                  product.available
+                                    ? "bg-green-900 text-green-300"
+                                    : "bg-red-900 text-red-300"
+                                }`}
+                              >
+                                {product.available ? "Disponible" : "Agotado"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => {
+                                    setModalTagInput("");
+                                    setEditingProduct(product);
+                                  }}
+                                  className="text-zinc-400 hover:text-white transition-colors"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setDeletingProductId(product.id)
+                                  }
+                                  className="text-zinc-400 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -988,111 +1007,117 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                       : "grid-cols-1 md:grid-cols-3 xl:grid-cols-4"
                   }`}
                 >
-                  {filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="group bg-black border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col"
-                    >
+                  {loading ? (
+                    <div className="col-span-full flex justify-center py-12">
+                      <CircularProgress size={30} sx={{ color: "white" }} />
+                    </div>
+                  ) : (
+                    products.map((product) => (
                       <div
-                        className="relative aspect-square overflow-hidden bg-black cursor-pointer"
-                        onClick={() => {
-                          setModalTagInput("");
-                          setEditingProduct(product);
-                        }}
+                        key={product.id}
+                        className="group bg-black border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col"
                       >
-                        <img
-                          src={
-                            product.image ||
-                            "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
-                          }
-                          alt={product.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                        />
-                        {product.discount_price &&
-                          product.discount_price < product.price && (
-                            <div className="absolute top-2 right-2 bg-white text-black text-[10px] font-bold px-2 py-1 z-10">
-                              {Math.round(
-                                ((product.price - product.discount_price) /
-                                  product.price) *
-                                  100
-                              )}
-                              % OFF
-                            </div>
-                          )}
-                        {/* Edit/Delete Overlay */}
-                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-center gap-3">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setModalTagInput("");
-                              setEditingProduct(product);
-                            }}
-                            className="bg-white text-black px-4 py-2 text-xs tracking-widest uppercase hover:bg-zinc-200 transition-colors flex items-center gap-2 shadow-lg"
-                          >
-                            <Edit size={14} /> Editar
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeletingProductId(product.id);
-                            }}
-                            className="bg-red-900 text-white px-4 py-2 text-xs tracking-widest uppercase hover:bg-red-800 transition-colors flex items-center gap-2 shadow-lg"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                        <div
+                          className="relative aspect-square overflow-hidden bg-black cursor-pointer"
+                          onClick={() => {
+                            setModalTagInput("");
+                            setEditingProduct(product);
+                          }}
+                        >
+                          <img
+                            src={
+                              product.image ||
+                              "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
+                            }
+                            alt={product.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                          />
+                          {product.discount_price &&
+                            product.discount_price < product.price && (
+                              <div className="absolute top-2 right-2 bg-white text-black text-[10px] font-bold px-2 py-1 z-10">
+                                {Math.round(
+                                  ((product.price - product.discount_price) /
+                                    product.price) *
+                                    100
+                                )}
+                                % OFF
+                              </div>
+                            )}
+                          {/* Edit/Delete Overlay */}
+                          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black to-transparent p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex justify-center gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setModalTagInput("");
+                                setEditingProduct(product);
+                              }}
+                              className="bg-white text-black px-4 py-2 text-xs tracking-widest uppercase hover:bg-zinc-200 transition-colors flex items-center gap-2 shadow-lg"
+                            >
+                              <Edit size={14} /> Editar
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletingProductId(product.id);
+                              }}
+                              className="bg-red-900 text-white px-4 py-2 text-xs tracking-widest uppercase hover:bg-red-800 transition-colors flex items-center gap-2 shadow-lg"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <div
-                        className="p-6 flex flex-col flex-1 cursor-pointer"
-                        onClick={() => {
-                          setModalTagInput("");
-                          setEditingProduct(product);
-                        }}
-                      >
-                        <span className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">
-                          {product.category}
-                        </span>
-                        <h3 className="text-white font-light text-lg mb-2 group-hover:underline decoration-zinc-500 underline-offset-4">
-                          {product.name}
-                        </h3>
-                        <p className="text-zinc-400 text-xs line-clamp-2 mb-4 flex-1">
-                          {product.description || "Sin descripción"}
-                        </p>
-                        <div className="mt-auto flex justify-between items-center pt-4 border-t border-zinc-900">
-                          <div className="flex flex-col">
-                            {product.discount_price &&
-                            product.discount_price < product.price ? (
-                              <>
-                                <span className="text-zinc-500 line-through text-xs">
+                        <div
+                          className="p-6 flex flex-col flex-1 cursor-pointer"
+                          onClick={() => {
+                            setModalTagInput("");
+                            setEditingProduct(product);
+                          }}
+                        >
+                          <span className="text-[10px] text-zinc-500 uppercase tracking-wider mb-2">
+                            {product.category}
+                          </span>
+                          <h3 className="text-white font-light text-lg mb-2 group-hover:underline decoration-zinc-500 underline-offset-4">
+                            {product.name}
+                          </h3>
+                          <p className="text-zinc-400 text-xs line-clamp-2 mb-4 flex-1">
+                            {product.description || "Sin descripción"}
+                          </p>
+                          <div className="mt-auto flex justify-between items-center pt-4 border-t border-zinc-900">
+                            <div className="flex flex-col">
+                              {product.discount_price &&
+                              product.discount_price < product.price ? (
+                                <>
+                                  <span className="text-zinc-500 line-through text-xs">
+                                    ${product.price.toLocaleString()}
+                                  </span>
+                                  <span className="text-white font-medium text-lg">
+                                    ${product.discount_price.toLocaleString()}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-white font-medium text-lg">
                                   ${product.price.toLocaleString()}
                                 </span>
-                                <span className="text-white font-medium text-lg">
-                                  ${product.discount_price.toLocaleString()}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-white font-medium text-lg">
-                                ${product.price.toLocaleString()}
-                              </span>
-                            )}
+                              )}
+                            </div>
+                            <span
+                              className={`text-[10px] uppercase tracking-widest ${
+                                product.available
+                                  ? "text-green-500"
+                                  : "text-red-500"
+                              }`}
+                            >
+                              {product.available ? "Disponible" : "Agotado"}
+                            </span>
                           </div>
-                          <span
-                            className={`text-[10px] uppercase tracking-widest ${
-                              product.available
-                                ? "text-green-500"
-                                : "text-red-500"
-                            }`}
-                          >
-                            {product.available ? "Disponible" : "Agotado"}
-                          </span>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               )}
 
-              {filteredProducts.length === 0 && (
+              {products.length === 0 && (
                 <div className="py-24 text-center border border-zinc-900 border-dashed">
                   <p className="text-zinc-500 font-light mb-2">
                     No se encontraron productos con estos filtros.
@@ -1108,6 +1133,44 @@ const ProductsManager: React.FC<ProductsManagerProps> = ({
                   >
                     Limpiar Filtros
                   </button>
+                </div>
+              )}
+
+              {/* Pagination */}
+              {products.length > 0 && (
+                <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 mt-4">
+                  <div className="text-sm text-zinc-400">
+                    Mostrando {page * rowsPerPage + 1} a{" "}
+                    {Math.min((page + 1) * rowsPerPage, totalCount)} de{" "}
+                    {totalCount} resultados
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setPage(Math.max(0, page - 1))}
+                      disabled={page === 0}
+                      className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <span className="text-sm text-zinc-400">
+                      Página {page + 1} de{" "}
+                      {Math.max(1, Math.ceil(totalCount / rowsPerPage))}
+                    </span>
+                    <button
+                      onClick={() =>
+                        setPage(
+                          Math.min(
+                            Math.ceil(totalCount / rowsPerPage) - 1,
+                            page + 1
+                          )
+                        )
+                      }
+                      disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                      className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
