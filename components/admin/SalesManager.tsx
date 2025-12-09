@@ -1,4 +1,12 @@
-import { Fade, Tooltip as MuiTooltip } from "@mui/material";
+import { Order, Product, SaleItem } from "../../types";
+import {
+  Autocomplete,
+  Avatar,
+  Chip,
+  Fade,
+  TextField,
+  Tooltip as MuiTooltip,
+} from "@mui/material";
 import {
   Calendar,
   Download,
@@ -10,6 +18,7 @@ import {
   Search,
   Trash2,
   TrendingUp,
+  X,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -30,22 +39,12 @@ import { supabase } from "../../services/supabase";
 import CustomSelect from "../ui/CustomSelect";
 import Modal from "./Modal";
 
-interface Order {
-  id: number;
-  code?: string;
-  date: string;
-  customer: string;
-  total: number;
-  status: string;
-  items: string[];
-  payment_method?: string;
-}
-
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
 
 const SalesManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"list" | "stats">("list");
   const [orders, setOrders] = useState<Order[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -57,6 +56,7 @@ const SalesManager: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filterPaymentMethod, setFilterPaymentMethod] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterProducts, setFilterProducts] = useState<Product[]>([]);
 
   // Sorting
   const [sortField, setSortField] = useState<keyof Order>("date");
@@ -73,17 +73,26 @@ const SalesManager: React.FC = () => {
     payment_method: "Transferencia",
   });
   const [itemsText, setItemsText] = useState("");
+  const [formSaleItems, setFormSaleItems] = useState<Partial<SaleItem>[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
   useEffect(() => {
     fetchOrders();
+    fetchProducts();
   }, []);
+
+  const fetchProducts = async () => {
+    const { data } = await supabase.from("products").select("*").order("name");
+    if (data) setProducts(data);
+  };
 
   const fetchOrders = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from("sales")
-        .select("*")
+        .select("*, sale_items(*)")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -95,19 +104,46 @@ const SalesManager: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (formSaleItems.length > 0) {
+      const calculatedTotal = formSaleItems.reduce(
+        (sum, item) => sum + (item.quantity || 0) * (item.unit_price || 0),
+        0
+      );
+      setFormData((prev) => ({ ...prev, total: calculatedTotal }));
+    }
+  }, [formSaleItems]);
+
   const handleSave = async () => {
     try {
+      let calculatedTotal = formData.total;
+      let itemsSummary = itemsText
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      if (formSaleItems.length > 0) {
+        // Recalculate total just in case, but respect manual override if needed?
+        // Actually, user asked for auto-sum but editable.
+        // If we recalculate here, we ignore manual edits.
+        // So we should use formData.total which is updated by the effect or the user.
+        calculatedTotal = formData.total; 
+        
+        itemsSummary = formSaleItems.map(
+          (item) => `${item.product_name} x${item.quantity}`
+        );
+      }
+
       const orderData: any = {
         customer: formData.customer,
         date: formData.date,
         status: formData.status,
-        total: formData.total,
-        items: itemsText
-          .split(",")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        total: calculatedTotal,
+        items: itemsSummary,
         payment_method: formData.payment_method,
       };
+
+      let saleId = editingOrder?.id;
 
       if (editingOrder) {
         const { error } = await supabase
@@ -122,9 +158,36 @@ const SalesManager: React.FC = () => {
           .substring(2, 5)
           .toUpperCase()}`;
 
-        const { error } = await supabase.from("sales").insert([orderData]);
+        const { data, error } = await supabase
+          .from("sales")
+          .insert([orderData])
+          .select()
+          .single();
         if (error) throw error;
+        saleId = data.id;
         toast.success("Pedido creado correctamente");
+      }
+
+      // Handle Sale Items
+      if (saleId && formSaleItems.length > 0) {
+        // Delete existing items for this sale (simple replace strategy)
+        if (editingOrder) {
+          await supabase.from("sale_items").delete().eq("sale_id", saleId);
+        }
+
+        // Insert new items
+        const itemsToInsert = formSaleItems.map((item) => ({
+          sale_id: saleId,
+          product_id: item.product_id,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("sale_items")
+          .insert(itemsToInsert);
+        if (itemsError) throw itemsError;
       }
 
       fetchOrders();
@@ -165,6 +228,7 @@ const SalesManager: React.FC = () => {
       payment_method: "Transferencia",
     });
     setItemsText("");
+    setFormSaleItems([]);
     setEditingOrder(null);
     setIsCreating(true);
   };
@@ -172,6 +236,7 @@ const SalesManager: React.FC = () => {
   const openEditModal = (order: Order) => {
     setFormData(order);
     setItemsText(order.items ? order.items.join(", ") : "");
+    setFormSaleItems(order.sale_items || []);
     setEditingOrder(order);
     setIsCreating(true);
   };
@@ -237,7 +302,15 @@ const SalesManager: React.FC = () => {
         (order.code &&
           order.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
         order.id.toString().includes(searchTerm);
-      return matchesMethod && matchesSearch;
+
+      const matchesProducts =
+        filterProducts.length === 0 ||
+        (order.sale_items &&
+          order.sale_items.some((item) =>
+            filterProducts.some((p) => p.id === item.product_id)
+          ));
+
+      return matchesMethod && matchesSearch && matchesProducts;
     });
 
     // Sort the filtered results
@@ -394,7 +467,7 @@ const SalesManager: React.FC = () => {
       </div>
 
       {showFilters && activeTab === "list" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 px-1 animate-fade-in">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 px-1 animate-fade-in">
           {/* Search */}
           <div className="relative group">
             <Search
@@ -407,6 +480,82 @@ const SalesManager: React.FC = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full bg-transparent border-b border-zinc-800 text-white pl-8 pr-4 py-2 focus:outline-none focus:border-white transition-colors text-xs uppercase tracking-widest placeholder-zinc-600"
+            />
+          </div>
+
+          {/* Product Filter */}
+          <div className="relative group w-full">
+            <Autocomplete
+              multiple
+              options={products}
+              getOptionLabel={(option) => option.name}
+              value={filterProducts}
+              onChange={(_, newValue) => setFilterProducts(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  placeholder={filterProducts.length === 0 ? "FILTRAR POR PRODUCTOS..." : ""}
+                  sx={{
+                    "& .MuiInput-underline:before": {
+                      borderBottomColor: "#27272a",
+                    },
+                    "& .MuiInput-underline:after": {
+                      borderBottomColor: "white",
+                    },
+                    "& .MuiInputBase-input": {
+                      color: "white",
+                      fontSize: "0.75rem",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                    },
+                    "& .MuiInputBase-root": { paddingBottom: "4px" },
+                  }}
+                />
+              )}
+              renderOption={(props, option) => (
+                <li
+                  {...props}
+                  className="bg-black hover:bg-zinc-900 text-white border-b border-zinc-800 last:border-0"
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <img
+                      src={option.image}
+                      alt={option.name}
+                      className="w-8 h-8 object-cover"
+                    />
+                    <span className="text-sm">{option.name}</span>
+                  </div>
+                </li>
+              )}
+              renderTags={(value, getTagProps) =>
+                value.map((option, index) => (
+                  <Chip
+                    variant="outlined"
+                    label={option.name}
+                    size="small"
+                    {...getTagProps({ index })}
+                    sx={{
+                      color: "white",
+                      borderColor: "#3f3f46",
+                      "& .MuiChip-deleteIcon": {
+                        color: "#71717a",
+                        "&:hover": { color: "white" },
+                      },
+                    }}
+                  />
+                ))
+              }
+              PaperComponent={({ children }) => (
+                <div className="bg-black border border-zinc-800 text-white mt-1">
+                  {children}
+                </div>
+              )}
+              sx={{
+                "& .MuiAutocomplete-popupIndicator": { color: "#71717a" },
+                "& .MuiAutocomplete-clearIndicator": { color: "#71717a" },
+                "& .MuiAutocomplete-tag": { margin: "2px" },
+              }}
             />
           </div>
 
@@ -551,7 +700,11 @@ const SalesManager: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
-                      {order.items && order.items.length > 0
+                      {order.sale_items && order.sale_items.length > 0
+                        ? order.sale_items
+                            .map((i) => `${i.product_name} x${i.quantity}`)
+                            .join(", ")
+                        : order.items && order.items.length > 0
                         ? order.items.join(", ")
                         : "-"}
                     </td>
@@ -785,12 +938,191 @@ const SalesManager: React.FC = () => {
               <label className="block text-zinc-400 text-sm mb-2">
                 Productos
               </label>
-              <textarea
-                value={itemsText}
-                onChange={(e) => setItemsText(e.target.value)}
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
-                placeholder="Lista de productos separados por coma"
-              />
+
+              {/* Product Selector */}
+              <div className="flex gap-4 mb-6 items-end">
+                <div className="flex-1">
+                  <Autocomplete
+                    options={products}
+                    getOptionLabel={(option) =>
+                      `${option.name} ($${option.price})`
+                    }
+                    value={
+                      products.find(
+                        (p) => p.id.toString() === selectedProductId
+                      ) || null
+                    }
+                    onChange={(_, newValue) => {
+                      if (newValue)
+                        setSelectedProductId(newValue.id.toString());
+                      else setSelectedProductId("");
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Seleccionar producto"
+                        variant="standard"
+                        sx={{
+                          "& .MuiInput-underline:before": {
+                            borderBottomColor: "#27272a",
+                          },
+                          "& .MuiInput-underline:after": {
+                            borderBottomColor: "white",
+                          },
+                          "& .MuiInputBase-input": { color: "white" },
+                          "& .MuiInputLabel-root": { color: "#a1a1aa" },
+                          "& .MuiInputLabel-root.Mui-focused": {
+                            color: "white",
+                          },
+                        }}
+                      />
+                    )}
+                    renderOption={(props, option) => (
+                      <li
+                        {...props}
+                        className="bg-black hover:bg-zinc-900 text-white border-b border-zinc-800 last:border-0"
+                      >
+                        <div className="flex items-center gap-3 w-full p-1">
+                          <img
+                            src={option.image}
+                            alt={option.name}
+                            className="w-10 h-10 object-cover"
+                          />
+                          <div>
+                            <p className="text-sm font-medium">{option.name}</p>
+                            <p className="text-xs text-zinc-400">
+                              ${option.price}
+                            </p>
+                          </div>
+                        </div>
+                      </li>
+                    )}
+                    PaperComponent={({ children }) => (
+                      <div className="bg-black border border-zinc-800 text-white mt-1">
+                        {children}
+                      </div>
+                    )}
+                    sx={{
+                      "& .MuiAutocomplete-popupIndicator": { color: "#71717a" },
+                      "& .MuiAutocomplete-clearIndicator": { color: "#71717a" },
+                    }}
+                  />
+                </div>
+                <div className="w-20">
+                  <label className="block text-zinc-400 text-xs mb-1">
+                    Cant.
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={selectedQuantity}
+                    onChange={(e) =>
+                      setSelectedQuantity(Number(e.target.value))
+                    }
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-2 py-1 text-sm focus:outline-none focus:border-white transition-colors text-center"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    if (!selectedProductId) return;
+                    const product = products.find(
+                      (p) => p.id.toString() === selectedProductId
+                    );
+                    if (product) {
+                      setFormSaleItems([
+                        ...formSaleItems,
+                        {
+                          product_id: product.id,
+                          product_name: product.name,
+                          quantity: selectedQuantity,
+                          unit_price: product.price,
+                        },
+                      ]);
+                      setSelectedProductId("");
+                      setSelectedQuantity(1);
+                    }
+                  }}
+                  className="bg-white text-black px-3 py-2 hover:bg-zinc-200 transition-colors mb-[2px]"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+
+              {/* Items Table */}
+              {formSaleItems.length > 0 && (
+                <div className="mb-4 border border-zinc-800">
+                  <table className="w-full text-sm text-left text-zinc-400">
+                    <thead className="text-xs text-zinc-500 uppercase bg-zinc-900/50">
+                      <tr>
+                        <th className="px-4 py-2">Imagen</th>
+                        <th className="px-4 py-2">Producto</th>
+                        <th className="px-4 py-2 text-center">Cant.</th>
+                        <th className="px-4 py-2 text-right">Precio</th>
+                        <th className="px-4 py-2 text-right">Total</th>
+                        <th className="px-4 py-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {formSaleItems.map((item, index) => {
+                        const product = products.find(
+                          (p) => p.id === item.product_id
+                        );
+                        return (
+                          <tr
+                            key={index}
+                            className="border-b border-zinc-800 last:border-0"
+                          >
+                            <td className="px-4 py-2">
+                              {product?.image && (
+                                <img
+                                  src={product.image}
+                                  alt={item.product_name}
+                                  className="w-10 h-10 object-cover"
+                                />
+                              )}
+                            </td>
+                            <td className="px-4 py-2 text-white">
+                              {item.product_name}
+                            </td>
+                            <td className="px-4 py-2 text-center">
+                              {item.quantity}
+                            </td>
+                            <td className="px-4 py-2 text-right">
+                              ${item.unit_price}
+                            </td>
+                            <td className="px-4 py-2 text-right">
+                              $
+                              {(item.quantity || 0) * (item.unit_price || 0)}
+                            </td>
+                            <td className="px-4 py-2 text-right">
+                              <button
+                                onClick={() => {
+                                  const newItems = [...formSaleItems];
+                                  newItems.splice(index, 1);
+                                  setFormSaleItems(newItems);
+                                }}
+                                className="text-zinc-500 hover:text-red-500"
+                              >
+                                <X size={14} />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Legacy Textarea */}
+              {formSaleItems.length === 0 && (
+                <textarea
+                  value={itemsText}
+                  onChange={(e) => setItemsText(e.target.value)}
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 min-h-[100px] resize-none"
+                  placeholder="Lista de productos (Legacy/Texto simple)"
+                />
+              )}
             </div>
           </div>
 

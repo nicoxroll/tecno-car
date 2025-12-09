@@ -95,6 +95,7 @@ const SettingsManager: React.FC = () => {
     { icon: "Tv", text: "Televisión con cable" },
     { icon: "CheckCircle", text: "Baño para clientes" },
   ]);
+  const [aboutGallery, setAboutGallery] = useState<string[]>([]);
 
   const [configView, setConfigView] = useState<"main" | "catalog">("main");
 
@@ -141,6 +142,15 @@ const SettingsManager: React.FC = () => {
             setAboutAmenities(parsedAmenities);
           } catch (e) {
             console.warn("Error parsing about amenities, using default");
+          }
+        }
+
+        if (configMap.about_gallery) {
+          try {
+            const parsedGallery = JSON.parse(configMap.about_gallery);
+            setAboutGallery(parsedGallery);
+          } catch (e) {
+            console.warn("Error parsing about gallery, using default");
           }
         }
 
@@ -329,11 +339,20 @@ const SettingsManager: React.FC = () => {
             { onConflict: "key" }
           );
 
+        // Save gallery
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "about_gallery", value: JSON.stringify(aboutGallery) },
+            { onConflict: "key" }
+          );
+
         // Update local state
         setAboutImage(aboutImage);
         setAboutDescription1(aboutDescription1);
         setAboutDescription2(aboutDescription2);
         setAboutAmenities(aboutAmenities);
+        setAboutGallery(aboutGallery);
 
         return "Configuración de Quiénes Somos guardada";
       };

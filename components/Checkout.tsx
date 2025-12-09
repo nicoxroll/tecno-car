@@ -94,9 +94,46 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
         code: orderCode,
       };
 
-      const { error } = await supabase.from("sales").insert([orderData]);
+      const { data: saleData, error: saleError } = await supabase
+        .from("sales")
+        .insert([orderData])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (saleError) throw saleError;
+
+      // 2. Create sale items
+      const saleItems = cart.map((item) => ({
+        sale_id: saleData.id,
+        product_id: item.id,
+        product_name: item.name,
+        quantity: item.quantity,
+        unit_price: item.price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("sale_items")
+        .insert(saleItems);
+
+      if (itemsError) throw itemsError;
+
+      // 3. Update stock
+      for (const item of cart) {
+        const { data: product } = await supabase
+          .from("products")
+          .select("stock")
+          .eq("id", item.id)
+          .single();
+
+        if (product) {
+          const currentStock = product.stock || 0;
+          const newStock = Math.max(0, currentStock - item.quantity);
+          await supabase
+            .from("products")
+            .update({ stock: newStock })
+            .eq("id", item.id);
+        }
+      }
 
       // 2. Generate WhatsApp Message
       const itemsList = cart

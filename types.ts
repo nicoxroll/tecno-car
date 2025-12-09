@@ -50,6 +50,27 @@ export interface Product {
   updated_at?: string;
 }
 
+export interface SaleItem {
+  id: number;
+  sale_id: number;
+  product_id: number | null;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+}
+
+export interface Order {
+  id: number;
+  customer: string;
+  date: string;
+  status: "Pendiente" | "Completado" | "Cancelado";
+  total: number;
+  items: string[]; // Legacy text items
+  sale_items?: SaleItem[]; // New structured items
+  payment_method: string;
+  code?: string;
+}
+
 export interface TimelineStep {
   title: string;
   description: string;
