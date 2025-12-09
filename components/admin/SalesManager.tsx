@@ -1,3 +1,4 @@
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   Calendar,
   Download,
@@ -11,7 +12,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   Bar,
   BarChart,
@@ -348,7 +348,9 @@ const SalesManager: React.FC = () => {
                   link.setAttribute("href", url);
                   link.setAttribute(
                     "download",
-                    `ventas_merlano_${new Date().toISOString().split("T")[0]}.csv`
+                    `ventas_merlano_${
+                      new Date().toISOString().split("T")[0]
+                    }.csv`
                   );
                   document.body.appendChild(link);
                   link.click();

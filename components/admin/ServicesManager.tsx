@@ -488,7 +488,9 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
               TransitionProps={{ timeout: 600 }}
             >
               <button
-                onClick={() => setShowAppointmentFilters(!showAppointmentFilters)}
+                onClick={() =>
+                  setShowAppointmentFilters(!showAppointmentFilters)
+                }
                 className={`px-3 py-2 border border-zinc-800 transition-colors flex items-center justify-center ${
                   showAppointmentFilters
                     ? "bg-white text-black"
@@ -949,7 +951,9 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                             TransitionProps={{ timeout: 600 }}
                           >
                             <button
-                              onClick={() => setSelectedAppointment(appointment)}
+                              onClick={() =>
+                                setSelectedAppointment(appointment)
+                              }
                               className="p-2 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
                             >
                               <Eye size={16} />

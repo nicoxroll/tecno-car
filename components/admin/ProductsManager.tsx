@@ -1,3 +1,4 @@
+import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   AlertTriangle,
   ChevronDown,
@@ -19,7 +20,6 @@ import {
   X,
 } from "lucide-react";
 import React, { useMemo, useState } from "react";
-import { Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   Bar,
   BarChart,
