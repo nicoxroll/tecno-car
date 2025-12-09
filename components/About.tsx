@@ -1,4 +1,13 @@
-import { CheckCircle, Coffee, Tv, Wifi, Wind } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Coffee,
+  Tv,
+  Wifi,
+  Wind,
+  X,
+} from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
 
@@ -24,6 +33,39 @@ const About: React.FC = () => {
     { icon: "Tv", text: "Televisión con cable" },
     { icon: "CheckCircle", text: "Baño para clientes" },
   ]);
+  const [aboutGallery, setAboutGallery] = useState<string[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null
+  );
+
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedImageIndex === null) return;
+    setSelectedImageIndex((prev) =>
+      prev === 0 ? aboutGallery.length - 1 : (prev as number) - 1
+    );
+  };
+
+  const handleNextImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (selectedImageIndex === null) return;
+    setSelectedImageIndex((prev) =>
+      prev === aboutGallery.length - 1 ? 0 : (prev as number) + 1
+    );
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedImageIndex === null) return;
+
+      if (e.key === "Escape") setSelectedImageIndex(null);
+      if (e.key === "ArrowLeft") handlePrevImage();
+      if (e.key === "ArrowRight") handleNextImage();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImageIndex]);
 
   useEffect(() => {
     const loadAboutData = async () => {
@@ -50,6 +92,15 @@ const About: React.FC = () => {
               setAmenities(parsedAmenities);
             } catch (e) {
               console.warn("Error parsing amenities, using default");
+            }
+          }
+
+          if (configMap.about_gallery) {
+            try {
+              const parsedGallery = JSON.parse(configMap.about_gallery);
+              setAboutGallery(parsedGallery);
+            } catch (e) {
+              console.warn("Error parsing gallery");
             }
           }
         }
@@ -131,6 +182,29 @@ const About: React.FC = () => {
         </div>
       </div>
 
+      {/* Gallery Section */}
+      {aboutGallery.length > 0 && (
+        <div className="mt-16">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {aboutGallery.map((img, index) => (
+                <div
+                  key={index}
+                  className="aspect-square border border-zinc-800 bg-black overflow-hidden group cursor-pointer relative"
+                  onClick={() => setSelectedImageIndex(index)}
+                >
+                  <img
+                    src={img}
+                    alt={`Galería ${index + 1}`}
+                    className="w-full h-full object-cover filter grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Video Section */}
       <div className="mt-16">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -146,6 +220,49 @@ const About: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {selectedImageIndex !== null && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
+          onClick={() => setSelectedImageIndex(null)}
+        >
+          <button
+            onClick={() => setSelectedImageIndex(null)}
+            className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors z-50"
+          >
+            <X size={32} strokeWidth={1} />
+          </button>
+
+          <button
+            onClick={handlePrevImage}
+            className="absolute left-4 text-zinc-500 hover:text-white transition-colors hidden sm:block z-50 p-2 hover:bg-white/10 rounded-full"
+          >
+            <ChevronLeft size={48} strokeWidth={1} />
+          </button>
+
+          <div
+            className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={aboutGallery[selectedImageIndex]}
+              alt={`Gallery ${selectedImageIndex + 1}`}
+              className="max-w-full max-h-full object-contain shadow-2xl"
+            />
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm tracking-widest font-light">
+              {selectedImageIndex + 1} / {aboutGallery.length}
+            </div>
+          </div>
+
+          <button
+            onClick={handleNextImage}
+            className="absolute right-4 text-zinc-500 hover:text-white transition-colors hidden sm:block z-50 p-2 hover:bg-white/10 rounded-full"
+          >
+            <ChevronRight size={48} strokeWidth={1} />
+          </button>
+        </div>
+      )}
     </section>
   );
 };

@@ -164,21 +164,34 @@ const GalleryManager: React.FC = () => {
     });
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!selectedImage) return;
     const currentIndex = posts.findIndex((p) => p.id === selectedImage.id);
     const nextIndex = (currentIndex + 1) % posts.length;
     setSelectedImage(posts[nextIndex]);
   };
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!selectedImage) return;
     const currentIndex = posts.findIndex((p) => p.id === selectedImage.id);
     const prevIndex = (currentIndex - 1 + posts.length) % posts.length;
     setSelectedImage(posts[prevIndex]);
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return;
+
+      if (e.key === "Escape") setSelectedImage(null);
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedImage, posts]);
 
   return (
     <div className="space-y-6">

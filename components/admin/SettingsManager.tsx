@@ -390,6 +390,25 @@ const SettingsManager: React.FC = () => {
     }
   };
 
+  const handleGalleryImageUpload = async (file: File) => {
+    try {
+      const promise = async () => {
+        const imageUrl = await uploadImage(file);
+        if (!imageUrl) throw new Error("Error al subir imagen");
+        setAboutGallery((prev) => [...prev, imageUrl]);
+        return "Imagen agregada a la galería";
+      };
+
+      toast.promise(promise(), {
+        loading: "Subiendo imagen...",
+        success: (data) => data,
+        error: "Error al subir la imagen",
+      });
+    } catch (error) {
+      console.error("Error uploading gallery image:", error);
+    }
+  };
+
   const handleSaveAll = async () => {
     try {
       const promise = async () => {
@@ -478,6 +497,14 @@ const SettingsManager: React.FC = () => {
           .from("site_config")
           .upsert(
             { key: "about_amenities", value: JSON.stringify(aboutAmenities) },
+            { onConflict: "key" }
+          );
+
+        // Save gallery
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "about_gallery", value: JSON.stringify(aboutGallery) },
             { onConflict: "key" }
           );
 
@@ -1017,6 +1044,60 @@ const SettingsManager: React.FC = () => {
                 <Plus size={12} /> Agregar
               </button>
             </div>
+          </div>
+
+          {/* Gallery Configuration */}
+          <div>
+            <label className="block text-zinc-400 text-xs sm:text-sm mb-4">
+              Galería de Imágenes
+            </label>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-4">
+              {aboutGallery.map((img, index) => (
+                <div
+                  key={index}
+                  className="relative group aspect-square border border-zinc-800 bg-black"
+                >
+                  <img
+                    src={img}
+                    alt={`Gallery ${index}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    onClick={() => {
+                      const newGallery = aboutGallery.filter(
+                        (_, i) => i !== index
+                      );
+                      setAboutGallery(newGallery);
+                    }}
+                    className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+
+              <label className="border border-dashed border-zinc-700 flex flex-col items-center justify-center cursor-pointer hover:border-white hover:bg-zinc-900 transition-all aspect-square">
+                <Plus size={24} className="text-zinc-500 mb-2" />
+                <span className="text-xs text-zinc-500 uppercase tracking-widest">
+                  Agregar
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      handleGalleryImageUpload(e.target.files[0]);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+            <p className="text-xs text-zinc-500">
+              Estas imágenes aparecerán debajo del texto en la sección "Quiénes
+              Somos".
+            </p>
           </div>
         </div>
       </div>

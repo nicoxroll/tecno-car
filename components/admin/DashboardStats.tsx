@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import { Calendar, Clock, User, Filter } from "lucide-react";
+import { Calendar, Clock, User } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -51,7 +51,9 @@ type TimeRange = "all" | "year" | "month" | "week" | "day";
 const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [products, setProducts] = useState<{ category: string; created_at?: string }[]>([]);
+  const [products, setProducts] = useState<
+    { category: string; created_at?: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("all");
 
@@ -114,9 +116,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
         let productsQuery = supabase
           .from("products")
           .select("category, created_at");
-        
+
         if (startDate) {
-           productsQuery = productsQuery.gte("created_at", startDate);
+          productsQuery = productsQuery.gte("created_at", startDate);
         }
 
         const { data: productsData } = await productsQuery;
@@ -127,26 +129,28 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
           .from("appointments")
           .select("*")
           .order("appointment_date", { ascending: false });
-          // .limit(4); // Remove limit if we want stats, or keep limit for "Recent"?
-          // The UI shows "Turnos Recientes" list, but maybe we want stats too?
-          // The component doesn't show appointment stats (count), just the list.
-          // But if I filter by "Last Year", showing only 4 is fine for the list.
-          // But if I want to show "Total Appointments" count (not currently shown), I'd need all.
-          // Currently "Servicios" card shows services count.
-          // I'll keep the limit for the list, but maybe increase it or fetch all for stats if I were showing stats.
-          // But wait, the user said "filter... on the dashboard about all the info".
-          // The "Recent Appointments" list should probably respect the filter.
-          // If I filter "Last Day", I should only see appointments from the last day.
+        // .limit(4); // Remove limit if we want stats, or keep limit for "Recent"?
+        // The UI shows "Turnos Recientes" list, but maybe we want stats too?
+        // The component doesn't show appointment stats (count), just the list.
+        // But if I filter by "Last Year", showing only 4 is fine for the list.
+        // But if I want to show "Total Appointments" count (not currently shown), I'd need all.
+        // Currently "Servicios" card shows services count.
+        // I'll keep the limit for the list, but maybe increase it or fetch all for stats if I were showing stats.
+        // But wait, the user said "filter... on the dashboard about all the info".
+        // The "Recent Appointments" list should probably respect the filter.
+        // If I filter "Last Day", I should only see appointments from the last day.
 
         if (startDate) {
-          appointmentsQuery = appointmentsQuery.gte("appointment_date", startDate);
+          appointmentsQuery = appointmentsQuery.gte(
+            "appointment_date",
+            startDate
+          );
         } else {
-           appointmentsQuery = appointmentsQuery.limit(10); // Default limit if no filter
+          appointmentsQuery = appointmentsQuery.limit(10); // Default limit if no filter
         }
 
         const { data: appointmentsData } = await appointmentsQuery;
         if (appointmentsData) setAppointments(appointmentsData);
-
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -161,9 +165,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
   const filteredServices = useMemo(() => {
     const startDate = getStartDate();
     if (!startDate) return services;
-    return services.filter(s => {
+    return services.filter((s) => {
       // @ts-ignore - created_at might exist at runtime
-      const date = s.created_at || s.date; 
+      const date = s.created_at || s.date;
       if (!date) return true; // Keep if no date
       return new Date(date) >= new Date(startDate);
     });
@@ -218,14 +222,18 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
           data[dayIndex].pedidos += 1;
         }
       });
-      
+
       // Rotate to start from today/tomorrow? Or just standard week?
       // Standard week (Sun-Sat) is fine.
       return data;
     } else if (timeRange === "month") {
       // Group by Day of Month (1-31)
       // We can create an array of days based on the current month or just 1-31.
-      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+      const daysInMonth = new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        0
+      ).getDate();
       const data = new Array(daysInMonth).fill(0).map((_, i) => ({
         name: `${i + 1}`,
         ventas: 0,

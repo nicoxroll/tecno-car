@@ -21,6 +21,17 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
   const { addToCart } = useCart();
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedProduct && e.key === "Escape") {
+        setSelectedProduct(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedProduct]);
+
+  useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
         const { data, error } = await supabase

@@ -10,6 +10,17 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
   const { cart, removeFromCart, cartTotal, isCartOpen, setIsCartOpen } =
     useCart();
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isCartOpen && e.key === "Escape") {
+        setIsCartOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCartOpen, setIsCartOpen]);
+
   if (!isCartOpen) return null;
 
   return (
