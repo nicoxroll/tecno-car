@@ -62,6 +62,8 @@ export interface SaleItem {
 export interface Order {
   id: number;
   customer: string;
+  email?: string;
+  phone?: string;
   date: string;
   status: "Pendiente" | "Completado" | "Cancelado";
   total: number;

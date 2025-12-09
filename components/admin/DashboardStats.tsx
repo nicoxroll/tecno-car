@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import { Calendar, Clock, User } from "lucide-react";
+import { Calendar, Clock, User, Filter } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   Bar,
@@ -46,38 +46,107 @@ const COLORS = [
   "#82ca9d",
 ];
 
+type TimeRange = "all" | "year" | "month" | "week" | "day";
+
 const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [products, setProducts] = useState<{ category: string }[]>([]);
+  const [products, setProducts] = useState<{ category: string; created_at?: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<TimeRange>("all");
+
+  const getStartDate = () => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0); // Start of the day for consistency
+    switch (timeRange) {
+      case "year":
+        now.setFullYear(now.getFullYear() - 1);
+        break;
+      case "month":
+        now.setMonth(now.getMonth() - 1);
+        break;
+      case "week":
+        now.setDate(now.getDate() - 7);
+        break;
+      case "day":
+        // For "day", we want from the start of today? Or last 24h?
+        // Usually "Last Day" means "Today" or "Last 24h".
+        // Let's assume "Today" (since midnight).
+        // If "day" means "Last 24h", we wouldn't setHours(0).
+        // Let's stick to "From start of today" if it's "Day", or maybe "Last 24h".
+        // User said "ultimo ... dia".
+        // Let's use "Last 24 hours" logic or "Since yesterday same time".
+        // But usually dashboard filters are "This Year", "This Month".
+        // "Ultimo año" -> Last 365 days.
+        // "Ultimo dia" -> Last 24 hours.
+        // Let's use simple subtraction.
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return d.toISOString();
+      default:
+        return null;
+    }
+    return now.toISOString();
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        const startDate = getStartDate();
+
         // Fetch Orders
-        const { data: ordersData } = await supabase
+        let ordersQuery = supabase
           .from("sales")
           .select("*")
           .order("created_at", { ascending: false });
 
+        if (startDate) {
+          // Use 'date' column if available and reliable, otherwise created_at
+          // The 'date' column is the business date.
+          ordersQuery = ordersQuery.gte("date", startDate);
+        }
+
+        const { data: ordersData } = await ordersQuery;
         if (ordersData) setOrders(ordersData);
 
         // Fetch Products (Categories only)
-        const { data: productsData } = await supabase
+        let productsQuery = supabase
           .from("products")
-          .select("category");
+          .select("category, created_at");
+        
+        if (startDate) {
+           productsQuery = productsQuery.gte("created_at", startDate);
+        }
 
+        const { data: productsData } = await productsQuery;
         if (productsData) setProducts(productsData);
 
         // Fetch Appointments
-        const { data: appointmentsData } = await supabase
+        let appointmentsQuery = supabase
           .from("appointments")
           .select("*")
-          .order("appointment_date", { ascending: false })
-          .limit(4);
+          .order("appointment_date", { ascending: false });
+          // .limit(4); // Remove limit if we want stats, or keep limit for "Recent"?
+          // The UI shows "Turnos Recientes" list, but maybe we want stats too?
+          // The component doesn't show appointment stats (count), just the list.
+          // But if I filter by "Last Year", showing only 4 is fine for the list.
+          // But if I want to show "Total Appointments" count (not currently shown), I'd need all.
+          // Currently "Servicios" card shows services count.
+          // I'll keep the limit for the list, but maybe increase it or fetch all for stats if I were showing stats.
+          // But wait, the user said "filter... on the dashboard about all the info".
+          // The "Recent Appointments" list should probably respect the filter.
+          // If I filter "Last Day", I should only see appointments from the last day.
 
+        if (startDate) {
+          appointmentsQuery = appointmentsQuery.gte("appointment_date", startDate);
+        } else {
+           appointmentsQuery = appointmentsQuery.limit(10); // Default limit if no filter
+        }
+
+        const { data: appointmentsData } = await appointmentsQuery;
         if (appointmentsData) setAppointments(appointmentsData);
+
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
       } finally {
@@ -86,56 +155,135 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
     };
 
     fetchData();
-  }, []);
+  }, [timeRange]);
+
+  // Filter services in memory (since it's a prop)
+  const filteredServices = useMemo(() => {
+    const startDate = getStartDate();
+    if (!startDate) return services;
+    return services.filter(s => {
+      // @ts-ignore - created_at might exist at runtime
+      const date = s.created_at || s.date; 
+      if (!date) return true; // Keep if no date
+      return new Date(date) >= new Date(startDate);
+    });
+  }, [services, timeRange]);
 
   // Calculate Stats
   const totalSales = orders.reduce((sum, order) => sum + (order.total || 0), 0);
   const totalOrders = orders.length;
 
-  // Process Monthly Data
-  const monthlyData = useMemo(() => {
-    const months = [
-      "Ene",
-      "Feb",
-      "Mar",
-      "Abr",
-      "May",
-      "Jun",
-      "Jul",
-      "Ago",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dic",
-    ];
-    const data = new Array(12).fill(0).map((_, i) => ({
-      month: months[i],
-      ventas: 0,
-      pedidos: 0,
-    }));
+  // Process Chart Data
+  const chartData = useMemo(() => {
+    if (timeRange === "day") {
+      // Group by Hour (0-23)
+      const data = new Array(24).fill(0).map((_, i) => ({
+        name: `${i}:00`,
+        ventas: 0,
+        pedidos: 0,
+      }));
 
-    orders.forEach((order) => {
-      const dateStr = order.date || order.created_at;
-      if (dateStr) {
-        const date = new Date(dateStr);
-        const monthIndex = date.getMonth();
-        if (monthIndex >= 0 && monthIndex < 12) {
-          data[monthIndex].ventas += order.total || 0;
-          data[monthIndex].pedidos += 1;
+      orders.forEach((order) => {
+        const dateStr = order.date || order.created_at;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          // Only process if it's today (or within the filtered range which is handled by fetch)
+          // Since orders are already filtered by fetch, we just map them to hours.
+          // However, if the filter is "Last 24h", we might span 2 days.
+          // If we want to show relative hours (e.g. "1 hour ago"), that's complex.
+          // Let's stick to absolute hours of the day for simplicity, or maybe just map to the hour index.
+          const hour = date.getHours();
+          if (hour >= 0 && hour < 24) {
+            data[hour].ventas += order.total || 0;
+            data[hour].pedidos += 1;
+          }
         }
-      }
-    });
+      });
+      return data;
+    } else if (timeRange === "week") {
+      // Group by Day of Week
+      const days = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+      const data = new Array(7).fill(0).map((_, i) => ({
+        name: days[i],
+        ventas: 0,
+        pedidos: 0,
+      }));
 
-    // Return last 6 months relative to current month
-    const currentMonth = new Date().getMonth();
-    const last6Months = [];
-    for (let i = 5; i >= 0; i--) {
-      let m = currentMonth - i;
-      if (m < 0) m += 12;
-      last6Months.push(data[m]);
+      orders.forEach((order) => {
+        const dateStr = order.date || order.created_at;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          const dayIndex = date.getDay();
+          data[dayIndex].ventas += order.total || 0;
+          data[dayIndex].pedidos += 1;
+        }
+      });
+      
+      // Rotate to start from today/tomorrow? Or just standard week?
+      // Standard week (Sun-Sat) is fine.
+      return data;
+    } else if (timeRange === "month") {
+      // Group by Day of Month (1-31)
+      // We can create an array of days based on the current month or just 1-31.
+      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+      const data = new Array(daysInMonth).fill(0).map((_, i) => ({
+        name: `${i + 1}`,
+        ventas: 0,
+        pedidos: 0,
+      }));
+
+      orders.forEach((order) => {
+        const dateStr = order.date || order.created_at;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          const day = date.getDate();
+          if (day >= 1 && day <= daysInMonth) {
+            data[day - 1].ventas += order.total || 0;
+            data[day - 1].pedidos += 1;
+          }
+        }
+      });
+      return data;
+    } else {
+      // Default: Group by Month (Year/All)
+      const months = [
+        "Ene",
+        "Feb",
+        "Mar",
+        "Abr",
+        "May",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dic",
+      ];
+      const data = new Array(12).fill(0).map((_, i) => ({
+        name: months[i],
+        ventas: 0,
+        pedidos: 0,
+      }));
+
+      orders.forEach((order) => {
+        const dateStr = order.date || order.created_at;
+        if (dateStr) {
+          const date = new Date(dateStr);
+          const monthIndex = date.getMonth();
+          if (monthIndex >= 0 && monthIndex < 12) {
+            data[monthIndex].ventas += order.total || 0;
+            data[monthIndex].pedidos += 1;
+          }
+        }
+      });
+
+      // If "all" or "year", maybe just show all 12 months.
+      // The previous logic showed last 6 months.
+      // Let's show all 12 months for "Year" view.
+      return data;
     }
-    return last6Months;
-  }, [orders]);
+  }, [orders, timeRange]);
 
   // Process Category Data
   const categoryData = useMemo(() => {
@@ -161,6 +309,29 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
 
   return (
     <div className="space-y-8">
+      {/* Filter Buttons */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { id: "all", label: "Todo" },
+          { id: "year", label: "Último Año" },
+          { id: "month", label: "Último Mes" },
+          { id: "week", label: "Última Semana" },
+          { id: "day", label: "Último Día" },
+        ].map((filter) => (
+          <button
+            key={filter.id}
+            onClick={() => setTimeRange(filter.id as TimeRange)}
+            className={`px-4 py-2 text-xs uppercase tracking-widest transition-colors border ${
+              timeRange === filter.id
+                ? "bg-white text-black border-white"
+                : "bg-black text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
+            }`}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <div className="bg-black border border-zinc-800 p-4 sm:p-6">
@@ -192,7 +363,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
             Servicios
           </h3>
           <p className="text-xl sm:text-2xl text-white font-light">
-            {services.length}
+            {filteredServices.length}
           </p>
         </div>
       </div>
@@ -201,13 +372,13 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-black border border-zinc-800 p-6">
           <h3 className="text-white text-lg mb-6 uppercase tracking-widest">
-            Ventas Mensuales
+            Ventas
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyData}>
+            <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="month" stroke="#9CA3AF" />
-              <YAxis stroke="#9CA3AF" />
+              <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#000000",
@@ -224,13 +395,13 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ services }) => {
 
         <div className="bg-black border border-zinc-800 p-6">
           <h3 className="text-white text-lg mb-6 uppercase tracking-widest">
-            Pedidos Mensuales
+            Pedidos
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-              <XAxis dataKey="month" stroke="#9CA3AF" />
-              <YAxis stroke="#9CA3AF" />
+              <XAxis dataKey="name" stroke="#9CA3AF" fontSize={12} />
+              <YAxis stroke="#9CA3AF" fontSize={12} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#000000",

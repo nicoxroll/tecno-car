@@ -73,6 +73,8 @@ const SalesManager: React.FC = () => {
   const [formData, setFormData] = useState<Partial<Order>>({
     code: "",
     customer: "",
+    email: "",
+    phone: "",
     date: new Date().toISOString().split("T")[0],
     status: "Pendiente",
     total: 0,
@@ -142,11 +144,11 @@ const SalesManager: React.FC = () => {
       if (searchTerm) {
         if (!isNaN(Number(searchTerm))) {
           query = query.or(
-            `customer.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%,id.eq.${searchTerm}`
+            `customer.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%,id.eq.${searchTerm},email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
           );
         } else {
           query = query.or(
-            `customer.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%`
+            `customer.ilike.%${searchTerm}%,code.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`
           );
         }
       }
@@ -167,6 +169,41 @@ const SalesManager: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const [productStats, setProductStats] = useState<
+    { name: string; quantity: number }[]
+  >([]);
+
+  useEffect(() => {
+    if (activeTab === "stats") {
+      fetchProductStats();
+    }
+  }, [activeTab]);
+
+  const fetchProductStats = async () => {
+    const { data, error } = await supabase
+      .from("sale_items")
+      .select("product_name, quantity");
+
+    if (error) {
+      console.error("Error fetching product stats:", error);
+      return;
+    }
+
+    const stats = data.reduce((acc: any, item: any) => {
+      acc[item.product_name] = (acc[item.product_name] || 0) + item.quantity;
+      return acc;
+    }, {});
+
+    const formattedStats = Object.entries(stats)
+      .map(([name, quantity]) => ({
+        name,
+        quantity: Number(quantity),
+      }))
+      .sort((a, b) => b.quantity - a.quantity);
+
+    setProductStats(formattedStats);
   };
 
   useEffect(() => {
@@ -201,6 +238,8 @@ const SalesManager: React.FC = () => {
 
       const orderData: any = {
         customer: formData.customer,
+        email: formData.email,
+        phone: formData.phone,
         date: formData.date,
         status: formData.status,
         total: calculatedTotal,
@@ -286,6 +325,8 @@ const SalesManager: React.FC = () => {
   const openCreateModal = () => {
     setFormData({
       customer: "",
+      email: "",
+      phone: "",
       date: new Date().toISOString().split("T")[0],
       status: "Pendiente",
       total: 0,
@@ -623,6 +664,12 @@ const SalesManager: React.FC = () => {
                     )}
                   </div>
                 </th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Email
+                </th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Teléfono
+                </th>
                 <th
                   className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("total")}
@@ -673,13 +720,13 @@ const SalesManager: React.FC = () => {
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12">
+                  <td colSpan={10} className="text-center py-12">
                     <CircularProgress size={30} sx={{ color: "white" }} />
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-4 text-zinc-400">
+                  <td colSpan={10} className="text-center py-4 text-zinc-400">
                     No hay ventas registradas
                   </td>
                 </tr>
@@ -694,6 +741,12 @@ const SalesManager: React.FC = () => {
                     </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">
                       {order.customer}
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                      {order.email || "-"}
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                      {order.phone || "-"}
                     </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">
                       ${order.total.toLocaleString()}
@@ -879,6 +932,31 @@ const SalesManager: React.FC = () => {
                 </ResponsiveContainer>
               </div>
             </div>
+
+            {/* Product Sales Chart */}
+            <div className="bg-black border border-zinc-800 p-6 col-span-1 lg:col-span-2">
+              <h3 className="text-white text-sm uppercase tracking-widest mb-6">
+                Ventas por Producto (Top 10)
+              </h3>
+              <div className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={productStats.slice(0, 10)}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                    <XAxis dataKey="name" stroke="#71717a" fontSize={12} />
+                    <YAxis stroke="#71717a" fontSize={12} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#000000",
+                        borderColor: "#27272a",
+                        color: "#fff",
+                      }}
+                      itemStyle={{ color: "#fff" }}
+                    />
+                    <Bar dataKey="quantity" fill="#fff" radius={[0, 0, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -918,6 +996,32 @@ const SalesManager: React.FC = () => {
                   value={formData.customer}
                   onChange={(e) =>
                     setFormData({ ...formData, customer: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                />
+              </div>
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Teléfono
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
                   }
                   className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                 />
