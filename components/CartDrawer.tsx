@@ -1,5 +1,5 @@
+import { ArrowRight, ShoppingBag, Trash2, X } from "lucide-react";
 import React from "react";
-import { X, Trash2, ArrowRight, ShoppingBag } from "lucide-react";
 import { useCart } from "../context/CartContext";
 
 interface CartDrawerProps {
