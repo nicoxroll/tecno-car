@@ -252,7 +252,11 @@ const SalesManager: React.FC = () => {
       if (editingOrder) {
         const { error } = await supabase
           .from("sales")
-          .upsert({ id: editingOrder.id, ...orderData });
+          .upsert({
+            id: editingOrder.id,
+            ...orderData,
+            updated_at: new Date().toISOString(),
+          });
         if (error) throw error;
         toast.success("Pedido actualizado correctamente");
       } else {
@@ -264,7 +268,13 @@ const SalesManager: React.FC = () => {
 
         const { data, error } = await supabase
           .from("sales")
-          .insert([orderData])
+          .insert([
+            {
+              ...orderData,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ])
           .select()
           .single();
         if (error) throw error;
@@ -645,6 +655,12 @@ const SalesManager: React.FC = () => {
                     )}
                   </div>
                 </th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Creado
+                </th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Modificado
+                </th>
                 <th
                   className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("customer")}
@@ -714,13 +730,13 @@ const SalesManager: React.FC = () => {
             <tbody className="divide-y divide-zinc-800">
               {loading ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-12">
+                  <td colSpan={12} className="text-center py-12">
                     <CircularProgress size={30} sx={{ color: "white" }} />
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="text-center py-4 text-zinc-400">
+                  <td colSpan={12} className="text-center py-4 text-zinc-400">
                     No hay ventas registradas
                   </td>
                 </tr>
@@ -732,6 +748,26 @@ const SalesManager: React.FC = () => {
                     </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.date}
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                      {order.created_at
+                        ? new Date(order.created_at).toLocaleDateString() +
+                          " " +
+                          new Date(order.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                      {order.updated_at
+                        ? new Date(order.updated_at).toLocaleDateString() +
+                          " " +
+                          new Date(order.updated_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
                     </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">
                       {order.customer}

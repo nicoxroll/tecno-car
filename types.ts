@@ -71,6 +71,8 @@ export interface Order {
   sale_items?: SaleItem[]; // New structured items
   payment_method: string;
   code?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface TimelineStep {
