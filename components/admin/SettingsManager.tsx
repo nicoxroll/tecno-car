@@ -698,19 +698,6 @@ const SettingsManager: React.FC = () => {
                 className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
-            <div>
-              <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
-                Dirección
-              </label>
-              <input
-                type="text"
-                value={settings.address}
-                onChange={(e) =>
-                  setSettings({ ...settings, address: e.target.value })
-                }
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-              />
-            </div>
           </div>
         </div>
 
@@ -755,6 +742,19 @@ const SettingsManager: React.FC = () => {
                   placeholder="Ej: 09:00 - 18:00 hs"
                 />
               </div>
+            </div>
+            <div>
+              <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+                Dirección
+              </label>
+              <input
+                type="text"
+                value={settings.address}
+                onChange={(e) =>
+                  setSettings({ ...settings, address: e.target.value })
+                }
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+              />
             </div>
           </div>
         </div>
@@ -898,12 +898,12 @@ const SettingsManager: React.FC = () => {
               Imagen de la Sección
             </label>
             <div className="space-y-3">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 {aboutImage && (
                   <img
                     src={aboutImage}
                     alt="About Preview"
-                    className="w-20 h-20 object-cover"
+                    className="w-20 h-20 object-cover flex-shrink-0"
                   />
                 )}
                 <input
@@ -919,7 +919,7 @@ const SettingsManager: React.FC = () => {
                       );
                     }
                   }}
-                  className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
+                  className="w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
                 />
               </div>
               <input

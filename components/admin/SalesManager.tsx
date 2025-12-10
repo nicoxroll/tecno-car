@@ -432,60 +432,54 @@ const SalesManager: React.FC = () => {
 
         {activeTab === "list" && (
           <div className="flex gap-2 w-full sm:w-auto">
-            <MuiTooltip
-              title="Exportar a Excel"
-              TransitionComponent={Fade}
-              TransitionProps={{ timeout: 600 }}
-            >
-              <button
-                onClick={() => {
-                  const headers = [
-                    "ID",
-                    "Código",
-                    "Fecha",
-                    "Cliente",
-                    "Total",
-                    "Estado",
-                    "Método Pago",
-                    "Items",
-                  ];
-                  const csvContent = [
-                    headers.join(";"),
-                    ...orders.map((o) =>
-                      [
-                        o.id,
-                        o.code || "",
-                        o.date,
-                        `"${o.customer}"`,
-                        o.total,
-                        o.status,
-                        o.payment_method || "",
-                        `"${(o.items || []).join(", ")}"`,
-                      ].join(";")
-                    ),
-                  ].join("\r\n");
+            <button
+              onClick={() => {
+                const headers = [
+                  "ID",
+                  "Código",
+                  "Fecha",
+                  "Cliente",
+                  "Total",
+                  "Estado",
+                  "Método Pago",
+                  "Items",
+                ];
+                const csvContent = [
+                  headers.join(";"),
+                  ...orders.map((o) =>
+                    [
+                      o.id,
+                      o.code || "",
+                      o.date,
+                      `"${o.customer}"`,
+                      o.total,
+                      o.status,
+                      o.payment_method || "",
+                      `"${(o.items || []).join(", ")}"`,
+                    ].join(";")
+                  ),
+                ].join("\r\n");
 
-                  const blob = new Blob(["\uFEFF" + csvContent], {
-                    type: "text/csv;charset=utf-8;",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  const link = document.createElement("a");
-                  link.setAttribute("href", url);
-                  link.setAttribute(
-                    "download",
-                    `ventas_merlano_${
-                      new Date().toISOString().split("T")[0]
-                    }.csv`
-                  );
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                }}
-                className="flex items-center justify-center text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
-              >
-                <Download size={16} />
-              </button>
-            </MuiTooltip>
+                const blob = new Blob(["\uFEFF" + csvContent], {
+                  type: "text/csv;charset=utf-8;",
+                });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute(
+                  "download",
+                  `ventas_merlano_${
+                    new Date().toISOString().split("T")[0]
+                  }.csv`
+                );
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+              className="flex items-center gap-2 text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+            >
+              <Download size={14} /> Exportar
+            </button>
             <MuiTooltip
               title="Filtros"
               TransitionComponent={Fade}
@@ -631,7 +625,7 @@ const SalesManager: React.FC = () => {
       )}
 
       {activeTab === "list" ? (
-        <div className="bg-black border border-zinc-800 overflow-hidden">
+        <div className="bg-black border border-zinc-800 overflow-x-auto">
           <table className="w-full min-w-[600px]">
             <thead className="bg-black">
               <tr>
