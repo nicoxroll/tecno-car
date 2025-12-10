@@ -825,7 +825,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
 
               {/* Table View */}
               {viewMode === "table" && (
-                <div className="overflow-x-auto w-full">
+                <div className="overflow-x-auto w-full bg-black border border-zinc-800">
                   <table className="w-full min-w-[800px]">
                     <thead className="bg-black">
                       <tr>
@@ -995,6 +995,42 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                       )}
                     </tbody>
                   </table>
+                  {products.length > 0 && (
+                    <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800">
+                      <div className="text-sm text-zinc-400">
+                        Mostrando {page * rowsPerPage + 1} a{" "}
+                        {Math.min((page + 1) * rowsPerPage, totalCount)} de{" "}
+                        {totalCount} resultados
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setPage(Math.max(0, page - 1))}
+                          disabled={page === 0}
+                          className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronLeft size={20} />
+                        </button>
+                        <span className="text-sm text-zinc-400">
+                          Página {page + 1} de{" "}
+                          {Math.max(1, Math.ceil(totalCount / rowsPerPage))}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setPage(
+                              Math.min(
+                                Math.ceil(totalCount / rowsPerPage) - 1,
+                                page + 1
+                              )
+                            )
+                          }
+                          disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                          className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <ChevronRight size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -1137,7 +1173,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
               )}
 
               {/* Pagination */}
-              {products.length > 0 && (
+              {viewMode === "grid" && products.length > 0 && (
                 <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800 mt-4">
                   <div className="text-sm text-zinc-400">
                     Mostrando {page * rowsPerPage + 1} a{" "}

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Menu, X, ShoppingCart } from "lucide-react";
+import { Menu, X, ShoppingCart, User } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useScroll } from "../context/ScrollContext";
 import { ViewState } from "../types";
+import { supabase } from "../services/supabase";
 
 interface NavbarProps {
   onNavigate: (view: ViewState) => void;
@@ -17,15 +18,31 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { cartCount, setIsCartOpen } = useCart();
   const { scrollTo } = useScroll();
 
   useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLinkClick = (e: React.MouseEvent, href: string) => {
@@ -131,10 +148,34 @@ const Navbar: React.FC<NavbarProps> = ({
                 </span>
               )}
             </button>
+
+            {/* Admin Profile Button */}
+            {isLoggedIn && (
+              <button
+                onClick={() => onNavigate("admin")}
+                className={`relative transition-colors ${
+                  currentView === "admin"
+                    ? "text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                <User size={20} strokeWidth={1} />
+              </button>
+            )}
           </div>
 
           {/* Mobile Toggle */}
           <div className="flex items-center gap-4 md:hidden">
+            {isLoggedIn && (
+              <button
+                onClick={() => onNavigate("admin")}
+                className={`relative transition-colors ${
+                  currentView === "admin" ? "text-white" : "text-zinc-400"
+                }`}
+              >
+                <User size={20} strokeWidth={1} />
+              </button>
+            )}
             <button onClick={handleCartClick} className="relative text-white">
               <ShoppingCart size={20} strokeWidth={1} />
               {cartCount > 0 && (
