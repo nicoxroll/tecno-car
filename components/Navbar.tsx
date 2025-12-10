@@ -200,8 +200,8 @@ const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-black border-b border-zinc-800 animate-fade-in h-screen">
-          <div className="flex flex-col pt-8">
+        <div className="md:hidden absolute top-full left-0 right-0 bg-black border-b border-zinc-800 animate-fade-in h-[calc(100vh-80px)] overflow-y-auto">
+          <div className="flex flex-col pt-8 pb-20">
             {navLinks.map((link) => (
               <a
                 key={link.name}
@@ -216,7 +216,7 @@ const Navbar: React.FC<NavbarProps> = ({
               href="https://wa.me/5492213334444"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white text-black py-6 px-8 text-sm tracking-widest uppercase font-medium text-center hover:bg-zinc-200 transition-colors mt-8 mx-8"
+              className="bg-white text-black py-6 px-8 text-sm tracking-widest uppercase font-medium text-center hover:bg-zinc-200 transition-colors mt-8 mx-8 mb-8"
               onClick={() => setMobileMenuOpen(false)}
             >
               Enviar Mensaje

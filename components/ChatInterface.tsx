@@ -162,7 +162,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       {isOpen && (
         <div
           ref={chatRef}
-          className="mb-6 w-[350px] sm:w-[400px] h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in overflow-hidden"
+          className="mb-4 sm:mb-6 w-[calc(100vw-2rem)] sm:w-[400px] h-[60vh] sm:h-[550px] bg-black border border-zinc-800 shadow-2xl flex flex-col animate-fade-in overflow-hidden"
         >
           {/* Header */}
           <div className="bg-black p-4 flex justify-between items-center border-b border-zinc-800">
@@ -246,7 +246,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
 
           {/* Input Area */}
-          <div className="p-4 bg-black border-t border-zinc-800">
+          <div className="p-3 sm:p-4 bg-black border-t border-zinc-800">
             <div className="relative flex items-center gap-0">
               <input
                 type="text"
@@ -254,13 +254,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Escribe tu consulta..."
-                className="flex-1 bg-zinc-950 text-white text-sm font-light py-3 px-4 focus:outline-none focus:ring-1 focus:ring-white border border-zinc-800 placeholder-zinc-600"
+                className="flex-1 bg-zinc-950 text-white text-sm font-light py-2 px-3 sm:py-3 sm:px-4 focus:outline-none focus:ring-1 focus:ring-white border border-zinc-800 placeholder-zinc-600"
                 disabled={isLoading}
               />
               <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
-                className={`p-3 border-y border-r border-zinc-800 h-full ${
+                className={`p-2 sm:p-3 border-y border-r border-zinc-800 h-full ${
                   isLoading || !input.trim()
                     ? "bg-zinc-900 text-zinc-600"
                     : "bg-white text-black hover:bg-zinc-200 border-white"
