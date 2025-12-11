@@ -250,13 +250,11 @@ const SalesManager: React.FC = () => {
       let saleId = editingOrder?.id;
 
       if (editingOrder) {
-        const { error } = await supabase
-          .from("sales")
-          .upsert({
-            id: editingOrder.id,
-            ...orderData,
-            updated_at: new Date().toISOString(),
-          });
+        const { error } = await supabase.from("sales").upsert({
+          id: editingOrder.id,
+          ...orderData,
+          updated_at: new Date().toISOString(),
+        });
         if (error) throw error;
         toast.success("Pedido actualizado correctamente");
       } else {
@@ -478,9 +476,7 @@ const SalesManager: React.FC = () => {
                 link.setAttribute("href", url);
                 link.setAttribute(
                   "download",
-                  `ventas_merlano_${
-                    new Date().toISOString().split("T")[0]
-                  }.csv`
+                  `ventas_merlano_${new Date().toISOString().split("T")[0]}.csv`
                 );
                 document.body.appendChild(link);
                 link.click();
@@ -636,14 +632,14 @@ const SalesManager: React.FC = () => {
 
       {activeTab === "list" ? (
         <div className="bg-black border border-zinc-800 overflow-x-auto">
-          <table className="w-full min-w-[600px]">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-black">
               <tr>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   <div className="flex items-center gap-1">Código</div>
                 </th>
                 <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("date")}
                 >
                   <div className="flex items-center gap-1">
@@ -656,7 +652,7 @@ const SalesManager: React.FC = () => {
                   </div>
                 </th>
                 <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("customer")}
                 >
                   <div className="flex items-center gap-1">
@@ -668,14 +664,14 @@ const SalesManager: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Email
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Teléfono
                 </th>
                 <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("total")}
                 >
                   <div className="flex items-center gap-1">
@@ -688,7 +684,7 @@ const SalesManager: React.FC = () => {
                   </div>
                 </th>
                 <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("payment_method")}
                 >
                   <div className="flex items-center gap-1">
@@ -700,19 +696,19 @@ const SalesManager: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Estado
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Creado
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Modificado
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Productos
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
@@ -733,28 +729,28 @@ const SalesManager: React.FC = () => {
               ) : (
                 orders.map((order) => (
                   <tr key={order.id}>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white font-mono">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-white font-mono">
                       {order.code || `#${order.id}`}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.date}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-white">
                       {order.customer}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.email || "-"}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.phone || "-"}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-white">
                       ${order.total.toLocaleString()}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.payment_method || "-"}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm">
+                    <td className="px-4 py-3 text-xs sm:text-sm">
                       <span
                         className={`px-2 py-1 text-xs uppercase tracking-wider ${
                           order.status === "Completado"
@@ -767,7 +763,7 @@ const SalesManager: React.FC = () => {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.created_at
                         ? new Date(order.created_at).toLocaleDateString() +
                           " " +
@@ -777,7 +773,7 @@ const SalesManager: React.FC = () => {
                           })
                         : "-"}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.updated_at
                         ? new Date(order.updated_at).toLocaleDateString() +
                           " " +
@@ -787,7 +783,7 @@ const SalesManager: React.FC = () => {
                           })
                         : "-"}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                    <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.sale_items && order.sale_items.length > 0
                         ? order.sale_items
                             .map((i) => `${i.product_name} x${i.quantity}`)
@@ -796,7 +792,7 @@ const SalesManager: React.FC = () => {
                         ? order.items.join(", ")
                         : "-"}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm">
+                    <td className="px-4 py-3 text-xs sm:text-sm">
                       <div className="flex gap-2">
                         <button
                           onClick={() => openEditModal(order)}
