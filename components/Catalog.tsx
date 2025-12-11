@@ -82,7 +82,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     loadData();
   }, []);
 
-  const categories = [
+  const [categories, setCategories] = useState<string[]>([
     "Todos",
     "Multimedia",
     "Audio",
@@ -90,7 +90,27 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     "Seguridad",
     "Accesorios",
     "Limpieza",
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data } = await supabase
+        .from("site_config")
+        .select("value")
+        .eq("key", "catalog_filters")
+        .single();
+
+      if (data?.value) {
+        try {
+          const parsedCategories = JSON.parse(data.value);
+          setCategories(["Todos", ...parsedCategories]);
+        } catch (e) {
+          console.error("Error parsing categories", e);
+        }
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {

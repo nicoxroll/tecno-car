@@ -655,12 +655,6 @@ const SalesManager: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Creado
-                </th>
-                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                  Modificado
-                </th>
                 <th
                   className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                   onClick={() => handleSort("customer")}
@@ -706,18 +700,14 @@ const SalesManager: React.FC = () => {
                     )}
                   </div>
                 </th>
-                <th
-                  className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort("status")}
-                >
-                  <div className="flex items-center gap-1">
-                    Estado
-                    {sortField === "status" && (
-                      <span className="text-zinc-500">
-                        {sortDirection === "asc" ? "↑" : "↓"}
-                      </span>
-                    )}
-                  </div>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Estado
+                </th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Creado
+                </th>
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                  Modificado
                 </th>
                 <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">
                   Productos
@@ -749,26 +739,6 @@ const SalesManager: React.FC = () => {
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.date}
                     </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
-                      {order.created_at
-                        ? new Date(order.created_at).toLocaleDateString() +
-                          " " +
-                          new Date(order.created_at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "-"}
-                    </td>
-                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
-                      {order.updated_at
-                        ? new Date(order.updated_at).toLocaleDateString() +
-                          " " +
-                          new Date(order.updated_at).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "-"}
-                    </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-white">
                       {order.customer}
                     </td>
@@ -796,6 +766,26 @@ const SalesManager: React.FC = () => {
                       >
                         {order.status}
                       </span>
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                      {order.created_at
+                        ? new Date(order.created_at).toLocaleDateString() +
+                          " " +
+                          new Date(order.created_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
+                      {order.updated_at
+                        ? new Date(order.updated_at).toLocaleDateString() +
+                          " " +
+                          new Date(order.updated_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "-"}
                     </td>
                     <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-zinc-400">
                       {order.sale_items && order.sale_items.length > 0
@@ -1003,16 +993,33 @@ const SalesManager: React.FC = () => {
           {/* Form */}
           <div className="space-y-6">
             {editingOrder && (
-              <div>
-                <label className="block text-zinc-400 text-sm mb-2">
-                  Código
-                </label>
-                <input
-                  type="text"
-                  value={editingOrder.code || "-"}
-                  disabled
-                  className="w-full bg-black/50 border border-zinc-800 text-zinc-500 px-4 py-3 cursor-not-allowed"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Código
+                  </label>
+                  <input
+                    type="text"
+                    value={editingOrder.code || "-"}
+                    disabled
+                    className="w-full bg-black/50 border border-zinc-800 text-zinc-500 px-4 py-3 cursor-not-allowed"
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Creado el
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      editingOrder.created_at
+                        ? new Date(editingOrder.created_at).toLocaleString()
+                        : "-"
+                    }
+                    disabled
+                    className="w-full bg-black/50 border border-zinc-800 text-zinc-500 px-4 py-3 cursor-not-allowed"
+                  />
+                </div>
               </div>
             )}
 
@@ -1113,6 +1120,24 @@ const SalesManager: React.FC = () => {
                 className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
             </div>
+
+            {editingOrder && (
+              <div>
+                <label className="block text-zinc-400 text-sm mb-2">
+                  Última Edición
+                </label>
+                <input
+                  type="text"
+                  value={
+                    editingOrder.updated_at
+                      ? new Date(editingOrder.updated_at).toLocaleString()
+                      : "-"
+                  }
+                  disabled
+                  className="w-full bg-black/50 border border-zinc-800 text-zinc-500 px-4 py-3 cursor-not-allowed"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-zinc-400 text-sm mb-2">
