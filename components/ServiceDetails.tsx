@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { ArrowLeft, MessageCircle, Sparkles, CheckCircle } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ArrowLeft, MessageCircle, Sparkles, CheckCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Service } from "../types";
 
 interface ServiceDetailsProps {
@@ -13,9 +13,52 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
   onBack,
   onOpenChat,
 }) => {
+  const [timelineModalOpen, setTimelineModalOpen] = useState(false);
+  const [currentTimelineIndex, setCurrentTimelineIndex] = useState(0);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Timeline modal functions
+  const openTimelineModal = (index: number) => {
+    setCurrentTimelineIndex(index);
+    setTimelineModalOpen(true);
+  };
+
+  const closeTimelineModal = () => {
+    setTimelineModalOpen(false);
+  };
+
+  const nextTimelineStep = () => {
+    setCurrentTimelineIndex((prev) => (prev + 1) % timelineData.length);
+  };
+
+  const prevTimelineStep = () => {
+    setCurrentTimelineIndex((prev) => (prev - 1 + timelineData.length) % timelineData.length);
+  };
+
+  // Keyboard navigation for timeline modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!timelineModalOpen) return;
+
+      switch (e.key) {
+        case 'Escape':
+          closeTimelineModal();
+          break;
+        case 'ArrowRight':
+          nextTimelineStep();
+          break;
+        case 'ArrowLeft':
+          prevTimelineStep();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [timelineModalOpen]);
 
   // Helper to get embed URL
   const getEmbedUrl = (url: string) => {
@@ -163,13 +206,18 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                           : "md:pr-16 md:text-right md:order-1"
                       }`}
                     >
-                      <div className="aspect-video overflow-hidden border border-zinc-800 bg-zinc-900 relative group">
+                      <div className="aspect-video overflow-hidden border border-zinc-800 bg-zinc-900 relative group cursor-pointer" onClick={() => openTimelineModal(index)}>
                         <img
                           src={item.image}
                           alt={item.title}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm font-medium">
+                            Ver detalle
+                          </div>
+                        </div>
                       </div>
                       <p className="text-zinc-400 text-sm leading-relaxed mt-4 md:hidden">
                         {item.description}
@@ -231,10 +279,10 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                   href={`https://wa.me/5492213334444?text=Hola,%20me%20interesa%20saber%20m%C3%A1s%20sobre%20el%20servicio:%20${service.title}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full border border-zinc-700 bg-zinc-800/50 text-white py-4 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-[#25D366] hover:border-[#25D366] transition-all flex items-center justify-center gap-2"
+                  className="w-full border border-zinc-700 bg-zinc-800/50 text-white py-4 px-6 uppercase tracking-[0.2em] text-[10px] font-medium hover:bg-[#25D366] hover:border-[#25D366] transition-all flex items-center justify-center gap-3"
                 >
                   <MessageCircle size={16} />
-                  Consultar por WhatsApp
+                  <span>Consultar por WhatsApp</span>
                 </a>
               </div>
 
@@ -252,6 +300,71 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Timeline Modal */}
+      {timelineModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="relative max-w-4xl w-full max-h-[90vh] bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+            {/* Close button */}
+            <button
+              onClick={closeTimelineModal}
+              className="absolute top-4 right-4 z-10 text-white/70 hover:text-white transition-colors bg-black/50 rounded-full p-2"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Navigation buttons */}
+            {timelineData.length > 1 && (
+              <>
+                <button
+                  onClick={prevTimelineStep}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white/70 hover:text-white transition-colors bg-black/50 rounded-full p-3"
+                >
+                  <ChevronLeft size={24} />
+                </button>
+                <button
+                  onClick={nextTimelineStep}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white/70 hover:text-white transition-colors bg-black/50 rounded-full p-3"
+                >
+                  <ChevronRight size={24} />
+                </button>
+              </>
+            )}
+
+            {/* Content */}
+            <div className="relative">
+              <div className="aspect-video w-full">
+                <img
+                  src={timelineData[currentTimelineIndex].image}
+                  alt={timelineData[currentTimelineIndex].title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <span className="text-brand text-xs font-bold tracking-widest uppercase">
+                    Paso 0{currentTimelineIndex + 1}
+                  </span>
+                  {timelineData.length > 1 && (
+                    <span className="text-zinc-500 text-xs">
+                      {currentTimelineIndex + 1} / {timelineData.length}
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="text-2xl text-white font-light uppercase mb-4">
+                  {timelineData[currentTimelineIndex].title}
+                </h3>
+
+                <p className="text-zinc-300 text-base leading-relaxed">
+                  {timelineData[currentTimelineIndex].description}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

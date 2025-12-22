@@ -2,10 +2,6 @@ import React from "react";
 
 const BRANDS = [
   {
-    name: "BMW",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/BMW.svg/512px-BMW.svg.png",
-  },
-  {
     name: "Tesla",
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Tesla_logo.png/512px-Tesla_logo.png",
   },
@@ -17,18 +13,7 @@ const BRANDS = [
     name: "Mercedes-Benz",
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Mercedes-Logo.svg/512px-Mercedes-Logo.svg.png",
   },
-  {
-    name: "Porsche",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Porsche_Logo.svg/512px-Porsche_Logo.svg.png",
-  },
-  {
-    name: "Ferrari",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Ferrari-Logo.svg/512px-Ferrari-Logo.svg.png",
-  },
-  {
-    name: "Lamborghini",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Lamborghini_Logo.svg/512px-Lamborghini_Logo.svg.png",
-  },
+  
   {
     name: "Volkswagen",
     logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Volkswagen_logo_2019.svg/512px-Volkswagen_logo_2019.svg.png",

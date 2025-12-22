@@ -70,7 +70,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
     <section
       id="services"
       ref={sectionRef}
-      className="py-32 bg-black relative z-20 overflow-hidden"
+      className="py-16 bg-black relative z-20 overflow-hidden"
     >
       {/* Central Line for Desktop */}
       <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-[1px] bg-zinc-900 transform -translate-x-1/2 z-0"></div>

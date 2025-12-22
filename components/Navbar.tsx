@@ -88,7 +88,7 @@ const Navbar: React.FC<NavbarProps> = ({
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled || currentView !== "landing"
+        isScrolled || (currentView !== "landing" && currentView !== "service")
           ? "bg-black/90 border-b border-zinc-800 py-4 backdrop-blur-md"
           : "bg-transparent py-6"
       }`}
