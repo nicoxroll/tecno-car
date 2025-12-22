@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, MessageCircle, Sparkles, CheckCircle, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Service } from "../types";
 
@@ -121,12 +122,12 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         </div>
 
-        <div className="absolute top-0 left-0 w-full p-6 z-20">
+        <div className="absolute top-20 left-6 z-20">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-white/80 hover:text-white transition-colors uppercase tracking-widest text-xs bg-black/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/10"
+            className="flex items-center justify-center w-10 h-10 text-white/80 hover:text-white transition-colors"
           >
-            <ArrowLeft size={16} /> Volver
+            <ArrowLeft size={16} />
           </button>
         </div>
 
@@ -213,11 +214,6 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm font-medium">
-                            Ver detalle
-                          </div>
-                        </div>
                       </div>
                       <p className="text-zinc-400 text-sm leading-relaxed mt-4 md:hidden">
                         {item.description}
@@ -302,69 +298,77 @@ const ServiceDetails: React.FC<ServiceDetailsProps> = ({
       </div>
 
       {/* Timeline Modal */}
-      {timelineModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative max-w-4xl w-full max-h-[90vh] bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
-            {/* Close button */}
-            <button
-              onClick={closeTimelineModal}
-              className="absolute top-4 right-4 z-10 text-white/70 hover:text-white transition-colors bg-black/50 rounded-full p-2"
+      {timelineModalOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={closeTimelineModal}
+          >
+            <div
+              className="relative max-w-5xl w-full max-h-[90vh] bg-zinc-950 border border-zinc-800 flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
-              <X size={24} />
-            </button>
+              <button
+                onClick={closeTimelineModal}
+                className="absolute -top-12 right-0 text-white hover:text-zinc-300 transition-colors flex items-center gap-2"
+              >
+                <span className="text-xs tracking-widest uppercase">
+                  Cerrar
+                </span>
+                <X size={24} strokeWidth={1} />
+              </button>
 
-            {/* Navigation buttons */}
-            {timelineData.length > 1 && (
-              <>
-                <button
-                  onClick={prevTimelineStep}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-10 text-white/70 hover:text-white transition-colors bg-black/50 rounded-full p-3"
-                >
-                  <ChevronLeft size={24} />
-                </button>
-                <button
-                  onClick={nextTimelineStep}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-10 text-white/70 hover:text-white transition-colors bg-black/50 rounded-full p-3"
-                >
-                  <ChevronRight size={24} />
-                </button>
-              </>
-            )}
-
-            {/* Content */}
-            <div className="relative">
-              <div className="aspect-video w-full">
+              <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden border-b border-zinc-900 group">
                 <img
                   src={timelineData[currentTimelineIndex].image}
                   alt={timelineData[currentTimelineIndex].title}
-                  className="w-full h-full object-cover"
+                  className="max-h-[70vh] w-auto object-contain"
                 />
+
+                {/* Navigation Arrows */}
+                {timelineData.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevTimelineStep}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <ChevronLeft size={24} strokeWidth={1} />
+                    </button>
+
+                    <button
+                      onClick={nextTimelineStep}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <ChevronRight size={24} strokeWidth={1} />
+                    </button>
+                  </>
+                )}
               </div>
 
-              <div className="p-8">
-                <div className="flex items-center gap-4 mb-4">
-                  <span className="text-brand text-xs font-bold tracking-widest uppercase">
-                    Paso 0{currentTimelineIndex + 1}
-                  </span>
-                  {timelineData.length > 1 && (
-                    <span className="text-zinc-500 text-xs">
-                      {currentTimelineIndex + 1} / {timelineData.length}
+              <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-zinc-950">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-4 mb-2">
+                    <span className="text-brand text-xs font-bold tracking-widest uppercase">
+                      Paso 0{currentTimelineIndex + 1}
                     </span>
-                  )}
+                    {timelineData.length > 1 && (
+                      <span className="text-zinc-500 text-xs">
+                        {currentTimelineIndex + 1} / {timelineData.length}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl text-white font-light tracking-[0.2em] uppercase">
+                    {timelineData[currentTimelineIndex].title}
+                  </h3>
+                  <p className="text-zinc-400 text-sm font-light max-w-2xl">
+                    {timelineData[currentTimelineIndex].description}
+                  </p>
                 </div>
-
-                <h3 className="text-2xl text-white font-light uppercase mb-4">
-                  {timelineData[currentTimelineIndex].title}
-                </h3>
-
-                <p className="text-zinc-300 text-base leading-relaxed">
-                  {timelineData[currentTimelineIndex].description}
-                </p>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };
