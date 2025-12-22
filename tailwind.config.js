@@ -30,11 +30,17 @@ export default {
         "fade-in": "fadeIn 0.5s ease-out",
         pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         bounce: "bounce 1s infinite",
+        marquee: "marquee 40s linear infinite",
+        "marquee-reverse": "marquee 40s linear infinite reverse",
       },
       keyframes: {
         fadeIn: {
           from: { opacity: "0", transform: "translateY(10px)" },
           to: { opacity: "1", transform: "translateY(0)" },
+        },
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
         },
       },
     },

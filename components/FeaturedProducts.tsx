@@ -90,6 +90,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
                   <img
                     src={product.image}
                     alt={product.name}
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 filter grayscale contrast-110"
                   />
                   <div className="absolute top-4 left-4 bg-black text-white text-[9px] px-2 py-1 uppercase tracking-widest border border-zinc-800">

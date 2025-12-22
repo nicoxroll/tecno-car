@@ -249,6 +249,7 @@ const Checkout: React.FC<CheckoutProps> = ({ onBack }) => {
                         <img
                           src={item.image}
                           alt={item.name}
+                          crossOrigin="anonymous"
                           className="w-full h-full object-cover"
                         />
                       </div>

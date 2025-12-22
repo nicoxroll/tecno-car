@@ -104,6 +104,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               <img
                 src={selectedImage}
                 alt={product.name}
+                crossOrigin="anonymous"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="absolute top-0 left-0 p-4">
@@ -142,6 +143,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                     <img
                       src={img}
                       alt={`${product.name} ${idx}`}
+                      crossOrigin="anonymous"
                       className="w-full h-full object-cover"
                     />
                   </button>

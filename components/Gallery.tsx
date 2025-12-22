@@ -221,6 +221,7 @@ const Gallery: React.FC = () => {
                   <img
                     src={post.img}
                     alt={post.title}
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100 filter grayscale contrast-110"
                   />
                   {/* Hover Overlay */}
@@ -274,6 +275,7 @@ const Gallery: React.FC = () => {
                 <img
                   src={selectedImage.img}
                   alt={selectedImage.title}
+                  crossOrigin="anonymous"
                   className="max-h-[70vh] w-auto object-contain"
                 />
 

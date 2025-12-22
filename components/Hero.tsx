@@ -67,6 +67,7 @@ const Hero: React.FC = () => {
         <img
           src={heroImage}
           alt="Automotive Technology Dashboard"
+          crossOrigin="anonymous"
           className="w-full h-full object-cover transition-transform duration-100 ease-out"
           style={{
             transform: `scale(${1 + scrollY * 0.0005}) translateY(${

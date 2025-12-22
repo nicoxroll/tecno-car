@@ -627,6 +627,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                         <img
                           src={service.image}
                           alt={service.title}
+                          crossOrigin="anonymous"
                           className="w-full h-full object-cover filter grayscale contrast-125 group-hover:grayscale-0 transition-all duration-700"
                         />
                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all duration-500"></div>
@@ -756,6 +757,7 @@ const ServicesManager: React.FC<ServicesManagerProps> = ({
                             "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
                           }
                           alt={appointment.service_name}
+                          crossOrigin="anonymous"
                           className="w-full h-full object-cover"
                         />
                       </div>

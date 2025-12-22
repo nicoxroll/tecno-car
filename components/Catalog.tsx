@@ -326,6 +326,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                     <img
                       src={product.image}
                       alt={product.name}
+                      crossOrigin="anonymous"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                     />
                     {product.discount_price &&

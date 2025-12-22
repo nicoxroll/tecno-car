@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import About from "./components/About";
 import Admin from "./components/Admin";
+import Brands from "./components/Brands";
 import CartDrawer from "./components/CartDrawer";
 import Catalog from "./components/Catalog";
 import ChatInterface from "./components/ChatInterface";
@@ -34,6 +35,7 @@ function App() {
   // Fixed sections order
   const sectionsOrder = [
     "hero",
+    "brands",
     "highlights",
     "services",
     "about",
@@ -107,6 +109,7 @@ function App() {
   // Define all sections
   const sections = {
     hero: <Hero key="hero" />,
+    brands: <Brands key="brands" />,
     highlights: <Highlights key="highlights" />,
     services: (
       <Services

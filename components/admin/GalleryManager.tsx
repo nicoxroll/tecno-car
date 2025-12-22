@@ -241,6 +241,7 @@ const GalleryManager: React.FC = () => {
                 <img
                   src={post.image_url}
                   alt={post.title}
+                  crossOrigin="anonymous"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
@@ -331,6 +332,7 @@ const GalleryManager: React.FC = () => {
                 <img
                   src={selectedImage.image_url}
                   alt={selectedImage.title}
+                  crossOrigin="anonymous"
                   className="max-h-[70vh] w-auto object-contain"
                 />
 
@@ -419,6 +421,7 @@ const GalleryManager: React.FC = () => {
                     <img
                       src={formData.image_url}
                       alt="Preview"
+                      crossOrigin="anonymous"
                       className="w-20 h-20 object-cover"
                     />
                   )}

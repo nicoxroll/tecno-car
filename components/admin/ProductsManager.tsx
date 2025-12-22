@@ -925,6 +925,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                                 <img
                                   src={product.image}
                                   alt={product.name}
+                                  crossOrigin="anonymous"
                                   className="w-12 h-12 object-cover border border-zinc-700"
                                 />
                                 <div>
@@ -1066,6 +1067,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                               "https://images.pexels.com/photos/28968374/pexels-photo-28968374.jpeg"
                             }
                             alt={product.name}
+                            crossOrigin="anonymous"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"
                           />
                           {product.discount_price &&

@@ -116,6 +116,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
                     <img
                       src={service.image}
                       alt={service.title}
+                      crossOrigin="anonymous"
                       className="w-full h-full object-cover filter grayscale contrast-125 group-hover:grayscale-0 transition-all duration-700"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-all duration-500"></div>
@@ -177,6 +178,7 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
                 <img
                   src={selectedService.image}
                   alt={selectedService.title}
+                  crossOrigin="anonymous"
                   className="w-full h-full object-cover"
                 />
               </div>

@@ -26,6 +26,9 @@ const Navbar: React.FC<NavbarProps> = ({
     // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
+    }).catch((error) => {
+      console.warn("Auth session check failed:", error);
+      setIsLoggedIn(false);
     });
 
     // Listen for auth changes
@@ -102,6 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({
               <img
                 src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
                 alt="Merlano Logo"
+                crossOrigin="anonymous"
                 className="w-full h-full object-cover filter grayscale transition-all duration-500"
               />
             </div>

@@ -175,6 +175,7 @@ const About: React.FC = () => {
               <img
                 src={aboutImage}
                 alt="Taller Merlano Sala de Espera"
+                crossOrigin="anonymous"
                 className="w-full h-full object-cover filter grayscale contrast-110 hover:grayscale-0 transition-all duration-700"
               />
             </div>
@@ -196,6 +197,7 @@ const About: React.FC = () => {
                   <img
                     src={img}
                     alt={`Galería ${index + 1}`}
+                    crossOrigin="anonymous"
                     className="w-full h-full object-cover filter grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
                   />
                 </div>
@@ -248,6 +250,7 @@ const About: React.FC = () => {
             <img
               src={aboutGallery[selectedImageIndex]}
               alt={`Gallery ${selectedImageIndex + 1}`}
+              crossOrigin="anonymous"
               className="max-w-full max-h-full object-contain shadow-2xl"
             />
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm tracking-widest font-light">
