@@ -18,6 +18,7 @@ import Navbar from "./components/Navbar";
 import Newsletter from "./components/Newsletter";
 import ProductDetails from "./components/ProductDetails";
 import ServiceDetails from "./components/ServiceDetails";
+import VideoSection from "./components/VideoSection";
 import Services from "./components/Services";
 import { CartProvider } from "./context/CartContext";
 import { ScrollProvider } from "./context/ScrollContext";
@@ -36,7 +37,7 @@ function App() {
   const sectionsOrder = [
     "hero",
     "brands",
-    "highlights",
+    "video-section",
     "services",
     "about",
     "featured-products",
@@ -110,6 +111,7 @@ function App() {
   const sections = {
     hero: <Hero key="hero" />,
     brands: <Brands key="brands" />,
+    "video-section": <VideoSection key="video-section" />,
     highlights: <Highlights key="highlights" />,
     services: (
       <Services
