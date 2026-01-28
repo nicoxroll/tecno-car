@@ -201,7 +201,7 @@ const About: React.FC = () => {
                     src={img}
                     alt={`Galería ${index + 1}`}
                     crossOrigin="anonymous"
-                    className="w-full h-full object-cover filter grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500"
+                    className="w-full h-full object-contain filter grayscale contrast-110 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                   />
                 </div>
               ))}

@@ -1,5 +1,5 @@
 import { CircularProgress } from "@mui/material";
-import { ArrowRight, ExternalLink, X } from "lucide-react";
+import { ArrowRight, ExternalLink, MessageCircle, X } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { streamChat } from "../services/geminiService";
 import { ChatMessage } from "../types";
@@ -11,8 +11,8 @@ const FormattedText: React.FC<{ text: string }> = ({ text }) => {
     return text.split("\n").map((line, lineIdx) => {
       if (line.trim() === "") return <br key={lineIdx} />;
 
-      // Split by bold markers (**text**)
-      const parts = line.split(/(\*\*.*?\*\*)/g);
+      // Split by bold markers (**text**) and links ([text](url))
+      const parts = line.split(/(\*\*.*?\*\*|\[.*?\]\(.*?\))/g);
 
       return (
         <p key={lineIdx} className="mb-1 last:mb-0">
@@ -23,6 +23,24 @@ const FormattedText: React.FC<{ text: string }> = ({ text }) => {
                   {part.slice(2, -2)}
                 </strong>
               );
+            } else if (part.match(/\[.*?\]\(.*?\)/)) {
+              // Handle markdown links [text](url)
+              const linkMatch = part.match(/\[(.+?)\]\((.+?)\)/);
+              if (linkMatch) {
+                const [, linkText, url] = linkMatch;
+                return (
+                  <a
+                    key={partIdx}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-green-400 hover:text-green-300 underline transition-colors"
+                  >
+                    <MessageCircle size={14} />
+                    {linkText}
+                  </a>
+                );
+              }
             }
             return <span key={partIdx}>{part}</span>;
           })}
@@ -122,6 +140,52 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       },
     ]);
 
+    // Fallback logic: if AI is disabled, use static knowledge base
+    if (!enabled) {
+      // First message: services list
+      const firstMessage = `El taller se especializa en brindar soluciones integrales para todo tipo de vehículos:
+- **Multimedia:** Venta e instalación de centrales multimedia originales y alternativas (Android/CarPlay).
+- **Cerrajería:** Cerrajería automotriz integral, incluyendo llaves codificadas de todo tipo.
+- **Electrónica:** Electrónica automotriz general, diagnóstico y reparaciones. Diagnóstico de ECU/Inyección.
+- **Electricidad:** Electricidad general, reparación de alternadores y arranques (burros de arranque).
+- **Seguridad:** Servicio integral de Airbag y ABS. Venta e instalación de alarmas (Positron G8, etc.).
+- **Confort:** Venta e instalación de cierres centralizados, alza cristales (venta, instalación, reparación).
+- **Baterías:** Venta e instalación de baterías multimarca.
+- **Climatización:** Reparación integral de sistemas de aire acondicionado y calefacción. **Especializados en:** Vehículos particulares, maquinaria vial, ómnibus y agrícola.
+- **Polarizados:** Servicio integral para vehículos y comercial/residencial.`;
+
+      // Second message: WhatsApp link
+      const secondMessage = `Si deseas más información, [toca aquí para hablar con un asesor](https://wa.me/5492213334444)`;
+
+      // Send first message
+      setTimeout(() => {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === tempId
+              ? { ...msg, text: firstMessage, isThinking: false }
+              : msg
+          )
+        );
+
+        // Send second message after a delay
+        setTimeout(() => {
+          const secondMsgId = (Date.now() + 2).toString();
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: secondMsgId,
+              role: "model",
+              text: secondMessage,
+            },
+          ]);
+        }, 1000); // 1 second delay
+
+        setIsLoading(false);
+      }, 600);
+      return;
+    }
+
+    // Default: AI enabled
     await streamChat(
       messages,
       userMsg.text,
@@ -285,7 +349,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       )}
 
       {/* Toggle Button */}
-      {!isOpen && enabled && (
+      {!isOpen && (
         <button
           onClick={() => onToggle(true)}
           className="bg-black w-16 h-16 flex items-center justify-center shadow-lg border border-zinc-700 hover:border-white transition-all duration-300 mb-6 overflow-hidden p-2.5 rounded-full"
