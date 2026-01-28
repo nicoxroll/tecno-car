@@ -143,14 +143,14 @@ const About: React.FC = () => {
             </h2>
             <div className="w-12 h-[1px] bg-white mb-8"></div>
 
-            <p
+            <div
               className="text-zinc-300 font-light text-sm leading-loose mb-8 text-justify"
               dangerouslySetInnerHTML={{ __html: aboutDescription1 }}
-            ></p>
-            <p
+            ></div>
+            <div
               className="text-zinc-400 font-light text-sm leading-loose mb-10"
               dangerouslySetInnerHTML={{ __html: aboutDescription2 }}
-            ></p>
+            ></div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {amenities.map((item, index) => (
