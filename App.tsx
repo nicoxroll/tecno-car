@@ -124,6 +124,16 @@ function App() {
 
       const ogDesc = document.querySelector('meta[property="og:description"]');
       if (ogDesc) ogDesc.setAttribute("content", desc);
+
+      // Canonical URL
+      let canonicalUrl = "https://merlanotecnologiavehicular.com.ar" + window.location.pathname;
+      let linkCanonical = document.querySelector('link[rel="canonical"]');
+      if (!linkCanonical) {
+        linkCanonical = document.createElement("link");
+        linkCanonical.setAttribute("rel", "canonical");
+        document.head.appendChild(linkCanonical);
+      }
+      linkCanonical.setAttribute("href", canonicalUrl);
     };
 
     if (currentView === "landing") {

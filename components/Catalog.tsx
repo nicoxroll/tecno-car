@@ -4,6 +4,8 @@ import {
   Filter,
   Search,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { Product } from "../types";
@@ -32,6 +34,8 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   const [searchTags, setSearchTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -132,6 +136,18 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
 
     return matchesCategory && matchesPrice && matchesSearch && matchesTags;
   });
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = filteredProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, priceRange, searchTerm, searchTags]);
 
   if (loading) {
     return (
@@ -304,7 +320,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                   : "grid-cols-1 md:grid-cols-3 xl:grid-cols-4"
               }`}
             >
-              {filteredProducts.map((product) => (
+              {currentProducts.map((product) => (
                 <div
                   key={product.id}
                   className="group bg-black border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col"
@@ -429,6 +445,49 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                   className="text-white text-xs underline"
                 >
                   Limpiar Filtros
+                </button>
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {filteredProducts.length > itemsPerPage && (
+              <div className="mt-12 flex justify-center items-center gap-4">
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="p-2 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} strokeWidth={1} />
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 flex items-center justify-center text-xs font-medium border transition-colors ${
+                          currentPage === page
+                            ? "bg-white text-black border-white"
+                            : "bg-transparent text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-white"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="p-2 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={20} strokeWidth={1} />
                 </button>
               </div>
             )}

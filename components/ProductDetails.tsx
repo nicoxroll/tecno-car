@@ -34,6 +34,34 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
   useEffect(() => {
     window.scrollTo(0, 0);
     setSelectedImage(product.image);
+
+    // Inject Product Schema
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": product.name,
+      "image": [product.image, ...(product.images || [])],
+      "description": product.description,
+      "brand": {
+        "@type": "Brand",
+        "name": "Merlano"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": window.location.href,
+        "priceCurrency": "ARS",
+        "price": product.discount_price || product.price,
+        "availability": (product.stock && product.stock > 0) ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "itemCondition": "https://schema.org/NewCondition"
+      }
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    }
   }, [product]);
 
   // Combine main image with gallery images
