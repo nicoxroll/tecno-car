@@ -20,7 +20,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [activeStyles, setActiveStyles] = useState({
     bold: false,
     italic: false,
+    fontSize: "3",
   });
+  const [showSizeMenu, setShowSizeMenu] = useState(false);
 
   useEffect(() => {
     if (contentEditableRef.current) {
@@ -32,9 +34,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, []);
 
   const updateActiveStyles = () => {
+    const size = document.queryCommandValue("fontSize");
     setActiveStyles({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
+      fontSize: size || "3",
     });
   };
 
@@ -90,16 +94,44 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         >
           I
         </button>
-        <button
-          onMouseDown={(e) => {
-            e.preventDefault();
-            execCommand("removeFormat");
-          }}
-          className="w-8 h-8 flex items-center justify-center text-white hover:bg-white/20 rounded text-xs"
-          title="Limpiar Formato"
-        >
-          Tx
-        </button>
+        
+        <div className="relative">
+          <button
+            onMouseDown={(e) => {
+              e.preventDefault();
+              setShowSizeMenu(!showSizeMenu);
+            }}
+            className={`w-8 h-8 flex items-center justify-center text-white hover:bg-white/20 rounded text-xs ${
+              showSizeMenu ? "bg-white/40" : ""
+            }`}
+            title="Tamaño de Letra"
+          >
+            Tx
+          </button>
+          
+          {showSizeMenu && (
+            <div className="absolute top-full left-0 mt-2 bg-zinc-900 border border-zinc-700 rounded overflow-hidden flex flex-col min-w-[2rem] shadow-xl">
+              {[1, 2, 3, 4, 5, 6, 7].map((size) => (
+                <button
+                  key={size}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    execCommand("fontSize", size.toString());
+                    setShowSizeMenu(false);
+                  }}
+                  className={`px-3 py-2 text-xs hover:bg-white/20 text-center transition-colors ${
+                    activeStyles.fontSize === size.toString() 
+                      ? "text-white bg-white/20 font-bold" 
+                      : "text-zinc-400"
+                  }`}
+                  title={`Tamaño ${size}`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <Tag

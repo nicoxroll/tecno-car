@@ -109,12 +109,11 @@ const Hero: React.FC = () => {
           style={{ animationDelay: "0.6s", animationFillMode: "forwards" }}
         ></div>
 
-        <p
+        <div
           className="text-zinc-300 font-light max-w-lg mx-auto mb-12 text-sm md:text-base leading-relaxed tracking-wide opacity-0 animate-fade-in"
           style={{ animationDelay: "0.8s", animationFillMode: "forwards" }}
-        >
-          {heroDescription}
-        </p>
+          dangerouslySetInnerHTML={{ __html: heroDescription }}
+        ></div>
 
         <div
           className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fade-in"

@@ -101,6 +101,7 @@ const SettingsManager: React.FC = () => {
   const [aboutGallery, setAboutGallery] = useState<string[]>([]);
   const [originalSettings, setOriginalSettings] = useState<any>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [showCancelWarning, setShowCancelWarning] = useState(false);
 
   const [configView, setConfigView] = useState<"main" | "catalog">("main");
 
@@ -545,17 +546,12 @@ const SettingsManager: React.FC = () => {
     }
   };
 
-  const handleCancel = async () => {
-    if (!window.confirm("¿Seguro que quieres cancelar? Se perderán todos los cambios no guardados.")) return;
-
+  const confirmCancel = async () => {
     try {
         // Delete uploaded images that weren't saved
         if (uploadedImages.length > 0) {
             await Promise.all(uploadedImages.map(async (url) => {
                 // Only delete if it's NOT in the original settings (double check)
-                // Actually, if it's in originalSettings, we shouldn't have added it to uploadedImages ideally, 
-                // but uploadedImages tracks NEW uploads. 
-                // However, safe guard:
                 if (url !== originalSettings.aboutImage && !originalSettings.aboutGallery.includes(url)) {
                      await deleteImage(url);
                 }
@@ -565,20 +561,40 @@ const SettingsManager: React.FC = () => {
 
         // Restore State
         if (originalSettings) {
+             // Main Hero
+            setMainHeroImage(originalSettings.mainHeroImage);
+            setMainHeroTitle(originalSettings.mainHeroTitle);
+            setMainHeroSubtitle(originalSettings.mainHeroSubtitle);
+            setMainHeroDescription(originalSettings.mainHeroDescription);
+            
+            // Catalog Hero
+            setCatalogHeroImage(originalSettings.catalogHeroImage);
+            setCatalogHeroTitle(originalSettings.catalogHeroTitle);
+            setCatalogHeroSubtitle(originalSettings.catalogHeroSubtitle);
+            setCatalogYear(originalSettings.catalogYear);
+
+            // About
             setAboutImage(originalSettings.aboutImage);
             setAboutDescription1(originalSettings.aboutDescription1);
             setAboutDescription2(originalSettings.aboutDescription2);
             setAboutAmenities(originalSettings.aboutAmenities);
             setAboutGallery(originalSettings.aboutGallery);
+            
+            // Filters & General
             setCatalogFilters(originalSettings.catalogFilters);
             setSettings(originalSettings.settings);
         }
         toast.info("Cambios cancelados");
+        setShowCancelWarning(false);
 
     } catch (error) {
         console.error("Error cancelling changes:", error);
         toast.error("Error al cancelar");
     }
+  }
+
+  const handleCancelClick = () => {
+      setShowCancelWarning(true);
   }
 
   const hasChanges = useMemo(() => {
@@ -1161,7 +1177,7 @@ const SettingsManager: React.FC = () => {
       <div className="flex justify-end mt-6 sm:mt-8 gap-4">
         {hasChanges && (
             <button
-            onClick={handleCancel}
+            onClick={handleCancelClick}
             className="px-4 sm:px-6 py-3 text-sm uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
             >
             Cancelar
@@ -1384,8 +1400,38 @@ const SettingsManager: React.FC = () => {
           </div>
         </Modal>
       )}
+
+      {/* Confirmation Modal for Cancel */}
+      {showCancelWarning && (
+        <Modal
+          isOpen={true}
+          title="Descartar Cambios"
+          onClose={() => setShowCancelWarning(false)}
+        >
+          <div className="space-y-4">
+            <p className="text-zinc-300 text-sm">
+              ¿Estás seguro de que deseas cancelar? Todos los cambios no guardados se perderán permanentemente.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowCancelWarning(false)}
+                className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+              >
+                Volver
+              </button>
+              <button
+                onClick={confirmCancel}
+                className="px-4 py-2 text-sm bg-red-900/30 text-red-500 border border-red-900/50 rounded hover:bg-red-900/50 hover:border-red-800 transition-colors uppercase tracking-wider"
+              >
+                Descartar Todo
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
 
 export default SettingsManager;
+
