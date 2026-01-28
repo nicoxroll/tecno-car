@@ -10,7 +10,7 @@ interface ServicesProps {
   onServiceSelect?: (service: Service) => void;
 }
 
-const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
+const Services: React.FC<ServicesProps> = ({ onServiceSelect }) => {
   const [visibleItems, setVisibleItems] = useState<number[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [services, setServices] = useState<Service[]>([]);
@@ -80,7 +80,11 @@ const Services: React.FC<ServicesProps> = ({ onNavigate, onServiceSelect }) => {
           <h2 className="text-4xl md:text-5xl font-thin text-white tracking-tight uppercase mb-4">
             Tecnología <span className="font-thin text-zinc-400">Aplicada</span>
           </h2>
-          <div className="w-12 h-[1px] bg-white mx-auto"></div>
+          <div className="w-12 h-[1px] bg-white mx-auto mb-8"></div>
+          <p className="max-w-2xl mx-auto text-zinc-500 font-light text-sm uppercase tracking-widest">
+            Soluciones integrales en <strong>Berisso</strong> y <strong>La Plata</strong>: 
+            Llaves codificadas, polarizados, multimedia, aire acondicionado y estética vehicular.
+          </p>
         </div>
 
         <div className="space-y-24 md:space-y-0 relative">

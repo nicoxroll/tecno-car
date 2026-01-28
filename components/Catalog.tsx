@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import {
   ShoppingBag,
   Filter,
-  ChevronUp,
-  ChevronDown,
   Search,
   X,
 } from "lucide-react";
@@ -82,15 +80,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     loadData();
   }, []);
 
-  const [categories, setCategories] = useState<string[]>([
-    "Todos",
-    "Multimedia",
-    "Audio",
-    "Iluminación",
-    "Seguridad",
-    "Accesorios",
-    "Limpieza",
-  ]);
+  const [categories, setCategories] = useState<string[]>(["Todos"]);
 
   useEffect(() => {
     const fetchCategories = async () => {

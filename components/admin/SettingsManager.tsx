@@ -7,9 +7,11 @@ import {
   Settings,
   X,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
-import { supabase, uploadImage } from "../../services/supabase";
+import { deleteImage, supabase, uploadImage } from "../../services/supabase";
+import IconPicker from "../ui/IconPicker";
+import RichTextEditor from "../ui/RichTextEditor";
 import Modal from "./Modal";
 
 const SettingsManager: React.FC = () => {
@@ -95,7 +97,10 @@ const SettingsManager: React.FC = () => {
     { icon: "Tv", text: "Televisión con cable" },
     { icon: "CheckCircle", text: "Baño para clientes" },
   ]);
+
   const [aboutGallery, setAboutGallery] = useState<string[]>([]);
+  const [originalSettings, setOriginalSettings] = useState<any>(null);
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
 
   const [configView, setConfigView] = useState<"main" | "catalog">("main");
 
@@ -187,6 +192,44 @@ const SettingsManager: React.FC = () => {
             whatsapp: configMap.social_whatsapp || prev.social.whatsapp,
           },
         }));
+
+        setOriginalSettings({
+          catalogHeroImage: configMap.catalog_hero_image,
+          catalogHeroTitle: configMap.catalog_hero_title,
+          catalogHeroSubtitle: configMap.catalog_hero_subtitle,
+          mainHeroImage: configMap.main_hero_image,
+          mainHeroTitle: configMap.main_hero_title,
+          mainHeroSubtitle: configMap.main_hero_subtitle,
+          mainHeroDescription: configMap.main_hero_description,
+          catalogYear: configMap.catalog_year,
+          aboutImage: configMap.about_image,
+          aboutDescription1: configMap.about_description_1,
+          aboutDescription2: configMap.about_description_2,
+          aboutAmenities: configMap.about_amenities
+            ? JSON.parse(configMap.about_amenities)
+            : [],
+          aboutGallery: configMap.about_gallery
+            ? JSON.parse(configMap.about_gallery)
+            : [],
+          catalogFilters: configMap.catalog_filters
+            ? JSON.parse(configMap.catalog_filters)
+            : [],
+          settings: {
+            companyName: configMap.company_name,
+            email: configMap.company_email,
+            phone: configMap.company_phone,
+            address: configMap.company_address,
+            hours: {
+              days: configMap.company_hours_days,
+              time: configMap.company_hours_time,
+            },
+            social: {
+              instagram: configMap.social_instagram,
+              facebook: configMap.social_facebook,
+              whatsapp: configMap.social_whatsapp,
+            },
+          },
+        });
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -304,68 +347,7 @@ const SettingsManager: React.FC = () => {
     }
   };
 
-  const handleSaveAbout = async () => {
-    try {
-      const promise = async () => {
-        // Save image
-        if (aboutImage) {
-          await supabase
-            .from("site_config")
-            .upsert(
-              { key: "about_image", value: aboutImage },
-              { onConflict: "key" }
-            );
-        }
 
-        // Save descriptions
-        await supabase
-          .from("site_config")
-          .upsert(
-            { key: "about_description_1", value: aboutDescription1 },
-            { onConflict: "key" }
-          );
-        await supabase
-          .from("site_config")
-          .upsert(
-            { key: "about_description_2", value: aboutDescription2 },
-            { onConflict: "key" }
-          );
-
-        // Save amenities
-        await supabase
-          .from("site_config")
-          .upsert(
-            { key: "about_amenities", value: JSON.stringify(aboutAmenities) },
-            { onConflict: "key" }
-          );
-
-        // Save gallery
-        await supabase
-          .from("site_config")
-          .upsert(
-            { key: "about_gallery", value: JSON.stringify(aboutGallery) },
-            { onConflict: "key" }
-          );
-
-        // Update local state
-        setAboutImage(aboutImage);
-        setAboutDescription1(aboutDescription1);
-        setAboutDescription2(aboutDescription2);
-        setAboutAmenities(aboutAmenities);
-        setAboutGallery(aboutGallery);
-
-        return "Configuración de Quiénes Somos guardada";
-      };
-
-      toast.promise(promise(), {
-        loading: "Guardando configuración...",
-        success: (data) => data,
-        error: "Error al guardar",
-      });
-    } catch (error) {
-      console.error("Error saving about configuration:", error);
-    }
-  };
 
   const handleHeroImageUpload = async (file: File, isMain: boolean = false) => {
     try {
@@ -396,6 +378,7 @@ const SettingsManager: React.FC = () => {
         const imageUrl = await uploadImage(file);
         if (!imageUrl) throw new Error("Error al subir imagen");
         setAboutGallery((prev) => [...prev, imageUrl]);
+        setUploadedImages((prev) => [...prev, imageUrl]); // Track uploaded image
         return "Imagen agregada a la galería";
       };
 
@@ -406,6 +389,26 @@ const SettingsManager: React.FC = () => {
       });
     } catch (error) {
       console.error("Error uploading gallery image:", error);
+    }
+  };
+
+  const handleAboutImageUpload = async (file: File) => {
+    try {
+      const promise = async () => {
+        const imageUrl = await uploadImage(file);
+        if (!imageUrl) throw new Error("Error al subir imagen");
+        setAboutImage(imageUrl);
+        setUploadedImages((prev) => [...prev, imageUrl]); // Track uploaded image
+        return "Imagen de sección actualizada";
+      };
+
+      toast.promise(promise(), {
+        loading: "Subiendo imagen...",
+        success: (data) => data,
+        error: "Error al subir la imagen",
+      });
+    } catch (error) {
+      console.error("Error uploading about image:", error);
     }
   };
 
@@ -516,6 +519,19 @@ const SettingsManager: React.FC = () => {
             { onConflict: "key" }
           );
 
+        // Update original settings to filter out "unsaved" state
+        setOriginalSettings({
+            ...originalSettings,
+            aboutImage,
+            aboutDescription1,
+            aboutDescription2,
+            aboutAmenities,
+            aboutGallery,
+            catalogFilters,
+            settings
+        })
+        setUploadedImages([]); // Clear uploaded images list as they are now saved
+
         return "Toda la configuración guardada correctamente";
       };
 
@@ -528,6 +544,69 @@ const SettingsManager: React.FC = () => {
       console.error("Error saving configuration:", error);
     }
   };
+
+  const handleCancel = async () => {
+    if (!window.confirm("¿Seguro que quieres cancelar? Se perderán todos los cambios no guardados.")) return;
+
+    try {
+        // Delete uploaded images that weren't saved
+        if (uploadedImages.length > 0) {
+            await Promise.all(uploadedImages.map(async (url) => {
+                // Only delete if it's NOT in the original settings (double check)
+                // Actually, if it's in originalSettings, we shouldn't have added it to uploadedImages ideally, 
+                // but uploadedImages tracks NEW uploads. 
+                // However, safe guard:
+                if (url !== originalSettings.aboutImage && !originalSettings.aboutGallery.includes(url)) {
+                     await deleteImage(url);
+                }
+            }));
+            setUploadedImages([]);
+        }
+
+        // Restore State
+        if (originalSettings) {
+            setAboutImage(originalSettings.aboutImage);
+            setAboutDescription1(originalSettings.aboutDescription1);
+            setAboutDescription2(originalSettings.aboutDescription2);
+            setAboutAmenities(originalSettings.aboutAmenities);
+            setAboutGallery(originalSettings.aboutGallery);
+            setCatalogFilters(originalSettings.catalogFilters);
+            setSettings(originalSettings.settings);
+        }
+        toast.info("Cambios cancelados");
+
+    } catch (error) {
+        console.error("Error cancelling changes:", error);
+        toast.error("Error al cancelar");
+    }
+  }
+
+  const hasChanges = useMemo(() => {
+    if (!originalSettings) return false;
+
+    const currentSettings = {
+        companyName: settings.companyName,
+        email: settings.email,
+        phone: settings.phone,
+        address: settings.address,
+        hours: settings.hours,
+        social: settings.social
+    };
+    
+    // Simplistic comparison using JSON.stringify
+    const settingsChanged = JSON.stringify(currentSettings) !== JSON.stringify(originalSettings.settings);
+    const aboutChanged = 
+        aboutImage !== originalSettings.aboutImage ||
+        aboutDescription1 !== originalSettings.aboutDescription1 ||
+        aboutDescription2 !== originalSettings.aboutDescription2 ||
+        JSON.stringify(aboutAmenities) !== JSON.stringify(originalSettings.aboutAmenities) ||
+        JSON.stringify(aboutGallery) !== JSON.stringify(originalSettings.aboutGallery);
+        
+    const filtersChanged = JSON.stringify(catalogFilters) !== JSON.stringify(originalSettings.catalogFilters);
+
+    return settingsChanged || aboutChanged || filtersChanged;
+  }, [settings, aboutImage, aboutDescription1, aboutDescription2, aboutAmenities, aboutGallery, catalogFilters, originalSettings]);
+
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -911,12 +990,7 @@ const SettingsManager: React.FC = () => {
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
-                      handleHeroImageUpload(e.target.files[0], false).then(
-                        () => {
-                          // After upload, we need to save the about image
-                          // This will be handled by the upload function updating the form
-                        }
-                      );
+                        handleAboutImageUpload(e.target.files[0]);
                     }
                   }}
                   className="w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
@@ -940,30 +1014,30 @@ const SettingsManager: React.FC = () => {
             <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
               Primer Párrafo
             </label>
-            <textarea
-              value={aboutDescription1}
-              onChange={(e) => setAboutDescription1(e.target.value)}
-              rows={3}
-              className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
-              placeholder="Texto del primer párrafo..."
-            />
-            <p className="text-xs text-zinc-500 mt-1">
-              Puedes usar &lt;strong&gt; para resaltar texto
-            </p>
-          </div>
+              <RichTextEditor
+                tagName="p"
+                initialValue={aboutDescription1}
+                onChange={(value) => setAboutDescription1(value)}
+                className="w-full bg-transparent border border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors min-h-[5rem] rounded"
+                placeholder="Texto del primer párrafo..."
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                Usa las herramientas de formato (selecciona el texto para verlas)
+              </p>
+            </div>
 
-          <div>
-            <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
-              Segundo Párrafo
-            </label>
-            <textarea
-              value={aboutDescription2}
-              onChange={(e) => setAboutDescription2(e.target.value)}
-              rows={3}
-              className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
-              placeholder="Texto del segundo párrafo..."
-            />
-          </div>
+            <div>
+              <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+                Segundo Párrafo
+              </label>
+              <RichTextEditor
+                tagName="p"
+                initialValue={aboutDescription2}
+                onChange={(value) => setAboutDescription2(value)}
+                className="w-full bg-transparent border border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors min-h-[5rem] rounded"
+                placeholder="Texto del segundo párrafo..."
+              />
+            </div>
 
           {/* Amenities/Services */}
           <div>
@@ -974,34 +1048,16 @@ const SettingsManager: React.FC = () => {
               {aboutAmenities.map((amenity, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 p-2 bg-black border-b border-zinc-800 hover:border-zinc-600 transition-colors group"
+                  className="flex items-center gap-3 p-2 bg-zinc-900/30 border border-zinc-800 rounded hover:border-zinc-700 transition-colors group"
                 >
-                  <select
+                  <IconPicker
                     value={amenity.icon}
-                    onChange={(e) => {
+                    onChange={(icon) => {
                       const newAmenities = [...aboutAmenities];
-                      newAmenities[index].icon = e.target.value;
+                      newAmenities[index].icon = icon;
                       setAboutAmenities(newAmenities);
                     }}
-                    className="bg-transparent text-zinc-500 text-xs focus:outline-none cursor-pointer hover:text-zinc-300 appearance-none"
-                  >
-                    <option value="Wind" className="bg-black text-white">
-                      Aire
-                    </option>
-                    <option value="Coffee" className="bg-black text-white">
-                      Café
-                    </option>
-                    <option value="Wifi" className="bg-black text-white">
-                      Wi-Fi
-                    </option>
-                    <option value="Tv" className="bg-black text-white">
-                      TV
-                    </option>
-                    <option value="CheckCircle" className="bg-black text-white">
-                      Check
-                    </option>
-                  </select>
-                  <div className="w-[1px] h-3 bg-zinc-800"></div>
+                  />
                   <input
                     type="text"
                     value={amenity.text}
@@ -1102,12 +1158,26 @@ const SettingsManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex justify-end mt-6 sm:mt-8">
+      <div className="flex justify-end mt-6 sm:mt-8 gap-4">
+        {hasChanges && (
+            <button
+            onClick={handleCancel}
+            className="px-4 sm:px-6 py-3 text-sm uppercase tracking-widest text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            >
+            Cancelar
+            </button>
+        )}
         <button
           onClick={handleSaveAll}
-          className="bg-white text-black px-4 sm:px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+          className="relative bg-white text-black px-4 sm:px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-200 transition-colors"
         >
           Guardar Cambios
+          {hasChanges && (
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+          )}
         </button>
       </div>
 
@@ -1149,16 +1219,15 @@ const SettingsManager: React.FC = () => {
               <label className="block text-sm font-medium text-zinc-400 mb-1">
                 Descripción
               </label>
-              <textarea
-                value={mainHeroForm.description}
-                onChange={(e) =>
+              <RichTextEditor
+                initialValue={mainHeroForm.description}
+                onChange={(value) =>
                   setMainHeroForm({
                     ...mainHeroForm,
-                    description: e.target.value,
+                    description: value,
                   })
                 }
-                rows={3}
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-none"
+                className="w-full bg-transparent border border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors min-h-[5rem] rounded"
                 placeholder="Descripción del hero principal..."
               />
             </div>

@@ -148,7 +148,6 @@ function App() {
             <Navbar
               onNavigate={handleNavigate}
               currentView={currentView}
-              onGoToCheckout={() => handleNavigate("checkout")}
             />
           )}
 

@@ -928,7 +928,7 @@ const SalesManager: React.FC = () => {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {stats.statusData.map((entry, index) => (
+                      {stats.statusData.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
@@ -1079,12 +1079,12 @@ const SalesManager: React.FC = () => {
               <CustomSelect
                 value={formData.status || "Pendiente"}
                 onChange={(value) =>
-                  setFormData({ ...formData, status: value })
+                  setFormData({ ...formData, status: value as "Pendiente" | "Completado" | "Cancelado" })
                 }
                 options={[
                   { value: "Pendiente", label: "Pendiente" },
-                  { value: "En proceso", label: "En proceso" },
                   { value: "Completado", label: "Completado" },
+                  { value: "Cancelado", label: "Cancelado" },
                 ]}
               />
             </div>

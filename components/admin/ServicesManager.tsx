@@ -1,5 +1,4 @@
 import { Fade, Tooltip as MuiTooltip } from "@mui/material";
-import { createTheme } from "@mui/material/styles";
 import dayjs, { Dayjs } from "dayjs";
 import "dayjs/locale/es";
 import {
@@ -30,38 +29,6 @@ import CustomSelect from "../ui/CustomSelect";
 import Modal from "./Modal";
 
 dayjs.locale("es");
-
-const darkTheme = createTheme({
-  palette: {
-    mode: "dark",
-    primary: {
-      main: "#ffffff",
-    },
-    background: {
-      paper: "#18181b",
-      default: "#09090b",
-    },
-  },
-  components: {
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            "& fieldset": {
-              borderColor: "#3f3f46", // zinc-700
-            },
-            "&:hover fieldset": {
-              borderColor: "#71717a", // zinc-500
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#ffffff",
-            },
-          },
-        },
-      },
-    },
-  },
-});
 
 interface Appointment {
   id: number;

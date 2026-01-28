@@ -597,7 +597,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {categoryStats.map((entry, index) => (
+                      {categoryStats.map((_, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={COLORS[index % COLORS.length]}
