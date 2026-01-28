@@ -120,6 +120,7 @@ const Services: React.FC<ServicesProps> = ({ onServiceSelect }) => {
                     <img
                       src={service.image}
                       alt={service.title}
+                      loading="lazy"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover filter grayscale contrast-125 group-hover:grayscale-0 transition-all duration-700"
                     />

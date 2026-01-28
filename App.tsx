@@ -107,6 +107,52 @@ function App() {
     }
   };
 
+  // SEO Management
+  useEffect(() => {
+    const defaultTitle =
+      "Merlano Tecnología Vehicular - Taller Integral del Automotor";
+    const defaultDesc =
+      "Expertos en llaves codificadas, cierre centralizado, polarizados, audio y multimedia, aire acondicionado y productos de limpieza. Taller de mantenimiento vehicular en La Plata y Berisso.";
+
+    const updateMeta = (title: string, desc: string) => {
+      document.title = title;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute("content", desc);
+
+      const ogTitle = document.querySelector('meta[property="og:title"]');
+      if (ogTitle) ogTitle.setAttribute("content", title);
+
+      const ogDesc = document.querySelector('meta[property="og:description"]');
+      if (ogDesc) ogDesc.setAttribute("content", desc);
+    };
+
+    if (currentView === "landing") {
+      updateMeta(defaultTitle, defaultDesc);
+    } else if (currentView === "product-details" && selectedProduct) {
+      const desc = selectedProduct.description
+        ? selectedProduct.description.slice(0, 150) + "..."
+        : defaultDesc;
+      updateMeta(`${selectedProduct.name} | Merlano`, desc);
+    } else if (currentView === "service-details" && selectedService) {
+      const desc = selectedService.description
+        ? selectedService.description.slice(0, 150) + "..."
+        : defaultDesc;
+      updateMeta(`${selectedService.title} | Servicios Merlano`, desc);
+    } else if (currentView === "catalog") {
+      updateMeta(
+        "Catálogo de Productos | Merlano",
+        "Explora nuestra variedad de productos de electrónica, audio, seguridad y confort para tu vehículo."
+      );
+    } else if (currentView === "checkout") {
+      updateMeta("Checkout | Merlano", "Finaliza tu compra o consulta.");
+    } else if (currentView === "admin") {
+      updateMeta(
+        "Panel de Administración | Merlano",
+        "Acceso restringido administrativos."
+      );
+    }
+  }, [currentView, selectedProduct, selectedService]);
+
   // Define all sections
   const sections = {
     hero: <Hero key="hero" />,
