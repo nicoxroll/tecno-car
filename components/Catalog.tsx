@@ -11,6 +11,7 @@ import { useCart } from "../context/CartContext";
 import { Product } from "../types";
 import { loadProducts } from "../utils/dataLoader";
 import { supabase } from "../services/supabase";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 
 interface CatalogProps {
   onProductSelect: (product: Product) => void;
@@ -163,9 +164,10 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
       <div className="relative h-[60vh] overflow-hidden border-b border-zinc-800">
         <div className="absolute inset-0 bg-zinc-900/40 z-10 mix-blend-multiply"></div>{" "}
         {/* Gray/Zinc Overlay */}
-        <img
+        <ImageWithLoader
           src={heroImage}
           alt="Catálogo Merlano"
+          containerClassName="w-full h-full"
           className="w-full h-full object-cover"
           style={{
             transform: `scale(1.1) translateY(${scrollY * 0.4}px)`,
@@ -329,9 +331,10 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                     className="relative aspect-square overflow-hidden bg-black cursor-pointer"
                     onClick={() => onProductSelect(product)}
                   >
-                    <img
+                    <ImageWithLoader
                       src={product.image}
                       alt={product.name}
+                      containerClassName="w-full h-full"
                       loading="lazy"
                       crossOrigin="anonymous"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100"

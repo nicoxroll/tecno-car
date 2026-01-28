@@ -39,6 +39,7 @@ interface ChatInterfaceProps {
   onToggle: (isOpen: boolean) => void;
   pendingMessage?: string;
   onMessageProcessed?: () => void;
+  enabled?: boolean;
 }
 
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -46,6 +47,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onToggle,
   pendingMessage,
   onMessageProcessed,
+  enabled = true,
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -283,7 +285,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       )}
 
       {/* Toggle Button */}
-      {!isOpen && (
+      {!isOpen && enabled && (
         <button
           onClick={() => onToggle(true)}
           className="bg-black w-16 h-16 flex items-center justify-center shadow-lg border border-zinc-700 hover:border-white transition-all duration-300 mb-6 overflow-hidden p-2.5 rounded-full"

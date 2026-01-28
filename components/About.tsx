@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../services/supabase";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 
 interface Amenity {
   icon: string;
@@ -173,10 +174,11 @@ const About: React.FC = () => {
           <div className="w-full lg:w-1/2 order-1 lg:order-2">
             <div className="relative aspect-[4/3] border border-zinc-800 p-2 bg-black">
               {/* Removed blue background decoration */}
-              <img
+              <ImageWithLoader
                 src={aboutImage}
                 alt="Taller Merlano Sala de Espera"
                 crossOrigin="anonymous"
+                containerClassName="w-full h-full"
                 className="w-full h-full object-cover filter grayscale contrast-110 hover:grayscale-0 transition-all duration-700"
               />
             </div>
@@ -195,7 +197,7 @@ const About: React.FC = () => {
                   className="aspect-square border border-zinc-800 bg-black overflow-hidden group cursor-pointer relative"
                   onClick={() => setSelectedImageIndex(index)}
                 >
-                  <img
+                  <ImageWithLoader
                     src={img}
                     alt={`Galería ${index + 1}`}
                     crossOrigin="anonymous"

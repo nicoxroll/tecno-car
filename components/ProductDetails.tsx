@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
 import { Product } from "../types";
 import { loadProducts } from "../utils/dataLoader";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 
 interface ProductDetailsProps {
   product: Product;
@@ -129,10 +130,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
           {/* Image Section */}
           <div className="space-y-4">
             <div className="relative bg-zinc-900 border border-zinc-800 aspect-square lg:aspect-[4/5] overflow-hidden group">
-              <img
+              <ImageWithLoader
                 src={selectedImage}
                 alt={product.name}
                 crossOrigin="anonymous"
+                containerClassName="w-full h-full"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="absolute top-0 left-0 p-4">
@@ -168,10 +170,11 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
                         : "border-zinc-800 opacity-50 hover:opacity-100"
                     }`}
                   >
-                    <img
+                    <ImageWithLoader
                       src={img}
                       alt={`${product.name} ${idx}`}
                       crossOrigin="anonymous"
+                      containerClassName="w-full h-full"
                       className="w-full h-full object-cover"
                     />
                   </button>

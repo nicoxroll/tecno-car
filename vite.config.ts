@@ -11,9 +11,7 @@ export default defineConfig(({ mode }) => {
     define: {
       // This ensures the process.env object is available in the client build
       // specifically for the API_KEY usage.
-      'process.env': {
-        API_KEY: env.API_KEY || process.env.API_KEY
-      }
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY || process.env.API_KEY || process.env.VITE_API_KEY || "")
     }
   };
 });

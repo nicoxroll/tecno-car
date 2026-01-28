@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useScroll } from "../context/ScrollContext";
 import { supabase } from "../services/supabase";
+import { ImageWithLoader } from "./ui/ImageWithLoader";
 
 const Hero: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -64,10 +65,11 @@ const Hero: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black z-20"></div>{" "}
         {/* Gradient fade at bottom */}
         {/* Pexels Image - Requested Image */}
-        <img
+        <ImageWithLoader
           src={heroImage}
           alt="Automotive Technology Dashboard"
           crossOrigin="anonymous"
+          containerClassName="w-full h-full"
           className="w-full h-full object-cover transition-transform duration-100 ease-out"
           style={{
             transform: `scale(${1 + scrollY * 0.0005}) translateY(${

@@ -102,6 +102,9 @@ const SettingsManager: React.FC = () => {
   const [originalSettings, setOriginalSettings] = useState<any>(null);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [showCancelWarning, setShowCancelWarning] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [aiChatEnabled, setAiChatEnabled] = useState(true);
+  const [aiKnowledgeBase, setAiKnowledgeBase] = useState("");
 
   const [configView, setConfigView] = useState<"main" | "catalog">("main");
 
@@ -117,6 +120,10 @@ const SettingsManager: React.FC = () => {
           acc[curr.key] = curr.value;
           return acc;
         }, {});
+
+        if (configMap.maintenance_mode) setMaintenanceMode(configMap.maintenance_mode === 'true');
+        if (configMap.ai_chat_enabled) setAiChatEnabled(configMap.ai_chat_enabled === 'true');
+        if (configMap.ai_knowledge_base) setAiKnowledgeBase(configMap.ai_knowledge_base);
 
         if (configMap.catalog_hero_image)
           setCatalogHeroImage(configMap.catalog_hero_image);
@@ -517,6 +524,28 @@ const SettingsManager: React.FC = () => {
           .from("site_config")
           .upsert(
             { key: "catalog_filters", value: JSON.stringify(catalogFilters) },
+            { onConflict: "key" }
+          );
+
+        // Save System Settings
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "maintenance_mode", value: maintenanceMode.toString() },
+            { onConflict: "key" }
+          );
+
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "ai_chat_enabled", value: aiChatEnabled.toString() },
+            { onConflict: "key" }
+          );
+
+        await supabase
+          .from("site_config")
+          .upsert(
+            { key: "ai_knowledge_base", value: aiKnowledgeBase },
             { onConflict: "key" }
           );
 
@@ -1170,6 +1199,80 @@ const SettingsManager: React.FC = () => {
               Estas imágenes aparecerán debajo del texto en la sección "Quiénes
               Somos".
             </p>
+          </div>
+        </div>
+
+        {/* System Settings & AI Knowledge */}
+        <div className="bg-black border border-zinc-800 p-4 sm:p-6 lg:col-span-2">
+          <div className="flex items-center gap-3 mb-6">
+            <Settings className="text-white" size={20} />
+            <h3 className="text-base sm:text-lg font-light text-white uppercase tracking-widest">
+              Configuración del Sistema
+            </h3>
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/20">
+              <div>
+                <h4 className="text-white font-medium mb-1 text-sm sm:text-base">
+                  Modo Mantenimiento
+                </h4>
+                <p className="text-zinc-500 text-xs sm:text-sm">
+                  Si se activa, el sitio mostrará una pantalla de mantenimiento
+                  a los usuarios.
+                </p>
+              </div>
+              <div
+                className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${
+                  maintenanceMode ? "bg-white" : "bg-zinc-800"
+                }`}
+                onClick={() => setMaintenanceMode(!maintenanceMode)}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full bg-black shadow transform transition-transform ${
+                    maintenanceMode ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-4 border border-zinc-800 bg-zinc-900/20">
+              <div>
+                <h4 className="text-white font-medium mb-1 text-sm sm:text-base">
+                  Chat con IA
+                </h4>
+                <p className="text-zinc-500 text-xs sm:text-sm">
+                  Activar o desactivar el asistente virtual en el sitio.
+                </p>
+              </div>
+              <div
+                className={`w-12 h-6 rounded-full p-1 cursor-pointer transition-colors ${
+                  aiChatEnabled ? "bg-white" : "bg-zinc-800"
+                }`}
+                onClick={() => setAiChatEnabled(!aiChatEnabled)}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full bg-black shadow transform transition-transform ${
+                    aiChatEnabled ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 text-xs sm:text-sm mb-2">
+                Conocimiento de la IA (Contexto Adicional)
+              </label>
+              <textarea
+                value={aiKnowledgeBase}
+                onChange={(e) => setAiKnowledgeBase(e.target.value)}
+                className="w-full h-40 bg-transparent border border-zinc-800 text-white p-3 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700 resize-y rounded"
+                placeholder="Ej: Tenemos promociones especiales en..."
+              />
+              <p className="text-xs text-zinc-500 mt-2">
+                Este texto se proveerá al asistente para que tenga más contexto sobre el negocio.
+              </p>
+            </div>
           </div>
         </div>
       </div>

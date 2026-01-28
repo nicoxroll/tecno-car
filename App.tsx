@@ -1,6 +1,7 @@
 import Lenis from "lenis";
 import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
+import { supabase } from "./services/supabase";
 import About from "./components/About";
 import Admin from "./components/Admin";
 import Brands from "./components/Brands";
@@ -25,13 +26,18 @@ import { ScrollProvider } from "./context/ScrollContext";
 import { Product, Service, ViewState } from "./types";
 
 function App() {
-  const [currentView, setCurrentView] = useState<ViewState>("landing");
+  const [currentView, setCurrentView] = useState<ViewState>(() =>
+    window.location.pathname === "/admin" ? "admin" : "landing"
+  );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatPendingMessage, setChatPendingMessage] = useState<
     string | undefined
   >(undefined);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [aiChatEnabled, setAiChatEnabled] = useState(true);
+  const [checkingMaintenance, setCheckingMaintenance] = useState(true);
 
   // Fixed sections order
   const sectionsOrder = [
@@ -71,6 +77,46 @@ function App() {
       (window as any).lenis = null;
     };
   }, []);
+
+  useEffect(() => {
+    const checkMaintenance = async () => {
+      if (currentView === "admin") {
+        setCheckingMaintenance(false);
+        return;
+      }
+      
+      setCheckingMaintenance(true);
+      try {
+        const { data } = await supabase
+          .from("site_config")
+          .select("key, value")
+          .in("key", ["maintenance_mode", "ai_chat_enabled"]);
+        
+        if (data) {
+          const maintenance = data.find(item => item.key === "maintenance_mode");
+          const aiChat = data.find(item => item.key === "ai_chat_enabled");
+          
+          if (maintenance && maintenance.value === "true") {
+            setMaintenanceMode(true);
+          } else {
+            setMaintenanceMode(false);
+          }
+
+          if (aiChat && aiChat.value === "false") {
+            setAiChatEnabled(false);
+          } else {
+            setAiChatEnabled(true);
+          }
+        }
+      } catch (e) {
+        console.error("Error checking maintenance:", e);
+      } finally {
+        setCheckingMaintenance(false);
+      }
+    };
+    
+    checkMaintenance();
+  }, [currentView]);
 
   const handleNavigate = (view: ViewState) => {
     setCurrentView(view);
@@ -190,6 +236,37 @@ function App() {
     footer: <Footer key="footer" />,
   };
 
+  if (checkingMaintenance && currentView !== "admin") {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
+
+  if (maintenanceMode && currentView !== "admin") {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+        <Toaster position="top-center" theme="dark" />
+        <img
+          src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
+          alt="Merlano Logo"
+          className="w-24 h-24 object-contain grayscale opacity-80 mb-8"
+        />
+        <h1 className="text-3xl font-light uppercase tracking-widest mb-4 text-center">
+          Sitio en Mantenimiento
+        </h1>
+        <p className="text-zinc-500 text-center max-w-md">
+          Estamos realizando mejoras en nuestra plataforma. Por favor, vuelve a
+          intentarlo más tarde.
+        </p>
+        <p className="text-zinc-600 text-sm mt-8">
+          Merlano Tecnología Vehicular
+        </p>
+      </div>
+    );
+  }
+
   return (
     <CartProvider>
       <ScrollProvider>
@@ -253,6 +330,7 @@ function App() {
             onToggle={setIsChatOpen}
             pendingMessage={chatPendingMessage}
             onMessageProcessed={() => setChatPendingMessage(undefined)}
+            enabled={aiChatEnabled}
           />
         </div>
       </ScrollProvider>

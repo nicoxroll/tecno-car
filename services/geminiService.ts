@@ -1,5 +1,7 @@
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
 import { ChatMessage } from "../types";
+import { supabase } from "./supabase";
+import { loadProducts } from "../utils/dataLoader";
 
 // SYSTEM_INSTRUCTION remains the same
 const SYSTEM_INSTRUCTION = `
@@ -30,18 +32,72 @@ export const streamChat = async (
   onComplete: (fullText: string, groundingUrls?: string[]) => void
 ) => {
   // Check if API key is available
-  if (!process.env.API_KEY) {
+  // Try to get key from various sources
+  let apiKey = "";
+  try {
+    apiKey = process.env.API_KEY || "";
+  } catch (e) {
+    // Ignore error if process is not defined
+  }
+
+  // Fallback to import.meta.env
+  if (!apiKey) {
+    // @ts-ignore
+    apiKey = import.meta.env.VITE_API_KEY || import.meta.env.API_KEY || "";
+  }
+  
+  if (!apiKey) {
+    console.error("DEBUG: API Key is missing.");
+    console.log("DEBUG env check:", { 
+       processEnv: typeof process !== 'undefined' ? "defined" : "undefined",
+       importMeta: typeof import.meta !== 'undefined' ? "defined" : "undefined"
+    });
+    
     const defaultMessage =
-      "En este momento el asistente no se encuentra disponible, enviar mensaje a 2213334444";
+      "En este momento el asistente no se encuentra disponible (API Key faltante), enviar mensaje a 2213334444";
     onChunk(defaultMessage);
     onComplete(defaultMessage);
     return;
   }
 
   // Initialize Gemini Client only if API key is available
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
+    // Determine AI Knowledge and Products
+    let aiKnowledge = "";
+    try {
+      const { data } = await supabase
+        .from("site_config")
+        .select("value")
+        .eq("key", "ai_knowledge_base")
+        .maybeSingle(); // Changed from single() to maybeSingle() to avoid 406 errors if not found
+      if (data && data.value) aiKnowledge = data.value;
+    } catch (e) {
+      console.error("Error loading AI config", e);
+    }
+
+    let productsList = "";
+    try {
+      const products = await loadProducts();
+      productsList = products
+        .map(
+          (p) => `- ${p.name}: $${p.price} (${p.category}) - ${p.description}`
+        )
+        .join("\n");
+    } catch (e) {
+      console.error("Error loading products", e);
+    }
+
+    const combinedSystemInstruction = `${SYSTEM_INSTRUCTION}
+
+[INFORMACIÓN ADICIONAL DEL NEGOCIO]
+${aiKnowledge}
+
+[CATÁLOGO DE PRODUCTOS DISPONIBLES]
+${productsList}
+`;
+
     // Construct the history for the API
     // We only send the last few turns to keep context but avoid overload if necessary,
     // though Gemini has a large context window.
@@ -54,7 +110,7 @@ export const streamChat = async (
       model: "gemini-3-pro-preview", // Using Pro for intelligence
       history: chatHistory,
       config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
+        systemInstruction: combinedSystemInstruction,
         thinkingConfig: {
           thinkingBudget: 32768, // High budget for complex automotive troubleshooting
         },
