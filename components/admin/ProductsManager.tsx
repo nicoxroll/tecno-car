@@ -369,23 +369,53 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
-      // Find product to get image URL
+      // Keep image reference to remove it from storage after DB deletion.
       const productToDelete = products.find((p) => p.id === id);
 
+      // Remove dependent sale items first to satisfy FK constraints.
+      const { error: saleItemsError } = await supabase
+        .from("sale_items")
+        .delete()
+        .eq("product_id", id);
+
+      if (saleItemsError) throw saleItemsError;
+
+      const { data: deletedProduct, error: productDeleteError } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
+        .select("id")
+        .maybeSingle();
+
+      if (productDeleteError) throw productDeleteError;
+
+      if (!deletedProduct) {
+        toast.error("No se pudo eliminar el producto (no encontrado)");
+        return;
+      }
+
+      // Image cleanup should not block a successful product deletion.
       if (productToDelete?.image) {
         await deleteImage(productToDelete.image);
       }
 
-      const { error } = await supabase.from("products").delete().eq("id", id);
-
-      if (error) throw error;
-
-      setProducts(products.filter((p) => p.id !== id));
-      toast.success("Producto eliminado correctamente");
       setDeletingProductId(null);
+      if (page !== 0) {
+        setPage(0);
+      } else {
+        await fetchProducts();
+      }
+      toast.success("Producto eliminado correctamente");
     } catch (error) {
       console.error("Error deleting product:", error);
-      toast.error("Error al eliminar el producto");
+      const message = (error as { message?: string })?.message || "";
+      if (message.includes("violates foreign key constraint")) {
+        toast.error(
+          "No se pudo eliminar porque el producto tiene registros relacionados"
+        );
+      } else {
+        toast.error("Error al eliminar el producto");
+      }
     }
   };
 
