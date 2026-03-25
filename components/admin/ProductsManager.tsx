@@ -67,7 +67,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
   const [creatingProduct, setCreatingProduct] =
     useState<Partial<Product> | null>(null);
   const [deletingProductId, setDeletingProductId] = useState<number | null>(
-    null
+    null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -162,14 +162,17 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
   }>({ type: "percentage", value: 0, action: "increase" });
   const [showBulkConfirm, setShowBulkConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(
-    null
+    null,
   );
 
   const categoryStats = useMemo(() => {
-    const stats = products.reduce((acc, product) => {
-      acc[product.category] = (acc[product.category] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const stats = products.reduce(
+      (acc, product) => {
+        acc[product.category] = (acc[product.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(stats).map(([name, value]) => ({ name, value }));
   }, [products]);
@@ -177,7 +180,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
   const productStats = useMemo(() => {
     const totalValue = products.reduce(
       (sum, p) => sum + Number(p.price) * (p.stock || 0),
-      0
+      0,
     );
     const totalStock = products.reduce((sum, p) => sum + (p.stock || 0), 0);
     const lowStockCount = products.filter((p) => (p.stock || 0) < 5).length;
@@ -220,7 +223,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
 
   const handleModalTagInput = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    isEditing: boolean
+    isEditing: boolean,
   ) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -332,7 +335,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
           `"${(p.tags || []).join(", ")}"`,
           p.created_at ? new Date(p.created_at).toLocaleDateString() : "",
           p.updated_at ? new Date(p.updated_at).toLocaleDateString() : "",
-        ].join(";")
+        ].join(";"),
       ),
     ].join("\r\n");
 
@@ -345,7 +348,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     link.setAttribute("href", url);
     link.setAttribute(
       "download",
-      `productos_merlano_${new Date().toISOString().split("T")[0]}.csv`
+      `productos_merlano_${new Date().toISOString().split("T")[0]}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -411,7 +414,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
       const message = (error as { message?: string })?.message || "";
       if (message.includes("violates foreign key constraint")) {
         toast.error(
-          "No se pudo eliminar porque el producto tiene registros relacionados"
+          "No se pudo eliminar porque el producto tiene registros relacionados",
         );
       } else {
         toast.error("Error al eliminar el producto");
@@ -1050,11 +1053,13 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                             setPage(
                               Math.min(
                                 Math.ceil(totalCount / rowsPerPage) - 1,
-                                page + 1
-                              )
+                                page + 1,
+                              ),
                             )
                           }
-                          disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
+                          disabled={
+                            page >= Math.ceil(totalCount / rowsPerPage) - 1
+                          }
                           className="p-2 text-zinc-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <ChevronRight size={20} />
@@ -1106,7 +1111,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                                 {Math.round(
                                   ((product.price - product.discount_price) /
                                     product.price) *
-                                    100
+                                    100,
                                 )}
                                 % OFF
                               </div>
@@ -1229,8 +1234,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                         setPage(
                           Math.min(
                             Math.ceil(totalCount / rowsPerPage) - 1,
-                            page + 1
-                          )
+                            page + 1,
+                          ),
                         )
                       }
                       disabled={page >= Math.ceil(totalCount / rowsPerPage) - 1}
@@ -1493,7 +1498,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                       <button
                         onClick={() => {
                           const newImages = editingProduct.images?.filter(
-                            (_, i) => i !== idx
+                            (_, i) => i !== idx,
                           );
                           setEditingProduct({
                             ...editingProduct,
@@ -1816,7 +1821,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   if (Object.keys(newErrors).length > 0) {
                     setErrors(newErrors);
                     toast.error(
-                      "Por favor corrige los errores antes de continuar."
+                      "Por favor corrige los errores antes de continuar.",
                     );
                     return;
                   }
@@ -1923,7 +1928,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                       <button
                         onClick={() => {
                           const newImages = creatingProduct.images?.filter(
-                            (_, i) => i !== idx
+                            (_, i) => i !== idx,
                           );
                           setCreatingProduct({
                             ...creatingProduct,
@@ -2244,7 +2249,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   if (Object.keys(newErrors).length > 0) {
                     setErrors(newErrors);
                     toast.error(
-                      "Por favor corrige los errores antes de continuar."
+                      "Por favor corrige los errores antes de continuar.",
                     );
                     return;
                   }
