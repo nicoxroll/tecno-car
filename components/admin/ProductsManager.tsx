@@ -1,3 +1,12 @@
+  // Utilidad para convertir el texto de características a array limpio
+  function parseFeaturesText(featuresText?: string): string[] | undefined {
+    if (!featuresText) return undefined;
+    const arr = featuresText
+      .split("\n")
+      .map((f) => f.trim())
+      .filter((f) => f.length > 0);
+    return arr.length > 0 ? arr : undefined;
+  }
 import { CircularProgress, Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   AlertTriangle,
@@ -355,13 +364,19 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     document.body.removeChild(link);
   };
 
-  const handleUpdateProduct = async (product: Product) => {
+  const handleUpdateProduct = async (product: any) => {
     try {
-      const { error } = await supabase.from("products").upsert(product);
+      const features = parseFeaturesText(product.featuresText);
+      const productToUpdate = {
+        ...product,
+        features,
+      };
+      delete productToUpdate.featuresText;
+      const { error } = await supabase.from("products").upsert(productToUpdate);
 
       if (error) throw error;
 
-      setProducts(products.map((p) => (p.id === product.id ? product : p)));
+      setProducts(products.map((p) => (p.id === product.id ? productToUpdate : p)));
       setEditingProduct(null);
       toast.success("Producto actualizado correctamente");
     } catch (error) {
@@ -422,8 +437,9 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     }
   };
 
-  const handleCreateProduct = async (product: Omit<Product, "id">) => {
+  const handleCreateProduct = async (product: any) => {
     try {
+      const features = parseFeaturesText(product.featuresText);
       const productData = {
         name: product.name,
         price: product.price,
@@ -431,7 +447,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
         image: product.image,
         category: product.category,
         description: product.description || "",
-        features: product.features || [],
+        features,
         stock: product.stock || 0,
         available: product.available ?? true,
         featured: product.featured ?? false,
@@ -1737,17 +1753,11 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   Características (opcional)
                 </label>
                 <textarea
-                  value={
-                    editingProduct.features
-                      ? editingProduct.features.join("\n")
-                      : ""
-                  }
+                  value={editingProduct.featuresText ?? (editingProduct.features ? editingProduct.features.join("\n") : "")}
                   onChange={(e) =>
                     setEditingProduct({
                       ...editingProduct,
-                      features: e.target.value
-                        .split("\n")
-                        .filter((f) => f.trim()),
+                      featuresText: e.target.value,
                     })
                   }
                   className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm h-24 focus:outline-none focus:border-white transition-colors resize-none placeholder-zinc-700"
@@ -2172,17 +2182,11 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   Características (opcional)
                 </label>
                 <textarea
-                  value={
-                    creatingProduct.features
-                      ? creatingProduct.features.join("\n")
-                      : ""
-                  }
+                  value={creatingProduct.featuresText ?? (creatingProduct.features ? creatingProduct.features.join("\n") : "")}
                   onChange={(e) =>
                     setCreatingProduct({
                       ...creatingProduct,
-                      features: e.target.value
-                        .split("\n")
-                        .filter((f) => f.trim()),
+                      featuresText: e.target.value,
                     })
                   }
                   className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm h-24 focus:outline-none focus:border-white transition-colors resize-none placeholder-zinc-700"
