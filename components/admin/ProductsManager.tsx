@@ -1,15 +1,7 @@
-  // Utilidad para convertir el texto de características a array limpio
-  function parseFeaturesText(featuresText?: string): string[] | undefined {
-    if (!featuresText) return undefined;
-    const arr = featuresText
-      .split("\n")
-      .map((f) => f.trim())
-      .filter((f) => f.length > 0);
-    return arr.length > 0 ? arr : undefined;
-  }
 import { CircularProgress, Fade, Tooltip as MuiTooltip } from "@mui/material";
 import {
   AlertTriangle,
+  CheckSquare,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -50,6 +42,16 @@ import { Product } from "../../types";
 import CustomSelect from "../ui/CustomSelect";
 import Modal from "./Modal";
 
+// Utilidad para convertir el texto de características a array limpio
+function parseFeaturesText(featuresText?: string): string[] | undefined {
+  if (!featuresText) return undefined;
+  const arr = featuresText
+    .split("\n")
+    .map((f) => f.trim())
+    .filter((f) => f.length > 0);
+  return arr.length > 0 ? arr : undefined;
+}
+
 interface ProductsManagerProps {}
 
 const ProductsManager: React.FC<ProductsManagerProps> = () => {
@@ -79,6 +81,11 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Multi Select State
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   // Categories State
   const [categories, setCategories] = useState<string[]>([
@@ -437,6 +444,54 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      // Find products to delete (for image cleanup later)
+      const productsToDelete = products.filter((p) => selectedIds.includes(p.id));
+
+      // First delete dependent sale items
+      const { error: saleItemsError } = await supabase
+        .from("sale_items")
+        .delete()
+        .in("product_id", selectedIds);
+
+      if (saleItemsError) throw saleItemsError;
+
+      // Delete the products
+      const { error: deleteError } = await supabase
+        .from("products")
+        .delete()
+        .in("id", selectedIds);
+
+      if (deleteError) throw deleteError;
+
+      // Clean up images non-blockingly
+      for (const product of productsToDelete) {
+        if (product.image) {
+          try {
+            await deleteImage(product.image);
+          } catch (e) {
+            console.error("Error cleaning up image:", e);
+          }
+        }
+      }
+
+      setShowBulkDeleteConfirm(false);
+      setSelectedIds([]);
+      setIsMultiSelectMode(false);
+      if (page !== 0) {
+        setPage(0);
+      } else {
+        await fetchProducts();
+      }
+      toast.success(`${productsToDelete.length} productos eliminados correctamente`);
+    } catch (error) {
+      console.error("Error en eliminación masiva:", error);
+      toast.error("Error al eliminar los productos seleccionados");
+    }
+  };
+
   const handleCreateProduct = async (product: any) => {
     try {
       const features = parseFeaturesText(product.featuresText);
@@ -551,10 +606,44 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
               <button
                 onClick={() => setIsBulkModalOpen(true)}
                 className="flex items-center justify-center text-white text-xs uppercase tracking-widest border border-zinc-700 px-3 py-2 hover:bg-zinc-900 transition-colors"
+                disabled={isMultiSelectMode}
               >
-                <Layers size={16} />
+                <Layers size={16} className={isMultiSelectMode ? "opacity-50" : ""} />
               </button>
             </MuiTooltip>
+            <MuiTooltip
+              title="Selección Múltiple"
+              TransitionComponent={Fade}
+              TransitionProps={{ timeout: 600 }}
+            >
+              <button
+                onClick={() => {
+                  setIsMultiSelectMode(!isMultiSelectMode);
+                  setSelectedIds([]);
+                }}
+                className={`flex items-center justify-center text-xs uppercase tracking-widest border px-3 py-2 transition-colors ${
+                  isMultiSelectMode
+                    ? "bg-white text-black border-white"
+                    : "text-white border-zinc-700 hover:bg-zinc-900"
+                }`}
+              >
+                <CheckSquare size={16} />
+              </button>
+            </MuiTooltip>
+            {isMultiSelectMode && selectedIds.length > 0 && (
+              <MuiTooltip
+                title={`Eliminar seleccionados (${selectedIds.length})`}
+                TransitionComponent={Fade}
+                TransitionProps={{ timeout: 600 }}
+              >
+                <button
+                  onClick={() => setShowBulkDeleteConfirm(true)}
+                  className="flex items-center justify-center text-white bg-red-900/50 hover:bg-red-800 text-xs uppercase tracking-widest border border-red-900 px-3 py-2 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </MuiTooltip>
+            )}
 
             <MuiTooltip
               title="Nuevo Producto"
@@ -878,6 +967,22 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   <table className="w-full min-w-[800px]">
                     <thead className="bg-black">
                       <tr>
+                        {isMultiSelectMode && (
+                          <th className="px-4 py-3 text-left w-12">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.length === products.length && products.length > 0}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedIds(products.map(p => p.id));
+                                } else {
+                                  setSelectedIds([]);
+                                }
+                              }}
+                              className="w-4 h-4 bg-black border border-zinc-700 rounded focus:ring-0 checked:bg-white"
+                            />
+                          </th>
+                        )}
                         <th
                           className="px-4 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                           onClick={() => handleSort("name")}
@@ -956,7 +1061,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     <tbody className="divide-y divide-zinc-800">
                       {loading ? (
                         <tr>
-                          <td colSpan={6} className="text-center py-12">
+                          <td colSpan={isMultiSelectMode ? 7 : 6} className="text-center py-12">
                             <CircularProgress
                               size={30}
                               sx={{ color: "white" }}
@@ -967,8 +1072,28 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                         products.map((product) => (
                           <tr
                             key={product.id}
-                            className="hover:bg-zinc-900 transition-colors"
+                            className={`transition-colors ${
+                              isMultiSelectMode && selectedIds.includes(product.id)
+                                ? "bg-zinc-800/50"
+                                : "hover:bg-zinc-900"
+                            }`}
                           >
+                            {isMultiSelectMode && (
+                              <td className="px-4 py-4 w-12">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedIds.includes(product.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedIds([...selectedIds, product.id]);
+                                    } else {
+                                      setSelectedIds(selectedIds.filter(id => id !== product.id));
+                                    }
+                                  }}
+                                  className="w-4 h-4 bg-black border border-zinc-700 rounded focus:ring-0 checked:bg-white"
+                                />
+                              </td>
+                            )}
                             <td className="px-4 py-4">
                               <div className="flex items-center gap-3">
                                 <img
@@ -1103,8 +1228,28 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     products.map((product) => (
                       <div
                         key={product.id}
-                        className="group bg-black border border-zinc-900 hover:border-zinc-700 transition-all duration-300 flex flex-col"
+                        className={`group bg-black border transition-all duration-300 flex flex-col relative ${
+                          isMultiSelectMode && selectedIds.includes(product.id)
+                            ? "border-white"
+                            : "border-zinc-900 hover:border-zinc-700"
+                        }`}
                       >
+                        {isMultiSelectMode && (
+                          <div className="absolute top-2 left-2 z-20">
+                            <input
+                              type="checkbox"
+                              checked={selectedIds.includes(product.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedIds([...selectedIds, product.id]);
+                                } else {
+                                  setSelectedIds(selectedIds.filter(id => id !== product.id));
+                                }
+                              }}
+                              className="w-5 h-5 bg-black border border-white rounded focus:ring-0 checked:bg-white cursor-pointer"
+                            />
+                          </div>
+                        )}
                         <div
                           className="relative aspect-square overflow-hidden bg-black cursor-pointer"
                           onClick={() => {
@@ -2349,6 +2494,41 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     setEditingProduct(null);
                   }
                 }}
+                className="bg-red-900 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-red-800 transition-colors"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {showBulkDeleteConfirm && (
+        <Modal
+          isOpen={true}
+          onClose={() => setShowBulkDeleteConfirm(false)}
+          title="Confirmar Eliminación Masiva"
+        >
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 text-red-500 bg-red-900/20 p-4 border border-red-900/50 rounded">
+              <AlertTriangle size={24} />
+              <p className="text-sm">Esta acción no se puede deshacer.</p>
+            </div>
+
+            <p className="text-zinc-300 text-lg leading-relaxed">
+              ¿Estás seguro de que deseas eliminar <strong>{selectedIds.length}</strong> productos
+              permanentemente?
+            </p>
+
+            <div className="flex justify-end gap-3 pt-6 border-t border-zinc-800">
+              <button
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                className="bg-zinc-800 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-zinc-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkDelete}
                 className="bg-red-900 text-white px-6 py-3 text-sm uppercase tracking-widest hover:bg-red-800 transition-colors"
               >
                 Eliminar

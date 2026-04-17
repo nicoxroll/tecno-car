@@ -4,7 +4,7 @@ import { Product, CartItem } from '../types';
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product) => void;
-  removeFromCart: (productId: number) => void;
+  removeFromCart: (productId: number | string) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -20,10 +20,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      const existingItem = prevCart.find((item) => String(item.id) === String(product.id));
       if (existingItem) {
         return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          String(item.id) === String(product.id) ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prevCart, { ...product, quantity: 1 }];
@@ -31,15 +31,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsCartOpen(true);
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  const removeFromCart = (productId: number | string) => {
+    setCart((prevCart) => prevCart.filter((item) => String(item.id) !== String(productId)));
   };
 
   const clearCart = () => {
     setCart([]);
   };
 
-  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const cartTotal = cart.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
 
   return (

@@ -38,6 +38,7 @@ export interface Product {
   category: string;
   description: string;
   features?: string[]; // Made optional to support catalog items that might add this later
+  featuresText?: string;
   stock?: number;
   available?: boolean;
   featured?: boolean;
