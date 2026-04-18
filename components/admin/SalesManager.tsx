@@ -784,13 +784,25 @@ const SalesManager: React.FC = () => {
                         : "-"}
                     </td>
                     <td className="px-4 py-3 text-xs sm:text-sm text-zinc-400">
-                      {order.sale_items && order.sale_items.length > 0
-                        ? order.sale_items
-                            .map((i) => `${i.product_name} x${i.quantity}`)
-                            .join(", ")
-                        : order.items && order.items.length > 0
-                        ? order.items.join(", ")
-                        : "-"}
+                      <div className="flex flex-wrap gap-1">
+                        {order.sale_items && order.sale_items.length > 0
+                          ? order.sale_items.map((i, idx) => (
+                              <MuiTooltip key={idx} title={`${i.product_name} x${i.quantity}`} TransitionComponent={Fade}>
+                                <div className="w-6 h-6 flex flex-shrink-0 items-center justify-center bg-zinc-800 text-white rounded-full text-[10px] font-bold uppercase border border-zinc-700 cursor-help">
+                                  {i.product_name.charAt(0)}
+                                </div>
+                              </MuiTooltip>
+                            ))
+                          : order.items && order.items.length > 0
+                          ? order.items.map((item, idx) => (
+                              <MuiTooltip key={idx} title={item} TransitionComponent={Fade}>
+                                <div className="w-6 h-6 flex flex-shrink-0 items-center justify-center bg-zinc-800 text-white rounded-full text-[10px] font-bold uppercase border border-zinc-700 cursor-help">
+                                  {item.charAt(0)}
+                                </div>
+                              </MuiTooltip>
+                            ))
+                          : "-"}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-xs sm:text-sm">
                       <div className="flex gap-2">

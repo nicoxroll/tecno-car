@@ -9,6 +9,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "../services/supabase";
 import { ImageWithLoader } from "./ui/ImageWithLoader";
 
@@ -227,48 +228,61 @@ const About: React.FC = () => {
       </div>
 
       {/* Lightbox Modal */}
-      {selectedImageIndex !== null && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm"
-          onClick={() => setSelectedImageIndex(null)}
-        >
-          <button
-            onClick={() => setSelectedImageIndex(null)}
-            className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors z-50"
-          >
-            <X size={32} strokeWidth={1} />
-          </button>
-
-          <button
-            onClick={handlePrevImage}
-            className="absolute left-4 text-zinc-500 hover:text-white transition-colors hidden sm:block z-50 p-2 hover:bg-white/10 rounded-full"
-          >
-            <ChevronLeft size={48} strokeWidth={1} />
-          </button>
-
+      {selectedImageIndex !== null &&
+        createPortal(
           <div
-            className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            onClick={() => setSelectedImageIndex(null)}
           >
-            <img
-              src={aboutGallery[selectedImageIndex]}
-              alt={`Gallery ${selectedImageIndex + 1}`}
-              crossOrigin="anonymous"
-              className="max-w-full max-h-full object-contain shadow-2xl"
-            />
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-sm tracking-widest font-light">
-              {selectedImageIndex + 1} / {aboutGallery.length}
-            </div>
-          </div>
+            <div
+              className="relative max-w-5xl w-full max-h-[90vh] bg-zinc-950 border border-zinc-800 flex flex-col shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedImageIndex(null)}
+                className="absolute -top-12 right-0 text-white hover:text-zinc-300 transition-colors flex items-center gap-2"
+              >
+                <span className="text-xs tracking-widest uppercase">
+                  Cerrar
+                </span>
+                <X size={24} strokeWidth={1} />
+              </button>
 
-          <button
-            onClick={handleNextImage}
-            className="absolute right-4 text-zinc-500 hover:text-white transition-colors hidden sm:block z-50 p-2 hover:bg-white/10 rounded-full"
-          >
-            <ChevronRight size={48} strokeWidth={1} />
-          </button>
-        </div>
-      )}
+              <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden border-b border-zinc-900 group">
+                <img
+                  src={aboutGallery[selectedImageIndex]}
+                  alt={`Gallery ${selectedImageIndex + 1}`}
+                  crossOrigin="anonymous"
+                  className="max-h-[70vh] w-auto object-contain"
+                />
+
+                {/* Navigation Arrows */}
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronLeft size={24} strokeWidth={1} />
+                </button>
+
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-white hover:text-black text-white p-2 border border-zinc-700 transition-all opacity-0 group-hover:opacity-100"
+                >
+                  <ChevronRight size={24} strokeWidth={1} />
+                </button>
+              </div>
+
+              <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-zinc-950">
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl text-white font-light tracking-[0.2em] uppercase">
+                    Galería {selectedImageIndex + 1} de {aboutGallery.length}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </section>
   );
 };

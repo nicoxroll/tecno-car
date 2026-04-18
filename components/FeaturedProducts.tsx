@@ -163,7 +163,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
             onClick={() => setSelectedProduct(null)}
           >
             <div
-              className="relative max-w-4xl w-full bg-black border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-hidden max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-visible"
+              className="relative max-w-5xl w-full max-h-[90vh] bg-black border border-zinc-800 shadow-2xl flex flex-col md:flex-row overflow-y-auto md:overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -174,16 +174,16 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
               </button>
 
               {/* Image Side - Full Color in Modal */}
-              <div className="w-full md:w-1/2 aspect-square md:aspect-auto">
+              <div className="w-full md:w-1/2 flex items-center justify-center bg-zinc-950 border-r border-zinc-800">
                 <img
                   src={selectedProduct.image}
                   alt={selectedProduct.name}
-                  className="w-full h-full object-cover"
+                  className="w-full max-h-[40vh] md:max-h-[90vh] object-contain p-4"
                 />
               </div>
 
               {/* Content Side */}
-              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center overflow-y-auto max-h-[90vh]">
                 <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4 border-l border-white pl-3">
                   {selectedProduct.category}
                 </span>

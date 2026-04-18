@@ -7,8 +7,7 @@ interface CartDrawerProps {
 }
 
 const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
-  const { cart, removeFromCart, cartTotal, isCartOpen, setIsCartOpen } =
-    useCart();
+  const { cart, removeFromCart, updateQuantity, cartTotal, isCartOpen, setIsCartOpen } = useCart();
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -89,19 +88,33 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mt-2">
                     <span className="text-zinc-300 text-xs font-medium">
-                      ${(item.price * item.quantity).toLocaleString()}
+                      ${(Number(item.price) * item.quantity).toLocaleString()}
                     </span>
                     <div className="flex items-center gap-3">
-                      <span className="text-zinc-500 text-xs">
-                        x{item.quantity}
-                      </span>
+                      <div className="flex items-center bg-zinc-900 border border-zinc-800">
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                        >
+                          -
+                        </button>
+                        <span className="text-xs text-white px-2">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="px-2 py-1 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
                       <button
                         onClick={() => removeFromCart(item.id)}
-                        className="text-zinc-600 hover:text-red-500 transition-colors"
+                        className="text-zinc-600 hover:text-red-500 transition-colors ml-2"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </div>

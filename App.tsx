@@ -236,36 +236,88 @@ function App() {
     footer: <Footer key="footer" />,
   };
 
-  if (checkingMaintenance && currentView !== "admin") {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-      </div>
-    );
-  }
-
-  if (maintenanceMode && currentView !== "admin") {
-    return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-        <Toaster position="top-center" theme="dark" />
-        <img
-          src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
-          alt="Merlano Logo"
-          className="w-24 h-24 object-contain grayscale opacity-80 mb-8"
+  const content = checkingMaintenance && currentView !== "admin" ? (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+    </div>
+  ) : maintenanceMode && currentView !== "admin" ? (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+      <Toaster position="top-center" theme="dark" />
+      <img
+        src="https://i.ibb.co/dJgTzQQP/merlano-modified.png"
+        alt="Merlano Logo"
+        className="w-24 h-24 object-contain grayscale opacity-80 mb-8"
+      />
+      <h1 className="text-3xl font-light uppercase tracking-widest mb-4 text-center">
+        Sitio en Mantenimiento
+      </h1>
+      <p className="text-zinc-500 text-center max-w-md">
+        Estamos realizando mejoras en nuestra plataforma. Por favor, vuelve a
+        intentarlo más tarde.
+      </p>
+      <p className="text-zinc-600 text-sm mt-8">
+        Merlano Tecnología Vehicular
+      </p>
+    </div>
+  ) : (
+    <div className="min-h-screen bg-black text-white font-sans selection:bg-zinc-700 selection:text-white">
+      {currentView !== "admin" && (
+        <Navbar
+          onNavigate={handleNavigate}
+          currentView={currentView}
         />
-        <h1 className="text-3xl font-light uppercase tracking-widest mb-4 text-center">
-          Sitio en Mantenimiento
-        </h1>
-        <p className="text-zinc-500 text-center max-w-md">
-          Estamos realizando mejoras en nuestra plataforma. Por favor, vuelve a
-          intentarlo más tarde.
-        </p>
-        <p className="text-zinc-600 text-sm mt-8">
-          Merlano Tecnología Vehicular
-        </p>
-      </div>
-    );
-  }
+      )}
+
+      <main>
+        {currentView === "landing" && (
+          <>
+            {sectionsOrder.map(
+              (sectionId) => sections[sectionId as keyof typeof sections]
+            )}
+          </>
+        )}
+
+        {currentView === "catalog" && (
+          <Catalog onProductSelect={handleProductSelect} />
+        )}
+
+        {currentView === "product-details" && selectedProduct && (
+          <ProductDetails
+            product={selectedProduct}
+            onBack={() => handleNavigate("catalog")}
+            onNavigateToCart={() => handleNavigate("checkout")}
+            onProductSelect={handleProductSelect}
+            onOpenChat={handleOpenChat}
+          />
+        )}
+
+        {currentView === "service-details" && selectedService && (
+          <ServiceDetails
+            service={selectedService}
+            onBack={() => handleNavigate("landing")}
+            onOpenChat={handleOpenChat}
+          />
+        )}
+
+        {currentView === "checkout" && (
+          <Checkout onBack={() => handleNavigate("catalog")} />
+        )}
+
+        {currentView === "admin" && (
+          <Admin onBack={() => handleNavigate("landing")} />
+        )}
+      </main>
+
+      <CartDrawer onCheckout={() => handleNavigate("checkout")} />
+      <ChatInterface
+        isOpen={isChatOpen}
+        onToggle={setIsChatOpen}
+        pendingMessage={chatPendingMessage}
+        onMessageProcessed={() => setChatPendingMessage(undefined)}
+        enabled={aiChatEnabled}
+      />
+    </div>
+  );
 
   return (
     <CartProvider>
@@ -276,63 +328,7 @@ function App() {
           richColors
           style={{ zIndex: 9999 }}
         />
-        <div className="min-h-screen bg-black text-white font-sans selection:bg-zinc-700 selection:text-white">
-          {currentView !== "admin" && (
-            <Navbar
-              onNavigate={handleNavigate}
-              currentView={currentView}
-            />
-          )}
-
-          <main>
-            {currentView === "landing" && (
-              <>
-                {sectionsOrder.map(
-                  (sectionId) => sections[sectionId as keyof typeof sections]
-                )}
-              </>
-            )}
-
-            {currentView === "catalog" && (
-              <Catalog onProductSelect={handleProductSelect} />
-            )}
-
-            {currentView === "product-details" && selectedProduct && (
-              <ProductDetails
-                product={selectedProduct}
-                onBack={() => handleNavigate("catalog")}
-                onNavigateToCart={() => handleNavigate("checkout")}
-                onProductSelect={handleProductSelect}
-                onOpenChat={handleOpenChat}
-              />
-            )}
-
-            {currentView === "service-details" && selectedService && (
-              <ServiceDetails
-                service={selectedService}
-                onBack={() => handleNavigate("landing")}
-                onOpenChat={handleOpenChat}
-              />
-            )}
-
-            {currentView === "checkout" && (
-              <Checkout onBack={() => handleNavigate("catalog")} />
-            )}
-
-            {currentView === "admin" && (
-              <Admin onBack={() => handleNavigate("landing")} />
-            )}
-          </main>
-
-          <CartDrawer onCheckout={() => handleNavigate("checkout")} />
-          <ChatInterface
-            isOpen={isChatOpen}
-            onToggle={setIsChatOpen}
-            pendingMessage={chatPendingMessage}
-            onMessageProcessed={() => setChatPendingMessage(undefined)}
-            enabled={aiChatEnabled}
-          />
-        </div>
+        {content}
       </ScrollProvider>
     </CartProvider>
   );
