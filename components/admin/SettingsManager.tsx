@@ -31,16 +31,23 @@ const SettingsManager: React.FC = () => {
     },
   });
 
-  // Catalog Filters State
-  const [catalogFilters, setCatalogFilters] = useState<string[]>([
-    "Multimedia",
-    "Audio",
-    "Iluminación",
-    "Seguridad",
-    "Accesorios",
-    "Limpieza",
+  // Catalog Sections State
+  const [catalogSections, setCatalogSections] = useState<any[]>([
+    {
+      id: "tech",
+      title: "Catálogo",
+      subtitle: "Equipamiento Premium Seleccionado",
+      image: "https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      year: "2024",
+      categories: ["Todos", "Audio", "Cierre Centralizado", "Levantacristales", "Lámparas", "Cámaras", "Sensores"],
+      recommendedTags: ["hotsale"]
+    }
   ]);
-  const [newFilter, setNewFilter] = useState("");
+  const [isEditingSection, setIsEditingSection] = useState<{isOpen: boolean, index: number}>({ isOpen: false, index: -1 });
+
+  const [newCategory, setNewCategory] = useState("");
+  const [newRecommendedTag, setNewRecommendedTag] = useState("");
+  const [newBrand, setNewBrand] = useState("");
 
   // Catalog Hero State
   const [catalogHeroImage, setCatalogHeroImage] = useState<string>(
@@ -167,20 +174,17 @@ const SettingsManager: React.FC = () => {
           }
         }
 
-        if (configMap.catalog_filters) {
+        if (configMap.catalog_sections) {
           try {
-            const parsedFilters = JSON.parse(configMap.catalog_filters);
-            setCatalogFilters(parsedFilters);
+            const parsedSections = JSON.parse(configMap.catalog_sections);
+            if (Array.isArray(parsedSections) && parsedSections.length > 0) {
+              setCatalogSections(parsedSections);
+            }
           } catch (e) {
-            console.warn("Error parsing catalog filters, using default");
+            console.warn("Error parsing catalog sections, using default");
           }
         }
 
-        if (configMap.company_hours_days)
-          setSettings((prev) => ({
-            ...prev,
-            hours: { ...prev.hours, days: configMap.company_hours_days },
-          }));
         if (configMap.company_hours_time)
           setSettings((prev) => ({
             ...prev,
@@ -219,8 +223,8 @@ const SettingsManager: React.FC = () => {
           aboutGallery: configMap.about_gallery
             ? JSON.parse(configMap.about_gallery)
             : [],
-          catalogFilters: configMap.catalog_filters
-            ? JSON.parse(configMap.catalog_filters)
+          catalogSections: configMap.catalog_sections
+            ? JSON.parse(configMap.catalog_sections)
             : [],
           settings: {
             companyName: configMap.company_name,
@@ -519,11 +523,11 @@ const SettingsManager: React.FC = () => {
             { onConflict: "key" }
           );
 
-        // Save catalog filters
+        // Save catalog sections
         await supabase
           .from("site_config")
           .upsert(
-            { key: "catalog_filters", value: JSON.stringify(catalogFilters) },
+            { key: "catalog_sections", value: JSON.stringify(catalogSections) },
             { onConflict: "key" }
           );
 
@@ -609,8 +613,8 @@ const SettingsManager: React.FC = () => {
             setAboutAmenities(originalSettings.aboutAmenities);
             setAboutGallery(originalSettings.aboutGallery);
             
-            // Filters & General
-            setCatalogFilters(originalSettings.catalogFilters);
+            // Sections & General
+            setCatalogSections(originalSettings.catalogSections);
             setSettings(originalSettings.settings);
         }
         toast.info("Cambios cancelados");
@@ -647,10 +651,10 @@ const SettingsManager: React.FC = () => {
         JSON.stringify(aboutAmenities) !== JSON.stringify(originalSettings.aboutAmenities) ||
         JSON.stringify(aboutGallery) !== JSON.stringify(originalSettings.aboutGallery);
         
-    const filtersChanged = JSON.stringify(catalogFilters) !== JSON.stringify(originalSettings.catalogFilters);
+    const sectionsChanged = JSON.stringify(catalogSections) !== JSON.stringify(originalSettings.catalogSections);
 
-    return settingsChanged || aboutChanged || filtersChanged;
-  }, [settings, aboutImage, aboutDescription1, aboutDescription2, aboutAmenities, aboutGallery, catalogFilters, originalSettings]);
+    return settingsChanged || aboutChanged || sectionsChanged;
+  }, [settings, aboutImage, aboutDescription1, aboutDescription2, aboutAmenities, aboutGallery, catalogSections, originalSettings]);
 
 
   return (
@@ -732,45 +736,71 @@ const SettingsManager: React.FC = () => {
             </div>
           </div>
         ) : (
-          /* Catalog Hero Editor */
-          <div className="relative group overflow-hidden border border-zinc-800 bg-black">
-            <div className="relative h-[60vh] overflow-hidden">
-              <div className="absolute inset-0 bg-zinc-900/40 z-10 mix-blend-multiply"></div>
-              <img
-                src={catalogHeroImage}
-                alt="Catalog Hero"
-                className="w-full h-full object-cover"
-                style={{
-                  filter: "grayscale(100%) contrast(90%) brightness(0.7)",
-                }}
-              />
-              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-4 pointer-events-none">
-                <h1 className="text-4xl md:text-6xl font-thin text-white uppercase tracking-tight mb-4 drop-shadow-lg">
-                  {catalogHeroTitle}{" "}
-                  <span className="text-zinc-400">{catalogYear}</span>
-                </h1>
-                <div className="h-[1px] w-24 bg-white mb-4"></div>
-                <p className="text-white font-light tracking-[0.3em] text-xs md:text-sm uppercase drop-shadow-md bg-black/50 px-6 py-3 backdrop-blur-md border border-white/20">
-                  {catalogHeroSubtitle}
-                </p>
-              </div>
-            </div>
-
-            <div className="absolute bottom-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+          /* Catalog Sections Editor */
+          <div className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white text-base sm:text-lg uppercase tracking-widest">
+                Secciones del Catálogo
+              </h3>
               <button
                 onClick={() => {
-                  setHeroForm({
-                    title: catalogHeroTitle,
-                    subtitle: catalogHeroSubtitle,
-                    image: catalogHeroImage,
-                    year: catalogYear,
-                  });
-                  setIsEditingHero(true);
+                  setCatalogSections([
+                    ...catalogSections,
+                    {
+                      id: "new_section",
+                      title: "Nueva Sección",
+                      subtitle: "Subtítulo",
+                      image: "https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg",
+                      year: "2024",
+                      categories: ["Todos"],
+                      recommendedTags: []
+                    }
+                  ]);
                 }}
-                className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2 shadow-lg"
+                className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors flex items-center gap-2"
               >
-                <Edit size={14} /> Editar
+                <Plus size={14} /> Agregar Sección
               </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {catalogSections.map((section, index) => (
+                <div key={index} className="relative group overflow-hidden border border-zinc-800 bg-black aspect-video">
+                  <div className="absolute inset-0 bg-zinc-900/40 z-10 mix-blend-multiply"></div>
+                  <img
+                    src={section.image}
+                    alt={section.title}
+                    className="w-full h-full object-cover"
+                    style={{ filter: "grayscale(100%) contrast(90%) brightness(0.7)" }}
+                  />
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-4 pointer-events-none">
+                    <h3 className="text-2xl font-thin text-white uppercase tracking-tight mb-2 drop-shadow-lg">
+                      {section.title} <span className="text-zinc-400">{section.year}</span>
+                    </h3>
+                    <p className="text-white font-light tracking-[0.2em] text-[10px] uppercase drop-shadow-md bg-black/50 px-3 py-1 backdrop-blur-md border border-white/20">
+                      {section.subtitle}
+                    </p>
+                  </div>
+
+                  <div className="absolute bottom-4 right-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                    <button
+                      onClick={() => setIsEditingSection({ isOpen: true, index })}
+                      className="bg-white text-black p-2 hover:bg-zinc-200 transition-colors shadow-lg"
+                    >
+                      <Edit size={16} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        const newSections = catalogSections.filter((_, i) => i !== index);
+                        setCatalogSections(newSections);
+                      }}
+                      className="bg-red-900 text-white p-2 hover:bg-red-800 transition-colors shadow-lg"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -936,75 +966,6 @@ const SettingsManager: React.FC = () => {
                 }
                 className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Catalog Filters */}
-        <div className="bg-black border border-zinc-800 p-4 sm:p-6">
-          <h3 className="text-white text-base sm:text-lg mb-4 sm:mb-6 uppercase tracking-widest">
-            Filtros de Catálogo
-          </h3>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newFilter}
-                onChange={(e) => setNewFilter(e.target.value)}
-                placeholder="Nuevo filtro..."
-                className="flex-1 bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && newFilter.trim()) {
-                    setCatalogFilters([...catalogFilters, newFilter.trim()]);
-                    setNewFilter("");
-                  }
-                }}
-              />
-              <button
-                onClick={() => {
-                  if (newFilter.trim()) {
-                    setCatalogFilters([...catalogFilters, newFilter.trim()]);
-                    setNewFilter("");
-                  }
-                }}
-                className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
-              >
-                Agregar
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {catalogFilters.map((filter, index) => (
-                <div key={index} className="relative group">
-                  <input
-                    type="text"
-                    value={filter}
-                    onChange={(e) => {
-                      const newFilters = [...catalogFilters];
-                      newFilters[index] = e.target.value;
-                      setCatalogFilters(newFilters);
-                    }}
-                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
-                  />
-                  <MuiTooltip
-                    title="Eliminar filtro"
-                    TransitionComponent={Fade}
-                    TransitionProps={{ timeout: 600 }}
-                  >
-                    <button
-                      onClick={() => {
-                        const newFilters = catalogFilters.filter(
-                          (_, i) => i !== index
-                        );
-                        setCatalogFilters(newFilters);
-                      }}
-                      className="absolute right-2 top-2.5 text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <X size={14} />
-                    </button>
-                  </MuiTooltip>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -1405,25 +1366,42 @@ const SettingsManager: React.FC = () => {
         </Modal>
       )}
 
-      {/* Modal Editar Catalog Hero */}
-      {isEditingHero && (
+      {/* Modal Editar Catalog Section */}
+      {isEditingSection.isOpen && isEditingSection.index !== -1 && (
         <Modal
           isOpen={true}
-          title="Editar Portada del Catálogo"
-          onClose={() => setIsEditingHero(false)}
+          title="Editar Sección del Catálogo"
+          onClose={() => setIsEditingSection({ isOpen: false, index: -1 })}
         >
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-1">
+                ID (Interno)
+              </label>
+              <input
+                type="text"
+                value={catalogSections[isEditingSection.index].id}
+                onChange={(e) => {
+                  const newSections = [...catalogSections];
+                  newSections[isEditingSection.index].id = e.target.value;
+                  setCatalogSections(newSections);
+                }}
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">
                 Título
               </label>
               <input
                 type="text"
-                value={heroForm.title}
-                onChange={(e) =>
-                  setHeroForm({ ...heroForm, title: e.target.value })
-                }
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                value={catalogSections[isEditingSection.index].title}
+                onChange={(e) => {
+                  const newSections = [...catalogSections];
+                  newSections[isEditingSection.index].title = e.target.value;
+                  setCatalogSections(newSections);
+                }}
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
               />
             </div>
             <div>
@@ -1432,25 +1410,203 @@ const SettingsManager: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={heroForm.subtitle}
-                onChange={(e) =>
-                  setHeroForm({ ...heroForm, subtitle: e.target.value })
-                }
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                value={catalogSections[isEditingSection.index].subtitle}
+                onChange={(e) => {
+                  const newSections = [...catalogSections];
+                  newSections[isEditingSection.index].subtitle = e.target.value;
+                  setCatalogSections(newSections);
+                }}
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">
-                Año del Catálogo
+                Año
               </label>
               <input
                 type="text"
-                value={heroForm.year}
-                onChange={(e) =>
-                  setHeroForm({ ...heroForm, year: e.target.value })
-                }
-                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                value={catalogSections[isEditingSection.index].year}
+                onChange={(e) => {
+                  const newSections = [...catalogSections];
+                  newSections[isEditingSection.index].year = e.target.value;
+                  setCatalogSections(newSections);
+                }}
+                className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                Categorías
+              </label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="Nueva categoría..."
+                  className="flex-1 bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newCategory.trim()) {
+                      e.preventDefault();
+                      const newSections = [...catalogSections];
+                      if (!newSections[isEditingSection.index].categories) newSections[isEditingSection.index].categories = [];
+                      newSections[isEditingSection.index].categories.push(newCategory.trim());
+                      setCatalogSections(newSections);
+                      setNewCategory("");
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (newCategory.trim()) {
+                      const newSections = [...catalogSections];
+                      if (!newSections[isEditingSection.index].categories) newSections[isEditingSection.index].categories = [];
+                      newSections[isEditingSection.index].categories.push(newCategory.trim());
+                      setCatalogSections(newSections);
+                      setNewCategory("");
+                    }
+                  }}
+                  className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Agregar
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(catalogSections[isEditingSection.index].categories || []).map((cat: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1 text-sm text-zinc-300">
+                    {cat}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const newSections = [...catalogSections];
+                        newSections[isEditingSection.index].categories = newSections[isEditingSection.index].categories.filter((_: any, i: number) => i !== idx);
+                        setCatalogSections(newSections);
+                      }}
+                      className="text-zinc-500 hover:text-red-400 ml-2"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                Marcas Específicas (Opcional)
+              </label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={newBrand}
+                  onChange={(e) => setNewBrand(e.target.value)}
+                  placeholder="Forzar marca..."
+                  className="flex-1 bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newBrand.trim()) {
+                      e.preventDefault();
+                      const newSections = [...catalogSections];
+                      if (!newSections[isEditingSection.index].brands) newSections[isEditingSection.index].brands = [];
+                      newSections[isEditingSection.index].brands.push(newBrand.trim());
+                      setCatalogSections(newSections);
+                      setNewBrand("");
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (newBrand.trim()) {
+                      const newSections = [...catalogSections];
+                      if (!newSections[isEditingSection.index].brands) newSections[isEditingSection.index].brands = [];
+                      newSections[isEditingSection.index].brands.push(newBrand.trim());
+                      setCatalogSections(newSections);
+                      setNewBrand("");
+                    }
+                  }}
+                  className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Agregar
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(catalogSections[isEditingSection.index].brands || []).map((brand: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1 text-sm text-zinc-300">
+                    {brand}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const newSections = [...catalogSections];
+                        newSections[isEditingSection.index].brands = newSections[isEditingSection.index].brands.filter((_: any, i: number) => i !== idx);
+                        setCatalogSections(newSections);
+                      }}
+                      className="text-zinc-500 hover:text-red-400 ml-2"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-zinc-500 mt-2">Si lo dejas vacío, las marcas se auto-detectarán por categoría.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">
+                Etiquetas Sugeridas
+              </label>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={newRecommendedTag}
+                  onChange={(e) => setNewRecommendedTag(e.target.value)}
+                  placeholder="Ej: hotsale, new..."
+                  className="flex-1 bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newRecommendedTag.trim()) {
+                      e.preventDefault();
+                      const newSections = [...catalogSections];
+                      if (!newSections[isEditingSection.index].recommendedTags) newSections[isEditingSection.index].recommendedTags = [];
+                      newSections[isEditingSection.index].recommendedTags.push(newRecommendedTag.trim());
+                      setCatalogSections(newSections);
+                      setNewRecommendedTag("");
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (newRecommendedTag.trim()) {
+                      const newSections = [...catalogSections];
+                      if (!newSections[isEditingSection.index].recommendedTags) newSections[isEditingSection.index].recommendedTags = [];
+                      newSections[isEditingSection.index].recommendedTags.push(newRecommendedTag.trim());
+                      setCatalogSections(newSections);
+                      setNewRecommendedTag("");
+                    }
+                  }}
+                  className="bg-white text-black px-4 py-2 text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors"
+                >
+                  Agregar
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(catalogSections[isEditingSection.index].recommendedTags || []).map((tag: string, idx: number) => (
+                  <div key={idx} className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 px-3 py-1 text-sm text-zinc-300">
+                    {tag}
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const newSections = [...catalogSections];
+                        newSections[isEditingSection.index].recommendedTags = newSections[isEditingSection.index].recommendedTags.filter((_: any, i: number) => i !== idx);
+                        setCatalogSections(newSections);
+                      }}
+                      className="text-zinc-500 hover:text-red-400 ml-2"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-zinc-400 mb-1">
@@ -1458,9 +1614,9 @@ const SettingsManager: React.FC = () => {
               </label>
               <div className="space-y-3">
                 <div className="flex items-center space-x-4">
-                  {heroForm.image && (
+                  {catalogSections[isEditingSection.index].image && (
                     <img
-                      src={heroForm.image}
+                      src={catalogSections[isEditingSection.index].image}
                       alt="Preview"
                       className="w-20 h-20 object-cover rounded"
                     />
@@ -1468,9 +1624,22 @@ const SettingsManager: React.FC = () => {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => {
+                    onChange={async (e) => {
                       if (e.target.files && e.target.files[0]) {
-                        handleHeroImageUpload(e.target.files[0], false);
+                        try {
+                           toast.loading("Subiendo imagen...");
+                           const url = await uploadImage(e.target.files[0]);
+                           if (url) {
+                              const newSections = [...catalogSections];
+                              newSections[isEditingSection.index].image = url;
+                              setCatalogSections(newSections);
+                              toast.dismiss();
+                              toast.success("Imagen subida");
+                           }
+                        } catch(e) {
+                           toast.dismiss();
+                           toast.error("Error al subir");
+                        }
                       }
                     }}
                     className="text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-zinc-800 file:text-white hover:file:bg-zinc-700"
@@ -1482,10 +1651,12 @@ const SettingsManager: React.FC = () => {
                   </span>
                   <input
                     type="text"
-                    value={heroForm.image}
-                    onChange={(e) =>
-                      setHeroForm({ ...heroForm, image: e.target.value })
-                    }
+                    value={catalogSections[isEditingSection.index].image}
+                    onChange={(e) => {
+                       const newSections = [...catalogSections];
+                       newSections[isEditingSection.index].image = e.target.value;
+                       setCatalogSections(newSections);
+                    }}
                     className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
                     placeholder="https://ejemplo.com/imagen.jpg"
                   />
@@ -1494,10 +1665,10 @@ const SettingsManager: React.FC = () => {
             </div>
             <div className="flex justify-end pt-4">
               <button
-                onClick={handleSaveHero}
+                onClick={() => setIsEditingSection({ isOpen: false, index: -1 })}
                 className="bg-white text-black px-4 py-2 rounded text-sm font-medium hover:bg-zinc-200"
               >
-                Guardar Cambios
+                Guardar
               </button>
             </div>
           </div>

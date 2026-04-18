@@ -19,48 +19,105 @@ interface CatalogProps {
 
 const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
-  const [priceRange, setPriceRange] = useState<number>(1000000);
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000000);
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [scrollY, setScrollY] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [heroImage, setHeroImage] = useState(
-    "https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1600"
-  );
-  const [heroTitle, setHeroTitle] = useState("Catálogo");
-  const [heroSubtitle, setHeroSubtitle] = useState(
-    "Equipamiento Premium Seleccionado"
-  );
-  const [heroYear, setHeroYear] = useState("2024");
+  
+  // Sections configuration
+  const [sections, setSections] = useState<any[]>([
+    {
+      id: "tech",
+      title: "Catálogo",
+      subtitle: "Equipamiento Premium Seleccionado",
+      image: "https://images.pexels.com/photos/100650/pexels-photo-100650.jpeg?auto=compress&cs=tinysrgb&w=1600",
+      year: "2024",
+      categories: ["Todos", "Audio", "Cierre Centralizado", "Levantacristales", "Lámparas", "Cámaras", "Sensores"],
+      recommendedTags: ["hotsale"]
+    },
+    {
+      id: "mobile",
+      title: "Celulares",
+      subtitle: "Equipos y Accesorios",
+      image: "https://images.pexels.com/photos/11297769/pexels-photo-11297769.jpeg",
+      year: "2024",
+      categories: ["Todos", "Celulares", "Cargador", "Fundas"],
+      recommendedTags: ["new"]
+    },
+    {
+      id: "clothes",
+      title: "Indumentaria",
+      subtitle: "Tendencias de temporada",
+      image: "https://images.pexels.com/photos/4903412/pexels-photo-4903412.jpeg",
+      year: "2024",
+      categories: ["Todos", "Remeras", "Buzos", "Pantalones Cortos", "Pantalones Largos"],
+      recommendedTags: ["hotsale"]
+    }
+  ]);
+  
   const [searchTags, setSearchTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeSlide, setActiveSlide] = useState(0);
   const itemsPerPage = 8;
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const fetchHero = async () => {
+    const fetchHeroAndConfig = async () => {
       const { data } = await supabase
         .from("site_config")
         .select("key, value")
         .in("key", [
+          "catalog_sections",
+          // Fallbacks for backwards compatibility:
           "catalog_hero_image",
           "catalog_hero_title",
           "catalog_hero_subtitle",
           "catalog_year",
+          "catalog_filters",
         ]);
 
       if (data) {
-        data.forEach((item) => {
-          if (item.key === "catalog_hero_image") setHeroImage(item.value);
-          if (item.key === "catalog_hero_title") setHeroTitle(item.value);
-          if (item.key === "catalog_hero_subtitle") setHeroSubtitle(item.value);
-          if (item.key === "catalog_year") setHeroYear(item.value);
-        });
+        const configMap = data.reduce((acc: any, curr: any) => {
+          acc[curr.key] = curr.value;
+          return acc;
+        }, {});
+
+        // Prefer structured JSON from DB if available
+        if (configMap.catalog_sections) {
+          try {
+            const parsedSections = JSON.parse(configMap.catalog_sections);
+            if (Array.isArray(parsedSections) && parsedSections.length > 0) {
+              setSections(parsedSections);
+            }
+          } catch (e) {
+            console.error("Error parsing catalog_sections", e);
+          }
+        } else {
+          // Fallback to legacy structure for the first slide if sections aren't defined in DB
+          setSections(prevSections => {
+            const updated = [...prevSections];
+            if (configMap.catalog_hero_image) updated[0].image = configMap.catalog_hero_image;
+            if (configMap.catalog_hero_title) updated[0].title = configMap.catalog_hero_title;
+            if (configMap.catalog_hero_subtitle) updated[0].subtitle = configMap.catalog_hero_subtitle;
+            if (configMap.catalog_year) updated[0].year = configMap.catalog_year;
+            
+            if (configMap.catalog_filters) {
+              try {
+                const parsedCats = JSON.parse(configMap.catalog_filters);
+                updated[0].categories = ["Todos", ...parsedCats];
+              } catch (e) {}
+            }
+            
+            return updated;
+          });
+        }
       }
     };
-    fetchHero();
+    fetchHeroAndConfig();
   }, []);
 
   useEffect(() => {
@@ -87,26 +144,6 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
 
   const [categories, setCategories] = useState<string[]>(["Todos"]);
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const { data } = await supabase
-        .from("site_config")
-        .select("value")
-        .eq("key", "catalog_filters")
-        .single();
-
-      if (data?.value) {
-        try {
-          const parsedCategories = JSON.parse(data.value);
-          setCategories(["Todos", ...parsedCategories]);
-        } catch (e) {
-          console.error("Error parsing categories", e);
-        }
-      }
-    };
-    fetchCategories();
-  }, []);
-
   const handleTagInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
@@ -122,10 +159,71 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     setSearchTags(searchTags.filter((tag) => tag !== tagToRemove));
   };
 
+  const handleNextSlide = () => {
+    setActiveSlide((prev) => (prev === sections.length - 1 ? 0 : prev + 1));
+    setSelectedCategory("Todos");
+    setSelectedBrand("Todas");
+  };
+
+  const handlePrevSlide = () => {
+    setActiveSlide((prev) => (prev === 0 ? sections.length - 1 : prev - 1));
+    setSelectedCategory("Todos");
+    setSelectedBrand("Todas");
+  };
+
+  const currentSection = sections[activeSlide];
+  const currentCategories = currentSection?.categories || ["Todos"];
+
+  const [selectedBrand, setSelectedBrand] = useState<string>("Todas");
+
+  // Get unique brands from products for the current slide
+  const availableBrands = currentSection?.brands && currentSection.brands.length > 0 
+    ? ["Todas", ...currentSection.brands]
+    : ["Todas", ...Array.from(new Set(products
+    .filter(p => {
+      // Check if product fits in current section's categories
+      const isConfiguredCategory = currentCategories.includes(p.category) && p.category !== "Todos";
+      
+      // If it's the specific slide logic, usually if it belongs to one of its categories
+      // We will map any product whose category is listed in the current section
+      if (currentCategories.includes("Todos") && currentCategories.length === 1) {
+        return true; 
+      }
+      
+      // Basic dynamic logic: Does the product belong to the categories defined for this slide?
+      // Since default category "Todos" is mostly always present, we check if p.category exists in currentSection
+      
+      // In a completely dynamic setup, we assume a product belongs to the section if its category is explicitly listed in `categories` (excluding the "Todos" string)
+      return currentCategories.some((cat: string) => cat !== "Todos" && cat === p.category);
+    })
+    .map(p => p.brand || p.model) // Default to brand or model logic
+    .filter(Boolean)
+  ))] as string[];
+
   const filteredProducts = products.filter((p) => {
+    let belongsToSlide = false;
+    if (currentCategories.length === 1 && currentCategories[0] === "Todos") {
+        belongsToSlide = true;
+    } else {
+        belongsToSlide = currentCategories.some((cat: string) => cat !== "Todos" && cat === p.category);
+        
+        // As a fallback edge case, if the slide is the first one (tech) and the product doesn't explicitly belong to mobile or clothes, 
+        // a pure dynamic approach should define ALL categories properly in DB.
+        // For backwards compatibility and the current logic requested:
+        if (!belongsToSlide && activeSlide === 0) {
+           const definedElsewhere = sections.slice(1).some(sec => sec.categories.includes(p.category));
+           if (!definedElsewhere) belongsToSlide = true;
+        }
+    }
+
     const matchesCategory =
-      selectedCategory === "Todos" || p.category === selectedCategory;
-    const matchesPrice = p.price <= priceRange;
+      selectedCategory === "Todos" ? belongsToSlide : p.category === selectedCategory;
+      
+    // Matching brand (using p.model as brand placeholder if p.brand doesn't exist, adjust as needed)
+    const pBrand = p.brand || p.model || "";
+    const matchesBrand = selectedBrand === "Todas" || pBrand === selectedBrand;
+
+    const matchesPrice = p.price >= minPrice && p.price <= maxPrice;
     const matchesSearch =
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -135,7 +233,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
         p.tags?.some((pt) => pt.toLowerCase().includes(tag.toLowerCase()))
       );
 
-    return matchesCategory && matchesPrice && matchesSearch && matchesTags;
+    return matchesCategory && matchesBrand && matchesPrice && matchesSearch && matchesTags && belongsToSlide;
   });
 
   // Calculate pagination
@@ -148,7 +246,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, priceRange, searchTerm, searchTags]);
+  }, [selectedCategory, minPrice, maxPrice, searchTerm, searchTags, selectedBrand]);
 
   if (loading) {
     return (
@@ -161,32 +259,45 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   return (
     <div className="min-h-screen bg-black animate-fade-in">
       {/* Catalog Hero - Parallax & Large */}
-      <div className="relative h-[60vh] overflow-hidden border-b border-zinc-800">
+      <div className="relative h-[60vh] overflow-hidden border-b border-zinc-800 group">
         <div className="absolute inset-0 bg-zinc-900/40 z-10 mix-blend-multiply"></div>{" "}
         {/* Gray/Zinc Overlay */}
         <ImageWithLoader
-          src={heroImage}
-          alt="Catálogo Merlano"
-          containerClassName="w-full h-full"
-          className="w-full h-full object-cover"
+          src={currentSection?.image}
+          alt={currentSection?.title}
+          containerClassName="absolute inset-0 w-full h-full transition-opacity duration-500"
+          className="w-full h-full object-cover transition-opacity duration-500"
           style={{
             transform: `scale(1.1) translateY(${scrollY * 0.4}px)`,
-            transition: "transform 0.1s linear",
             filter: "grayscale(100%) contrast(90%) brightness(0.7)", // Heavy gray filter
           }}
         />
         <div
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-4"
+          className="absolute inset-0 z-20 flex flex-col items-center justify-center text-center p-4 transition-all duration-500 key={activeSlide}"
           style={{ transform: `translateY(${scrollY * 0.2}px)` }}
         >
-          <h1 className="text-5xl md:text-7xl font-thin text-white uppercase tracking-tight mb-6 drop-shadow-lg">
-            {heroTitle} <span className="text-zinc-400">{heroYear}</span>
+          <h1 className="text-5xl md:text-7xl font-thin text-white uppercase tracking-tight mb-6 drop-shadow-lg animate-fade-in">
+            {currentSection?.title} <span className="text-zinc-400">{currentSection?.year}</span>
           </h1>
           <div className="h-[1px] w-24 bg-white mb-6"></div>
-          <p className="text-white font-light tracking-[0.3em] text-xs md:text-sm uppercase drop-shadow-md bg-black/50 px-6 py-3 backdrop-blur-md border border-white/20">
-            {heroSubtitle}
+          <p className="text-white font-light tracking-[0.3em] text-xs md:text-sm uppercase drop-shadow-md bg-black/50 px-6 py-3 backdrop-blur-md border border-white/20 animate-fade-in">
+            {currentSection?.subtitle}
           </p>
         </div>
+
+        {/* Navigation Arrows */}
+        <button
+          onClick={handlePrevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-30 p-3 text-white/50 hover:text-white bg-black/20 hover:bg-black/60 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 backdrop-blur-sm border border-transparent hover:border-zinc-700"
+        >
+          <ChevronLeft size={36} strokeWidth={1} />
+        </button>
+        <button
+          onClick={handleNextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-30 p-3 text-white/50 hover:text-white bg-black/20 hover:bg-black/60 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 backdrop-blur-sm border border-transparent hover:border-zinc-700"
+        >
+          <ChevronRight size={36} strokeWidth={1} />
+        </button>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-24">
@@ -235,7 +346,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                   Categorías
                 </h3>
                 <div className="space-y-1">
-                  {categories.map((cat) => (
+                  {currentCategories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
@@ -246,6 +357,28 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                       }`}
                     >
                       {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Brands */}
+              <div>
+                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+                  Marcas
+                </h3>
+                <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
+                  {availableBrands.map((brand) => (
+                    <button
+                      key={brand}
+                      onClick={() => setSelectedBrand(brand)}
+                      className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                        selectedBrand === brand
+                          ? "border-white text-white pl-4 font-medium"
+                          : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                      }`}
+                    >
+                      {brand}
                     </button>
                   ))}
                 </div>
@@ -267,7 +400,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                   />
                 </div>
                 {searchTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {searchTags.map((tag) => (
                       <span
                         key={tag}
@@ -284,29 +417,69 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
                     ))}
                   </div>
                 )}
+                
+                {/* Recommended Tags */}
+                {currentSection?.recommendedTags && currentSection.recommendedTags.length > 0 && (
+                  <div className="mt-4">
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 block">
+                      Sugeridas:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {currentSection.recommendedTags.map((tag: string) => (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            if (!searchTags.includes(tag)) setSearchTags([...searchTags, tag]);
+                          }}
+                          className="text-[10px] text-zinc-400 border border-zinc-800 hover:border-zinc-500 hover:text-white px-2 py-1 transition-colors"
+                        >
+                          + {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Price Range */}
               <div>
                 <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6">
-                  Precio Máximo
+                  Rango de Precio
                 </h3>
-                <div className="px-2">
-                  <input
-                    type="range"
-                    min="50000"
-                    max="1000000"
-                    step="10000"
-                    value={priceRange}
-                    onChange={(e) => setPriceRange(Number(e.target.value))}
-                    className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
-                  />
-                  <div className="flex justify-between text-[10px] text-zinc-500 mt-4 font-mono">
-                    <span>$50k</span>
-                    <span className="text-white">
-                      ${priceRange.toLocaleString()}
-                    </span>
-                    <span>$1M+</span>
+                <div className="px-2 space-y-4">
+                  <div>
+                    <label className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-2">
+                      Mínimo: ${minPrice.toLocaleString()}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000000"
+                      step="10000"
+                      value={minPrice}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val <= maxPrice) setMinPrice(val);
+                      }}
+                      className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-2">
+                      Máximo: ${maxPrice.toLocaleString()}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000000"
+                      step="10000"
+                      value={maxPrice}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= minPrice) setMaxPrice(val);
+                      }}
+                      className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
+                    />
                   </div>
                 </div>
               </div>
@@ -436,12 +609,14 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
             {filteredProducts.length === 0 && (
               <div className="py-24 text-center border border-zinc-900 border-dashed">
                 <p className="text-zinc-500 font-light mb-2">
-                  No se encontraron productos en este rango.
+                  No se encontraron productos con estos filtros.
                 </p>
                 <button
                   onClick={() => {
-                    setPriceRange(1000000);
+                    setMinPrice(0);
+                    setMaxPrice(1000000);
                     setSelectedCategory("Todos");
+                    setSelectedBrand("Todas");
                     setSearchTerm("");
                     setSearchTags([]);
                   }}

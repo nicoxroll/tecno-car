@@ -159,7 +159,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
       {selectedProduct &&
         createPortal(
           <div
-            className="fixed inset-0 z-[200] flex items-start justify-center pt-20 p-4 bg-black/90 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in"
             onClick={() => setSelectedProduct(null)}
           >
             <div
@@ -174,7 +174,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
               </button>
 
               {/* Image Side - Full Color in Modal */}
-              <div className="w-full md:w-1/2 flex items-center justify-center bg-zinc-950 border-r border-zinc-800">
+              <div className="w-full md:w-1/2 flex flex-shrink-0 items-center justify-center bg-zinc-950 border-b md:border-b-0 md:border-r border-zinc-800">
                 <img
                   src={selectedProduct.image}
                   alt={selectedProduct.name}
@@ -183,7 +183,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
               </div>
 
               {/* Content Side */}
-              <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center overflow-y-auto max-h-[90vh]">
+              <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto max-h-[90vh]">
                 <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4 border-l border-white pl-3">
                   {selectedProduct.category}
                 </span>
