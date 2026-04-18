@@ -6,6 +6,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { Product } from "../types";
@@ -21,6 +23,20 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
   const [minPrice, setMinPrice] = useState<number>(0);
   const [maxPrice, setMaxPrice] = useState<number>(1000000);
+  const [selectedBrand, setSelectedBrand] = useState<string>("Todas");
+  const [selectedModel, setSelectedModel] = useState<string>("Todos");
+
+  const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
+    categories: true,
+    brands: true,
+    models: true,
+    tags: true,
+    price: true,
+  });
+
+  const toggleFilter = (key: string) => {
+    setExpandedFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
   const [isFiltersOpen, setIsFiltersOpen] = useState(true);
   const [scrollY, setScrollY] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
@@ -163,18 +179,19 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     setActiveSlide((prev) => (prev === sections.length - 1 ? 0 : prev + 1));
     setSelectedCategory("Todos");
     setSelectedBrand("Todas");
+    setSelectedModel("Todos");
   };
 
   const handlePrevSlide = () => {
     setActiveSlide((prev) => (prev === 0 ? sections.length - 1 : prev - 1));
     setSelectedCategory("Todos");
     setSelectedBrand("Todas");
+    setSelectedModel("Todos");
   };
 
   const currentSection = sections[activeSlide];
-  const currentCategories = currentSection?.categories || ["Todos"];
-
-  const [selectedBrand, setSelectedBrand] = useState<string>("Todas");
+  const configuredCategories = currentSection?.categories || [];
+  const currentCategories = ["Todos", ...configuredCategories.filter((c: string) => c !== "Todos")];
 
   // Get unique brands from products for the current slide
   const availableBrands = currentSection?.brands && currentSection.brands.length > 0 
@@ -182,30 +199,31 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     : ["Todas", ...Array.from(new Set(products
     .filter(p => {
       // Check if product fits in current section's categories
-      const isConfiguredCategory = currentCategories.includes(p.category) && p.category !== "Todos";
-      
-      // If it's the specific slide logic, usually if it belongs to one of its categories
-      // We will map any product whose category is listed in the current section
-      if (currentCategories.includes("Todos") && currentCategories.length === 1) {
-        return true; 
-      }
-      
-      // Basic dynamic logic: Does the product belong to the categories defined for this slide?
-      // Since default category "Todos" is mostly always present, we check if p.category exists in currentSection
-      
-      // In a completely dynamic setup, we assume a product belongs to the section if its category is explicitly listed in `categories` (excluding the "Todos" string)
-      return currentCategories.some((cat: string) => cat !== "Todos" && cat === p.category);
+      const isConfiguredCategory = configuredCategories.includes(p.category);
+      if (configuredCategories.length === 0) return true; 
+      return configuredCategories.includes(p.category);
     })
-    .map(p => p.brand || p.model) // Default to brand or model logic
+    .map(p => p.brand)
     .filter(Boolean)
-  ))] as string[];
+  )).sort()] as string[];
+
+  const availableModels = ["Todos", ...Array.from(new Set(products
+    .filter(p => {
+      const isConfiguredCategory = configuredCategories.includes(p.category);
+      if (configuredCategories.length === 0) return true; 
+      return configuredCategories.includes(p.category);
+    })
+    .filter(p => selectedBrand === "Todas" || p.brand === selectedBrand)
+    .map(p => p.model)
+    .filter(Boolean)
+  )).sort()] as string[];
 
   const filteredProducts = products.filter((p) => {
     let belongsToSlide = false;
-    if (currentCategories.length === 1 && currentCategories[0] === "Todos") {
+    if (configuredCategories.length === 0) {
         belongsToSlide = true;
     } else {
-        belongsToSlide = currentCategories.some((cat: string) => cat !== "Todos" && cat === p.category);
+        belongsToSlide = configuredCategories.includes(p.category);
         
         // As a fallback edge case, if the slide is the first one (tech) and the product doesn't explicitly belong to mobile or clothes, 
         // a pure dynamic approach should define ALL categories properly in DB.
@@ -222,6 +240,8 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
     // Matching brand (using p.model as brand placeholder if p.brand doesn't exist, adjust as needed)
     const pBrand = p.brand || p.model || "";
     const matchesBrand = selectedBrand === "Todas" || pBrand === selectedBrand;
+    const pModel = p.model || "";
+    const matchesModel = selectedModel === "Todos" ? true : pModel === selectedModel;
 
     const matchesPrice = p.price >= minPrice && p.price <= maxPrice;
     const matchesSearch =
@@ -233,7 +253,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
         p.tags?.some((pt) => pt.toLowerCase().includes(tag.toLowerCase()))
       );
 
-    return matchesCategory && matchesBrand && matchesPrice && matchesSearch && matchesTags && belongsToSlide;
+    return matchesCategory && matchesBrand && matchesModel && matchesPrice && matchesSearch && matchesTags && belongsToSlide;
   });
 
   // Calculate pagination
@@ -246,7 +266,7 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, minPrice, maxPrice, searchTerm, searchTags, selectedBrand]);
+  }, [selectedCategory, minPrice, maxPrice, searchTerm, searchTags, selectedBrand, selectedModel]);
 
   if (loading) {
     return (
@@ -342,146 +362,231 @@ const Catalog: React.FC<CatalogProps> = ({ onProductSelect }) => {
 
               {/* Categories */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                  Categorías
-                </h3>
-                <div className="space-y-1">
-                  {currentCategories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
-                        selectedCategory === cat
-                          ? "border-white text-white pl-4 font-medium"
-                          : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("categories")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Categorías</span>
+                  {expandedFilters.categories ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.categories && (
+                  <div className="space-y-1 mt-2">
+                    {currentCategories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          selectedCategory === cat
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Brands */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                  Marcas
-                </h3>
-                <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
-                  {availableBrands.map((brand) => (
-                    <button
-                      key={brand}
-                      onClick={() => setSelectedBrand(brand)}
-                      className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
-                        selectedBrand === brand
-                          ? "border-white text-white pl-4 font-medium"
-                          : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
-                      }`}
-                    >
-                      {brand}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("brands")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Marcas</span>
+                  {expandedFilters.brands ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.brands && (
+                  <div className="space-y-1 mt-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                    {availableBrands.map((brand) => (
+                      <button
+                        key={brand}
+                        onClick={() => setSelectedBrand(brand)}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          selectedBrand === brand
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {brand}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Models */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("models")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Modelos</span>
+                  {expandedFilters.models ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.models && (
+                  <div className="space-y-1 mt-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                    {availableModels.map((model) => (
+                      <button
+                        key={model}
+                        onClick={() => setSelectedModel(model)}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          selectedModel === model
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {model}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Tags */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                  Etiquetas
-                </h3>
-                <div className="relative mb-3">
-                  <input
-                    type="text"
-                    placeholder="FILTRAR POR ETIQUETA..."
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleTagInput}
-                    className="w-full bg-black border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
-                  />
-                </div>
-                {searchTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {searchTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-zinc-800 text-white text-[10px] px-2 py-1 flex items-center gap-1"
-                      >
-                        {tag}
-                        <button
-                          onClick={() => removeTag(tag)}
-                          className="hover:text-red-400"
-                        >
-                          <X size={10} />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                
-                {/* Recommended Tags */}
-                {currentSection?.recommendedTags && currentSection.recommendedTags.length > 0 && (
-                  <div className="mt-4">
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 block">
-                      Sugeridas:
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {currentSection.recommendedTags.map((tag: string) => (
-                        <button
-                          key={tag}
-                          onClick={() => {
-                            if (!searchTags.includes(tag)) setSearchTags([...searchTags, tag]);
-                          }}
-                          className="text-[10px] text-zinc-400 border border-zinc-800 hover:border-zinc-500 hover:text-white px-2 py-1 transition-colors"
-                        >
-                          + {tag}
-                        </button>
-                      ))}
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("tags")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Etiquetas</span>
+                  {expandedFilters.tags ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.tags && (
+                  <div className="mt-2">
+                    <div className="relative mb-3">
+                      <input
+                        type="text"
+                        placeholder="FILTRAR POR ETIQUETA..."
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagInput}
+                        className="w-full bg-black border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
+                      />
                     </div>
+                    {searchTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {searchTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="bg-zinc-800 text-white text-[10px] px-2 py-1 flex items-center gap-1"
+                          >
+                            {tag}
+                            <button
+                              onClick={() => removeTag(tag)}
+                              className="hover:text-red-400"
+                            >
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Recommended Tags */}
+                    {currentSection?.recommendedTags && currentSection.recommendedTags.length > 0 && (
+                      <div className="mt-4">
+                        <span className="text-[10px] text-zinc-500 uppercase tracking-widest mb-2 block">
+                          Sugeridas:
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          {currentSection.recommendedTags.map((tag: string) => (
+                            <button
+                              key={tag}
+                              onClick={() => {
+                                if (!searchTags.includes(tag)) setSearchTags([...searchTags, tag]);
+                              }}
+                              className="text-[10px] text-zinc-400 border border-zinc-800 hover:border-zinc-500 hover:text-white px-2 py-1 transition-colors"
+                            >
+                              + {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* Price Range */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6">
-                  Rango de Precio
-                </h3>
-                <div className="px-2 space-y-4">
-                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-2">
-                      Mínimo: ${minPrice.toLocaleString()}
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1000000"
-                      step="10000"
-                      value={minPrice}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        if (val <= maxPrice) setMinPrice(val);
-                      }}
-                      className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
-                    />
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("price")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 border-t border-zinc-800 pt-6 flex justify-between items-center"
+                >
+                  <span>RANGO DE PRECIO</span>
+                  {expandedFilters.price ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.price && (
+                  <div className="space-y-4 px-1 mt-2">
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[10px] uppercase text-zinc-500 tracking-wider">
+                          Mínimo
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          max={maxPrice}
+                          value={minPrice}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val <= maxPrice) setMinPrice(val);
+                          }}
+                          className="bg-transparent text-white text-xs font-mono text-right w-20 focus:outline-none border-b border-zinc-800 focus:border-white transition-colors"
+                        />
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1000000"
+                        step="10000"
+                        value={minPrice}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val <= maxPrice) setMinPrice(val);
+                        }}
+                        className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="text-[10px] uppercase text-zinc-500 tracking-wider">
+                          Máximo
+                        </label>
+                        <input
+                          type="number"
+                          min={minPrice}
+                          max="1000000"
+                          value={maxPrice}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= minPrice) setMaxPrice(val);
+                          }}
+                          className="bg-transparent text-white text-xs font-mono text-right w-20 focus:outline-none border-b border-zinc-800 focus:border-white transition-colors"
+                        />
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="1000000"
+                        step="10000"
+                        value={maxPrice}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= minPrice) setMaxPrice(val);
+                        }}
+                        className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="text-[10px] text-zinc-500 uppercase tracking-widest block mb-2">
-                      Máximo: ${maxPrice.toLocaleString()}
-                    </label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1000000"
-                      step="10000"
-                      value={maxPrice}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        if (val >= minPrice) setMaxPrice(val);
-                      }}
-                      className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

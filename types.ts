@@ -36,17 +36,19 @@ export interface Product {
   price: number;
   image: string;
   category: string;
+  section?: string;
   description: string;
   features?: string[]; // Made optional to support catalog items that might add this later
   featuresText?: string;
   stock?: number;
-  available?: boolean;
+  available?: boolean | null; // true: Disponible, false: Agotado, null: Oculto
   featured?: boolean;
   year?: number;
   tags?: string[];
   discount_price?: number;
   images?: string[];
   model?: string;
+  brand?: string;
   created_at?: string;
   updated_at?: string;
 }

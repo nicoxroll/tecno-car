@@ -65,7 +65,20 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
 
   const [activeTab, setActiveTab] = useState<"products" | "stats">("products");
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
-  const [priceRange, setPriceRange] = useState<number>(1000000);
+  const [selectedSection, setSelectedSection] = useState<string>("");
+  const [selectedBrand, setSelectedBrand] = useState<string>("Todas");
+  const [selectedModel, setSelectedModel] = useState<string>("Todos");
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000000);
+  
+  const [expandedFilters, setExpandedFilters] = useState<Record<string, boolean>>({
+    sections: true,
+    categories: true,
+    brands: true,
+    models: true,
+    tags: true,
+    price: true,
+  });
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchTags, setSearchTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
@@ -87,7 +100,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
-  // Categories State
+  // Categories and Sections State
   const [categories, setCategories] = useState<string[]>([
     "Multimedia",
     "Audio",
@@ -96,24 +109,32 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     "Accesorios",
     "Limpieza",
   ]);
+  const [sectionsData, setSectionsData] = useState<any[]>([]);
 
   React.useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchConfig = async () => {
       const { data } = await supabase
         .from("site_config")
-        .select("value")
-        .eq("key", "catalog_filters")
-        .single();
+        .select("key, value")
+        .in("key", ["catalog_filters", "catalog_sections"]);
 
-      if (data?.value) {
+      if (data) {
+        const filtersConfig = data.find((d) => d.key === "catalog_filters");
+        const sectionsConfig = data.find((d) => d.key === "catalog_sections");
+
         try {
-          setCategories(JSON.parse(data.value));
+          if (filtersConfig?.value) {
+            setCategories(JSON.parse(filtersConfig.value));
+          }
+          if (sectionsConfig?.value) {
+            setSectionsData(JSON.parse(sectionsConfig.value));
+          }
         } catch (e) {
-          console.error("Error parsing categories", e);
+          console.error("Error parsing config", e);
         }
       }
     };
-    fetchCategories();
+    fetchConfig();
   }, []);
 
   const fetchProducts = async () => {
@@ -121,12 +142,27 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
       setLoading(true);
       let query = supabase.from("products").select("*", { count: "exact" });
 
-      if (selectedCategory !== "Todos") {
+      if (selectedSection && selectedSection !== "Todas") {
+        query = query.eq("section", selectedSection);
+      }
+
+      if (selectedCategory && selectedCategory !== "Todos") {
         query = query.eq("category", selectedCategory);
       }
 
-      if (priceRange < 1000000) {
-        query = query.lte("price", priceRange);
+      if (selectedBrand && selectedBrand !== "Todas") {
+        query = query.eq("brand", selectedBrand);
+      }
+
+      if (selectedModel && selectedModel !== "Todos") {
+        query = query.eq("model", selectedModel);
+      }
+
+      if (minPrice > 0) {
+        query = query.gte("price", minPrice);
+      }
+      if (maxPrice < 1000000) {
+        query = query.lte("price", maxPrice);
       }
 
       if (searchQuery) {
@@ -162,12 +198,43 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
     page,
     rowsPerPage,
     selectedCategory,
-    priceRange,
+    minPrice,
+    maxPrice,
+    selectedSection,
+    selectedBrand,
+    selectedModel,
     searchQuery,
     searchTags,
     sortField,
     sortDirection,
   ]);
+
+  // Available brands derived from currently queried products and sectionsData configuration
+  const availableBrands = useMemo(() => {
+    const brandsSet = new Set<string>();
+    sectionsData.forEach((s) => {
+      if (s.brands) {
+        s.brands.forEach((b: string) => brandsSet.add(b));
+      }
+    });
+    products.forEach((p) => {
+      if (p.brand) brandsSet.add(p.brand);
+    });
+    return ["Todas", ...Array.from(brandsSet).sort()];
+  }, [sectionsData, products]);
+
+  // Available models derived from products directly
+  const availableModels = useMemo(() => {
+    const modelsSet = new Set<string>();
+    products.forEach((p) => {
+      if (p.model) modelsSet.add(p.model);
+    });
+    return ["Todos", ...Array.from(modelsSet).sort()];
+  }, [products]);
+
+  const toggleFilter = (key: string) => {
+    setExpandedFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   // Bulk Update State
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -300,8 +367,22 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
         } else {
           newPrice -= change;
         }
+        newPrice = Math.round(newPrice);
 
-        return { ...p, price: Math.round(newPrice) };
+        let newDiscountPrice = p.discount_price;
+        if (p.discount_price && p.discount_price < Number(p.price)) {
+          if (bulkConfig.type === "percentage") {
+            const discountChange = Number(p.discount_price) * (bulkConfig.value / 100);
+            newDiscountPrice = bulkConfig.action === "increase" ? Number(p.discount_price) + discountChange : Number(p.discount_price) - discountChange;
+            newDiscountPrice = Math.round(newDiscountPrice);
+          } else {
+             // For amount change, adjust discount price proportionally or keep ratio? Assuming proportional to the original discount.
+             const discountRatio = Number(p.discount_price) / Number(p.price);
+             newDiscountPrice = Math.round(newPrice * discountRatio);
+          }
+        }
+
+        return { ...p, price: newPrice, discount_price: newDiscountPrice };
       });
 
       const { error } = await supabase.from("products").upsert(updates);
@@ -342,7 +423,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
           p.category,
           p.price,
           p.stock || 0,
-          p.available ? "Sí" : "No",
+          p.available === true ? "Sí" : p.available === false ? "No" : "Oculto",
           p.featured ? "Sí" : "No",
           `"${(p.description || "")
             .replace(/"/g, '""')
@@ -501,12 +582,15 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
         discount_price: product.discount_price,
         image: product.image,
         category: product.category,
+        section: product.section,
         description: product.description || "",
         features,
         stock: product.stock || 0,
-        available: product.available ?? true,
+        available: product.available !== undefined ? product.available : true,
         featured: product.featured ?? false,
         tags: product.tags || [],
+        model: product.model,
+        brand: product.brand,
       };
 
       const { data, error } = await supabase
@@ -655,7 +739,8 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   setModalTagInput("");
                   setCreatingProduct({
                     name: "",
-                    category: "Multimedia",
+                    category: "",
+                    section: sectionsData.length > 0 ? sectionsData[0].id : "",
                     price: 0,
                     image:
                       "https://images.pexels.com/photos/17345649/pexels-photo-17345649.jpeg?auto=compress&cs=tinysrgb&w=800",
@@ -833,86 +918,246 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                 />
               </div>
 
+              {/* Sections */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("sections")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Secciones</span>
+                  {expandedFilters.sections ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.sections && (
+                  <div className="space-y-1 mt-2">
+                    {[
+                      { id: "Todas", title: "Todas" },
+                      ...sectionsData.map((s) => ({ id: s.id, title: s.title }))
+                    ].map((sec) => (
+                      <button
+                        key={sec.id}
+                        onClick={() => {
+                          setSelectedSection(sec.id === "Todas" ? "" : sec.id);
+                          setSelectedCategory("Todos");
+                        }}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          (selectedSection === sec.id) || (selectedSection === "" && sec.id === "Todas")
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {sec.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Categories */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                  Categorías
-                </h3>
-                <div className="space-y-1">
-                  {["Todos", ...categories].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
-                        selectedCategory === cat
-                          ? "border-white text-white pl-4 font-medium"
-                          : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("categories")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Categorías</span>
+                  {expandedFilters.categories ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.categories && (
+                  <div className="space-y-1 mt-2">
+                    {["Todos", ...categories].map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          selectedCategory === cat
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Brands */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("brands")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Marcas</span>
+                  {expandedFilters.brands ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.brands && (
+                  <div className="space-y-1 mt-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                    {availableBrands.map((b) => (
+                      <button
+                        key={b}
+                        onClick={() => setSelectedBrand(b)}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          selectedBrand === b
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Models */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("models")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Modelos</span>
+                  {expandedFilters.models ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.models && (
+                  <div className="space-y-1 mt-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">
+                    {availableModels.map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setSelectedModel(m)}
+                        className={`block w-full text-left text-xs py-2 px-2 transition-all duration-200 border-l-2 ${
+                          selectedModel === m
+                            ? "border-white text-white pl-4 font-medium"
+                            : "border-transparent text-zinc-500 hover:text-zinc-300 pl-2"
+                        }`}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Tags */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                  Etiquetas
-                </h3>
-                <div className="relative mb-3">
-                  <input
-                    type="text"
-                    placeholder="FILTRAR POR ETIQUETA..."
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={handleTagInput}
-                    className="w-full bg-black border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
-                  />
-                </div>
-                {searchTags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {searchTags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-zinc-800 text-white text-[10px] px-2 py-1 flex items-center gap-1"
-                      >
-                        {tag}
-                        <button
-                          onClick={() => removeTag(tag)}
-                          className="hover:text-red-400"
-                        >
-                          <X size={10} />
-                        </button>
-                      </span>
-                    ))}
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("tags")}
+                  className="w-full text-white text-xs font-bold uppercase tracking-widest mb-6 flex justify-between items-center"
+                >
+                  <span>Etiquetas</span>
+                  {expandedFilters.tags ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.tags && (
+                  <div className="mt-2">
+                    <div className="relative mb-3">
+                      <input
+                        type="text"
+                        placeholder="FILTRAR POR ETIQUETA..."
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={handleTagInput}
+                        className="w-full bg-black border-b border-zinc-800 text-white text-xs py-2 pl-2 focus:outline-none focus:border-white transition-colors"
+                      />
+                    </div>
+                    {searchTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {searchTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="bg-zinc-800 text-white text-[10px] px-2 py-1 flex items-center gap-1"
+                          >
+                            {tag}
+                            <button
+                              onClick={() => removeTag(tag)}
+                              className="hover:text-red-400"
+                            >
+                              <X size={10} />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* Price Range */}
               <div>
-                <h3 className="text-white text-xs font-bold uppercase tracking-widest mb-6">
-                  Precio Máximo
-                </h3>
-                <div className="px-2">
-                  <input
-                    type="range"
-                    min="50000"
-                    max="1000000"
-                    step="10000"
-                    value={priceRange}
-                    onChange={(e) => setPriceRange(Number(e.target.value))}
-                    className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
-                  />
-                  <div className="flex justify-between text-[10px] text-zinc-500 mt-4 font-mono">
-                    <span>$50k</span>
-                    <span className="text-white">
-                      ${priceRange.toLocaleString()}
-                    </span>
-                    <span>$1M+</span>
+                <button
+                  type="button"
+                  onClick={() => toggleFilter("price")}
+                  className="w-full text-white text-[10px] font-bold uppercase tracking-widest mb-6 border-t border-zinc-800 pt-6 flex justify-between items-center"
+                >
+                  <span>RANGO DE PRECIO</span>
+                  {expandedFilters.price ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                {expandedFilters.price && (
+                  <div className="space-y-4 px-1 mt-2">
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] uppercase text-zinc-500 tracking-wider">
+                        MÍNIMO
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max={maxPrice}
+                        value={minPrice}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val <= maxPrice) setMinPrice(val);
+                        }}
+                        className="bg-transparent text-white text-xs font-mono text-right w-20 focus:outline-none border-b border-zinc-800 focus:border-white transition-colors"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000000"
+                      step="10000"
+                      value={minPrice}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val <= maxPrice) setMinPrice(val);
+                      }}
+                      className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-[10px] uppercase text-zinc-500 tracking-wider">
+                        MÁXIMO
+                      </label>
+                      <input
+                        type="number"
+                        min={minPrice}
+                        max="1000000"
+                        value={maxPrice}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          if (val >= minPrice) setMaxPrice(val);
+                        }}
+                        className="bg-transparent text-white text-xs font-mono text-right w-20 focus:outline-none border-b border-zinc-800 focus:border-white transition-colors"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000000"
+                      step="10000"
+                      value={maxPrice}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= minPrice) setMaxPrice(val);
+                      }}
+                      className="w-full h-1 bg-zinc-800 appearance-none cursor-pointer accent-white"
+                    />
                   </div>
                 </div>
+                )}
               </div>
             </div>
           </div>
@@ -1136,12 +1381,14 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                             <td className="px-4 py-4">
                               <span
                                 className={`px-2 py-1 text-xs ${
-                                  product.available
+                                  product.available === true
                                     ? "bg-green-900 text-green-300"
-                                    : "bg-red-900 text-red-300"
+                                    : product.available === false
+                                    ? "bg-red-900 text-red-300"
+                                    : "bg-zinc-800 text-zinc-400"
                                 }`}
                               >
-                                {product.available ? "Disponible" : "Agotado"}
+                                {product.available === true ? "Disponible" : product.available === false ? "Agotado" : "Oculto"}
                               </span>
                             </td>
                             <td className="px-4 py-4">
@@ -1336,12 +1583,14 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                             </div>
                             <span
                               className={`text-[10px] uppercase tracking-widest ${
-                                product.available
+                                product.available === true
                                   ? "text-green-500"
-                                  : "text-red-500"
+                                  : product.available === false
+                                  ? "text-red-500"
+                                  : "text-zinc-500"
                               }`}
                             >
-                              {product.available ? "Disponible" : "Agotado"}
+                              {product.available === true ? "Disponible" : product.available === false ? "Agotado" : "Oculto"}
                             </span>
                           </div>
                         </div>
@@ -1358,7 +1607,9 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                   </p>
                   <button
                     onClick={() => {
-                      setPriceRange(1000000);
+                      setMinPrice(0);
+                      setMaxPrice(1000000);
+                      setSelectedSection("");
                       setSelectedCategory("Todos");
                       setSearchQuery("");
                       setSearchTags([]);
@@ -1730,33 +1981,65 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                 )}
               </div>
 
-              <div>
-                <label className="block text-zinc-400 text-sm mb-2">
-                  Categoría
-                </label>
-                <CustomSelect
-                  value={editingProduct.category}
-                  onChange={(value) => {
-                    setEditingProduct({
-                      ...editingProduct,
-                      category: value,
-                    });
-                    if (errors.category) setErrors({ ...errors, category: "" });
-                  }}
-                  options={categories.map((cat) => ({
-                    value: cat,
-                    label: cat,
-                  }))}
-                  error={!!errors.category}
-                />
-                {errors.category && (
-                  <span className="text-red-500 text-xs mt-1 block">
-                    {errors.category}
-                  </span>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Sección
+                  </label>
+                  <CustomSelect
+                    value={editingProduct.section || ""}
+                    onChange={(value) => {
+                      setEditingProduct({
+                        ...editingProduct,
+                        section: value,
+                        category: "", // reset category when section changes
+                      });
+                    }}
+                    options={[
+                      ...sectionsData.map((s) => ({
+                        value: s.id,
+                        label: s.title,
+                      })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Categoría
+                  </label>
+                  <CustomSelect
+                    value={editingProduct.category || ""}
+                    onChange={(value) => {
+                      setEditingProduct({
+                        ...editingProduct,
+                        category: value,
+                      });
+                      if (errors.category) setErrors({ ...errors, category: "" });
+                    }}
+                    options={[
+                      { value: "", label: "Seleccionar categoría" },
+                      ...(
+                        editingProduct.section
+                          ? sectionsData
+                              .find((s) => s.id === editingProduct.section)
+                              ?.categories?.filter((c: string) => c !== "Todos") || []
+                          : categories
+                      ).map((cat: string) => ({
+                        value: cat,
+                        label: cat,
+                      })),
+                    ]}
+                    error={!!errors.category}
+                  />
+                  {errors.category && (
+                    <span className="text-red-500 text-xs mt-1 block">
+                      {errors.category}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Precio ($)
@@ -1801,6 +2084,25 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     placeholder="Opcional"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Marca (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={editingProduct.brand || ""}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        brand: e.target.value,
+                      })
+                    }
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="Ej: Toyota"
+                  />
+                </div>
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Modelo (Opcional)
@@ -1820,7 +2122,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Stock
@@ -1843,16 +2145,26 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     Estado
                   </label>
                   <CustomSelect
-                    value={editingProduct.available ? "true" : "false"}
-                    onChange={(value) =>
+                    value={
+                      editingProduct.available === false 
+                        ? "false" 
+                        : editingProduct.available === null 
+                          ? "hidden" 
+                          : "true"
+                    }
+                    onChange={(value) => {
+                      let availableVal: boolean | null = true;
+                      if (value === "false") availableVal = false;
+                      if (value === "hidden") availableVal = null;
                       setEditingProduct({
                         ...editingProduct,
-                        available: value === "true",
-                      })
-                    }
+                        available: availableVal,
+                      });
+                    }}
                     options={[
                       { value: "true", label: "Disponible" },
                       { value: "false", label: "Agotado" },
+                      { value: "hidden", label: "Oculto" },
                     ]}
                   />
                 </div>
@@ -1870,7 +2182,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                       className="w-5 h-5 bg-black border border-zinc-700 rounded focus:ring-0 checked:bg-white"
                     />
                     <span className="text-zinc-400 text-sm">
-                      Destacado en Home
+                      Destacar
                     </span>
                   </label>
                 </div>
@@ -1940,6 +2252,33 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     ))}
                   </div>
                 )}
+                {editingProduct.section && (() => {
+                  const section = sectionsData.find(s => s.id === editingProduct.section);
+                  if (section && section.recommendedTags && section.recommendedTags.length > 0) {
+                    return (
+                      <div className="flex flex-wrap gap-2 mt-4 mt-2 border-t border-zinc-800 pt-2">
+                        <span className="text-xs text-zinc-500 w-full mb-1">Recomendadas de la sección:</span>
+                        {section.recommendedTags.map((tag: string, i: number) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const currentTags = editingProduct.tags || [];
+                                if (!currentTags.includes(tag)) {
+                                  setEditingProduct({...editingProduct, tags: [...currentTags, tag]});
+                                }
+                            }}
+                            className="text-xs bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-zinc-300 px-2 py-1 flex items-center gap-1 transition-colors"
+                          >
+                            <Plus size={10} /> {tag}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
@@ -2154,33 +2493,61 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                 )}
               </div>
 
-              <div>
-                <label className="block text-zinc-400 text-sm mb-2">
-                  Categoría *
-                </label>
-                <CustomSelect
-                  value={creatingProduct.category || ""}
-                  onChange={(value) => {
-                    setCreatingProduct({
-                      ...creatingProduct,
-                      category: value,
-                    });
-                    if (errors.category) setErrors({ ...errors, category: "" });
-                  }}
-                  options={[
-                    { value: "", label: "Seleccionar categoría" },
-                    ...categories.map((cat) => ({ value: cat, label: cat })),
-                  ]}
-                  error={!!errors.category}
-                />
-                {errors.category && (
-                  <span className="text-red-500 text-xs mt-1 block">
-                    {errors.category}
-                  </span>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Sección
+                  </label>
+                  <CustomSelect
+                    value={creatingProduct.section || ""}
+                    onChange={(value) => {
+                      setCreatingProduct({
+                        ...creatingProduct,
+                        section: value,
+                        category: "", // reset category
+                      });
+                    }}
+                    options={[
+                      ...sectionsData.map((s) => ({
+                        value: s.id,
+                        label: s.title,
+                      })),
+                    ]}
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Categoría *
+                  </label>
+                  <CustomSelect
+                    value={creatingProduct.category || ""}
+                    onChange={(value) => {
+                      setCreatingProduct({
+                        ...creatingProduct,
+                        category: value,
+                      });
+                      if (errors.category) setErrors({ ...errors, category: "" });
+                    }}
+                    options={[
+                      { value: "", label: "Seleccionar categoría" },
+                      ...(creatingProduct.section
+                        ? sectionsData
+                            .find((s) => s.id === creatingProduct.section)
+                            ?.categories?.filter((c: string) => c !== "Todos") || []
+                        : categories
+                      ).map((cat: string) => ({ value: cat, label: cat })),
+                    ]}
+                    error={!!errors.category}
+                  />
+                  {errors.category && (
+                    <span className="text-red-500 text-xs mt-1 block">
+                      {errors.category}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Precio *
@@ -2225,6 +2592,25 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     placeholder="Opcional"
                   />
                 </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-zinc-400 text-sm mb-2">
+                    Marca (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={creatingProduct.brand || ""}
+                    onChange={(e) =>
+                      setCreatingProduct({
+                        ...creatingProduct,
+                        brand: e.target.value,
+                      })
+                    }
+                    className="w-full bg-transparent border-b border-zinc-800 text-white px-3 py-2 text-sm focus:outline-none focus:border-white transition-colors placeholder-zinc-700"
+                    placeholder="Ej: Toyota"
+                  />
+                </div>
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Modelo (Opcional)
@@ -2244,7 +2630,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Stock
@@ -2262,26 +2648,31 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     placeholder="0"
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-zinc-400 text-sm mb-2">
                     Estado
                   </label>
                   <CustomSelect
                     value={
-                      creatingProduct.available !== false ? "true" : "false"
+                      creatingProduct.available === false 
+                        ? "false" 
+                        : creatingProduct.available === null 
+                          ? "hidden" 
+                          : "true"
                     }
-                    onChange={(value) =>
+                    onChange={(value) => {
+                      let availableVal: boolean | null = true;
+                      if (value === "false") availableVal = false;
+                      if (value === "hidden") availableVal = null;
                       setCreatingProduct({
                         ...creatingProduct,
-                        available: value === "true",
+                        available: availableVal as boolean, // we map null to 'hidden' using types, wait we must update type Product
                       })
-                    }
+                    }}
                     options={[
                       { value: "true", label: "Disponible" },
                       { value: "false", label: "Agotado" },
+                      { value: "hidden", label: "Oculto" },
                     ]}
                   />
                 </div>
@@ -2299,7 +2690,7 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                       className="w-5 h-5 bg-black border border-zinc-700 rounded focus:ring-0 checked:bg-white"
                     />
                     <span className="text-zinc-400 text-sm">
-                      Destacado en Home
+                      Destacar
                     </span>
                   </label>
                 </div>
@@ -2369,6 +2760,33 @@ const ProductsManager: React.FC<ProductsManagerProps> = () => {
                     ))}
                   </div>
                 )}
+                {creatingProduct.section && (() => {
+                  const section = sectionsData.find(s => s.id === creatingProduct.section);
+                  if (section && section.recommendedTags && section.recommendedTags.length > 0) {
+                    return (
+                      <div className="flex flex-wrap gap-2 mt-4 pt-2 border-t border-zinc-800">
+                        <span className="text-xs text-zinc-500 w-full mb-1">Recomendadas de la sección:</span>
+                        {section.recommendedTags.map((tag: string, i: number) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                const currentTags = creatingProduct.tags || [];
+                                if (!currentTags.includes(tag)) {
+                                  setCreatingProduct({...creatingProduct, tags: [...currentTags, tag]});
+                                }
+                            }}
+                            className="text-xs bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-zinc-300 px-2 py-1 flex items-center gap-1 transition-colors"
+                          >
+                            <Plus size={10} /> {tag}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
