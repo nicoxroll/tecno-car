@@ -561,7 +561,7 @@ const SettingsManager: React.FC = () => {
             aboutDescription2,
             aboutAmenities,
             aboutGallery,
-            catalogFilters,
+            catalogSections,
             settings
         })
         setUploadedImages([]); // Clear uploaded images list as they are now saved
