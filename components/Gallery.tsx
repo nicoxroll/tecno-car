@@ -172,8 +172,17 @@ const Gallery: React.FC = () => {
       if (e.key === "ArrowRight") handleNext();
     };
 
+    if (selectedImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
   }, [selectedImage, posts]);
 
   return (

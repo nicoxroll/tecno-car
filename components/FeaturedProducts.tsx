@@ -27,8 +27,17 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
       }
     };
 
+    if (selectedProduct) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
   }, [selectedProduct]);
 
   useEffect(() => {
@@ -183,7 +192,7 @@ const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
               </div>
 
               {/* Content Side */}
-              <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto max-h-[90vh]">
+              <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col md:overflow-y-auto md:max-h-[90vh]">
                 <span className="text-[10px] text-zinc-500 tracking-[0.3em] font-medium uppercase mb-4 border-l border-white pl-3">
                   {selectedProduct.category}
                 </span>

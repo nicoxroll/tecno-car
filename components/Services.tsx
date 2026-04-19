@@ -32,6 +32,26 @@ const Services: React.FC<ServicesProps> = ({ onServiceSelect }) => {
   }, []);
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedService && e.key === "Escape") {
+        setSelectedService(null);
+      }
+    };
+
+    if (selectedService) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedService]);
+
+  useEffect(() => {
     // Fallback for browsers that don't support IntersectionObserver
     if (!("IntersectionObserver" in window)) {
       setVisibleItems(services.map((s) => s.id));

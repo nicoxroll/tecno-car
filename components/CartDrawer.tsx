@@ -16,8 +16,17 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
       }
     };
 
+    if (isCartOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
   }, [isCartOpen, setIsCartOpen]);
 
   if (!isCartOpen) return null;
