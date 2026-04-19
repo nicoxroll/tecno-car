@@ -60,10 +60,13 @@ const Brands: React.FC = () => {
                 className="h-full w-auto object-contain"
                 onError={(e) => {
                   // Fallback to text if image fails
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement!.innerText = brand.name;
-                  e.currentTarget.parentElement!.className =
-                    "text-3xl md:text-5xl font-bold text-zinc-800 uppercase tracking-tighter hover:text-white transition-colors cursor-default select-none";
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    e.currentTarget.style.display = "none";
+                    parent.innerText = brand.name;
+                    parent.className =
+                      "text-3xl md:text-5xl font-bold text-zinc-800 uppercase tracking-tighter hover:text-white transition-colors cursor-default select-none";
+                  }
                 }}
               />
             </div>
@@ -84,10 +87,13 @@ const Brands: React.FC = () => {
                 className="h-full w-auto object-contain"
                 onError={(e) => {
                   // Fallback to text if image fails
-                  e.currentTarget.style.display = "none";
-                  e.currentTarget.parentElement!.innerText = brand.name;
-                  e.currentTarget.parentElement!.className =
-                    "text-3xl md:text-5xl font-bold text-zinc-800 uppercase tracking-tighter hover:text-white transition-colors cursor-default select-none";
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    e.currentTarget.style.display = "none";
+                    parent.innerText = brand.name;
+                    parent.className =
+                      "text-3xl md:text-5xl font-bold text-zinc-800 uppercase tracking-tighter hover:text-white transition-colors cursor-default select-none";
+                  }
                 }}
               />
             </div>
